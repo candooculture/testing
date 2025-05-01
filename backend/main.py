@@ -102,7 +102,8 @@ def get_industry_benchmarks(industry: str):
     try:
         b = industry_benchmarks(industry)
         return {
-            "churn_rate": int(b.get("Employee Churn Rate (%) (Value)", 0)),
+            # ✅ Corrected here
+            "churn_rate": int(b.get("Customer Churn Rate (%) (Value)", 0)),
             "inefficiency_rate": int(b.get("Process Inefficiency Rate (%) (Value)", 0)),
             "leadership_drag": int(b.get("Leadership Drag Impact (%) (Value)", 10)),
             "target_hours_per_employee": int(b.get("Target Hours per Employee (Value)", 160)),

@@ -113,6 +113,11 @@ def calculate_productivity_metrics(data):
     b = industry_benchmarks(data.industry)
     total_target_hours = data.num_employees * data.target_hours_per_employee
     lost_hours = data.absenteeism_days * 7.6 * data.num_employees
+
+    # Estimate the opportunity gain if utilisation improves by 5%
+    # (Note: This is a soft 'what-if' assumption — not a measured delta.
+    # It's used to illustrate potential upside in a low-friction, sales-friendly way.
+    # Actual productivity gains are not measured here.)
     extra_hours = 0.05 * total_target_hours
 
     revenue_per_employee = data.total_revenue / \
