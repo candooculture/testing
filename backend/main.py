@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, conint, confloat
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.encoders import jsonable_encoder
 from admin import admin_router
 from calculator import (
     industry_benchmarks,
@@ -11,9 +10,9 @@ from calculator import (
     calculate_productivity_metrics
 )
 
-# === App Setup ===
 app = FastAPI()
 
+# === CORS Middleware ===
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://jamescandoo.github.io"],
@@ -22,6 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# === Admin Router ===
 app.include_router(admin_router)
 
 # === Input Models ===
@@ -60,7 +60,7 @@ class ProductivityInput(BaseModel):
     overtime_hours: confloat(ge=0) = 0
     absenteeism_days: confloat(ge=0) = 0
 
-# === API Endpoints ===
+# === Calculator Endpoints ===
 
 
 @app.post("/run-efficiency-calculator")
@@ -94,19 +94,20 @@ def run_productivity_snapshot(data: ProductivityInput):
     except Exception as e:
         return {"error": str(e)}
 
+# === GET Industry Benchmarks for Frontend Pre-Fill ===
+
 
 @app.get("/get-industry-benchmarks")
 def get_industry_benchmarks(industry: str):
     try:
         b = industry_benchmarks(industry)
-        result = {
-            "churn_rate": b.get("Employee Churn Rate (%) (Value)", None),
-            "inefficiency_rate": b.get("Process Inefficiency Rate (%) (Value)", None),
-            "leadership_drag": b.get("Leadership Drag Impact (%) (Value)", None),
-            "target_hours_per_employee": b.get("Target Hours per Employee (Value)", None),
-            "absenteeism_days": b.get("Absenteeism Days per Month (Value)", None),
-            "cac": b.get("Customer Acquisition Cost (CAC) (AUD) (Value)", None)
+        return {
+            "churn_rate": int(b.get("Employee Churn Rate (%) (Value)", 0)),
+            "inefficiency_rate": int(b.get("Process Inefficiency Rate (%) (Value)", 0)),
+            "leadership_drag": int(b.get("Leadership Drag Impact (%) (Value)", 10)),
+            "target_hours_per_employee": int(b.get("Target Hours per Employee (Value)", 160)),
+            "absenteeism_days": float(b.get("Absenteeism Days per Month (Value)", 1.0)),
+            "cac": int(b.get("Customer Acquisition Cost (CAC) (AUD) (Value)", 800))
         }
-        return jsonable_encoder(result)
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
