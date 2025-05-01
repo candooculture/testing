@@ -1,27 +1,30 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, conint, confloat
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
+from admin import admin_router
 from calculator import (
     industry_benchmarks,
-    calculate_efficiency_loss_and_roi,
     calculate_customer_churn_loss,
+    calculate_efficiency_loss_and_roi,
     calculate_leadership_drag_loss,
-    calculate_productivity_metrics,
-    get_industry_benchmarks as get_full_benchmark_data
+    calculate_productivity_metrics
 )
 
+# === App Setup ===
 app = FastAPI()
 
-# Allow frontend (adjust domain in production!)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://jamescandoo.github.io"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# === INPUT MODELS ===
+app.include_router(admin_router)
+
+# === Input Models ===
 
 
 class EfficiencyAutoInput(BaseModel):
@@ -57,34 +60,46 @@ class ProductivityInput(BaseModel):
     overtime_hours: confloat(ge=0) = 0
     absenteeism_days: confloat(ge=0) = 0
 
-# === ENDPOINTS ===
+# === API Endpoints ===
 
 
 @app.post("/run-efficiency-calculator")
 def run_efficiency_calculator(data: EfficiencyAutoInput):
-    return calculate_efficiency_loss_and_roi(data)
+    try:
+        return calculate_efficiency_loss_and_roi(data)
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.post("/run-churn-calculator")
 def run_churn_calculator(data: ChurnCalculatorRequest):
-    return calculate_customer_churn_loss(data)
+    try:
+        return calculate_customer_churn_loss(data)
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.post("/run-leadership-drag-calculator")
 def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
-    return calculate_leadership_drag_loss(data)
+    try:
+        return calculate_leadership_drag_loss(data)
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.post("/run-productivity-snapshot")
 def run_productivity_snapshot(data: ProductivityInput):
-    return calculate_productivity_metrics(data)
+    try:
+        return calculate_productivity_metrics(data)
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.get("/get-industry-benchmarks")
 def get_industry_benchmarks(industry: str):
     try:
         b = industry_benchmarks(industry)
-        return {
+        result = {
             "churn_rate": b.get("Employee Churn Rate (%) (Value)", None),
             "inefficiency_rate": b.get("Process Inefficiency Rate (%) (Value)", None),
             "leadership_drag": b.get("Leadership Drag Impact (%) (Value)", None),
@@ -92,5 +107,6 @@ def get_industry_benchmarks(industry: str):
             "absenteeism_days": b.get("Absenteeism Days per Month (Value)", None),
             "cac": b.get("Customer Acquisition Cost (CAC) (AUD) (Value)", None)
         }
+        return jsonable_encoder(result)
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
