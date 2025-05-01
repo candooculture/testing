@@ -1,0 +1,18 @@
+[
+    {
+        "calculator": "team_efficiency",
+        "visible": true
+    },
+    {
+        "calculator": "customer_churn",
+        "visible": true
+    },
+    {
+        "calculator": "leadership_drag",
+        "visible": true
+    },
+    {
+        "calculator": "workforce_productivity",
+        "visible": true
+    }
+]
