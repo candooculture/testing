@@ -56,8 +56,17 @@ async def get_benchmarks():
 @admin_router.post("/update-benchmarks")
 async def update_benchmarks(updated_benchmarks: List[dict]):
     try:
+        # Convert list of dicts to DataFrame
         df = pd.DataFrame(updated_benchmarks)
+
+        # Optional: Reorder columns to match original CSV (recommended for stability)
+        original_columns = pd.read_csv(
+            BENCHMARK_FILE, nrows=1).columns.tolist()
+        df = df[original_columns]
+
+        # Save to CSV
         df.to_csv(BENCHMARK_FILE, index=False)
-        return {"status": "success", "message": "Benchmarks updated successfully."}
+
+        return {"status": "success", "message": "Benchmarks updated and saved successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
