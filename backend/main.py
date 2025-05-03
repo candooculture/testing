@@ -9,6 +9,7 @@ from calculator import (
     calculate_leadership_drag_loss,
     calculate_productivity_metrics
 )
+import pandas as pd
 
 app = FastAPI()
 
@@ -102,7 +103,6 @@ def get_industry_benchmarks(industry: str):
     try:
         b = industry_benchmarks(industry)
         return {
-            # ✅ Corrected here
             "churn_rate": int(b.get("Customer Churn Rate (%) (Value)", 0)),
             "inefficiency_rate": int(b.get("Process Inefficiency Rate (%) (Value)", 0)),
             "leadership_drag": int(b.get("Leadership Drag Impact (%) (Value)", 10)),
@@ -112,3 +112,16 @@ def get_industry_benchmarks(industry: str):
         }
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+# === GET Alphabetised Industry List ===
+
+
+@app.get("/get-all-industries")
+def get_all_industries():
+    try:
+        df = pd.read_csv(
+            "benchmarks/final_cleaned_benchmarks_with_certainty.csv")
+        industries = sorted(df["Industry"].dropna().unique().tolist())
+        return {"industries": industries}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
