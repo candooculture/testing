@@ -8,16 +8,14 @@ def load_benchmark_data():
     df.set_index("Industry", inplace=True)
     return df
 
-
-benchmark_df = load_benchmark_data()
-
 # === 2. LOOKUP ===
 
 
 def industry_benchmarks(industry):
-    if industry not in benchmark_df.index:
+    df = load_benchmark_data()  # Load fresh on each call
+    if industry not in df.index:
         raise ValueError(f"Industry '{industry}' not found in benchmarks.")
-    return benchmark_df.loc[industry]
+    return df.loc[industry]
 
 # === 3. BENCHMARK MESSAGES ===
 
@@ -113,11 +111,6 @@ def calculate_productivity_metrics(data):
     b = industry_benchmarks(data.industry)
     total_target_hours = data.num_employees * data.target_hours_per_employee
     lost_hours = data.absenteeism_days * 7.6 * data.num_employees
-
-    # Estimate the opportunity gain if utilisation improves by 5%
-    # (Note: This is a soft 'what-if' assumption — not a measured delta.
-    # It's used to illustrate potential upside in a low-friction, sales-friendly way.
-    # Actual productivity gains are not measured here.)
     extra_hours = 0.05 * total_target_hours
 
     revenue_per_employee = data.total_revenue / \
@@ -152,4 +145,4 @@ def calculate_productivity_metrics(data):
 
 
 def get_industry_benchmarks():
-    return benchmark_df.to_dict(orient="index")
+    return load_benchmark_data().to_dict(orient="index")

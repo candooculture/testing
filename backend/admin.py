@@ -3,6 +3,7 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException, Body
 from pydantic import BaseModel
 from typing import List
+from fastapi.responses import FileResponse
 
 admin_router = APIRouter(prefix="/admin")
 
@@ -56,17 +57,21 @@ async def get_benchmarks():
 @admin_router.post("/update-benchmarks")
 async def update_benchmarks(updated_benchmarks: List[dict]):
     try:
-        # Convert list of dicts to DataFrame
         df = pd.DataFrame(updated_benchmarks)
-
-        # Optional: Reorder columns to match original CSV (recommended for stability)
         original_columns = pd.read_csv(
             BENCHMARK_FILE, nrows=1).columns.tolist()
         df = df[original_columns]
-
-        # Save to CSV
         df.to_csv(BENCHMARK_FILE, index=False)
-
         return {"status": "success", "message": "Benchmarks updated and saved successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# === CSV Download Endpoint ===
+
+
+@admin_router.get("/download-csv")
+async def download_csv():
+    try:
+        return FileResponse(BENCHMARK_FILE, media_type="text/csv", filename="latest_benchmarks.csv")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
