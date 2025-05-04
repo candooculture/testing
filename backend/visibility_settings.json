@@ -14,5 +14,9 @@
     {
         "calculator": "workforce_productivity",
         "visible": true
+    },
+    {
+        "calculator": "productivity_dive",
+        "visible": true
     }
 ]
