@@ -18,5 +18,9 @@
     {
         "calculator": "productivity_dive",
         "visible": true
+    },
+    {
+        "calculator": "operational_risk",
+        "visible": true
     }
 ]
