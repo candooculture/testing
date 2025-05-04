@@ -1,13 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, conint, confloat
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 from admin import admin_router
 from calculator import (
     industry_benchmarks,
     calculate_customer_churn_loss,
     calculate_efficiency_loss_and_roi,
     calculate_leadership_drag_loss,
-    calculate_productivity_metrics
+    calculate_productivity_metrics,
+    calculate_productivity_metrics_dive
 )
 import pandas as pd
 
@@ -61,6 +63,14 @@ class ProductivityInput(BaseModel):
     overtime_hours: confloat(ge=0) = 0
     absenteeism_days: confloat(ge=0) = 0
 
+
+class ProductivityDeepDiveInput(BaseModel):
+    industry: str
+    total_employees: conint(gt=0)
+    avg_salary: confloat(gt=0)
+    absenteeism_days: Optional[confloat(ge=0)] = None
+    avg_hours: Optional[confloat(ge=0)] = None
+
 # === Calculator Endpoints ===
 
 
@@ -94,6 +104,14 @@ def run_productivity_snapshot(data: ProductivityInput):
         return calculate_productivity_metrics(data)
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.post("/run-productivity-dive")
+def run_productivity_deep_dive(data: ProductivityDeepDiveInput):
+    try:
+        return calculate_productivity_metrics_dive(data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 # === GET Industry Benchmarks for Frontend Pre-Fill ===
 

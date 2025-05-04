@@ -146,3 +146,45 @@ def calculate_productivity_metrics(data):
 
 def get_industry_benchmarks():
     return load_benchmark_data().to_dict(orient="index")
+
+# === 9. PRODUCTIVITY METRICS DEEP DIVE ===
+
+
+def calculate_productivity_metrics_dive(data):
+    b = industry_benchmarks(data.industry)
+    monthly_salary = data.avg_salary / 12
+    target_hours = b.get("Target Hours per Employee (Value)", 160)
+    utilisation_benchmark = b.get("Utilisation Rate (%) (Value)", 75)
+    absenteeism_benchmark = b.get("Absenteeism Days per Month (Value)", 4)
+    overtime_benchmark = b.get("Overtime Dependency (%) (Value)", 10)
+    output_per_employee = b.get(
+        "Output per Employee (AUD/month) (Value)", 12000)
+
+    # Use provided or fallback to benchmark
+    absenteeism_days = data.absenteeism_days or absenteeism_benchmark
+    avg_hours = data.avg_hours or target_hours
+
+    # Utilisation calc
+    utilisation_gap = max(0, (target_hours - avg_hours) / target_hours)
+    underutilisation_cost = utilisation_gap * \
+        output_per_employee * data.total_employees
+
+    # Absenteeism cost
+    absenteeism_cost = (absenteeism_days / 22) * \
+        monthly_salary * data.total_employees
+
+    return {
+        "formatted_labels": {
+            "Absenteeism Cost": f"AUD ${round(absenteeism_cost):,}/month",
+            "Utilisation Gap": f"{round(utilisation_gap * 100, 1)}%",
+            "Output Loss from Under-utilisation": f"AUD ${round(underutilisation_cost):,}/month",
+            "Output per Employee": f"AUD ${round(output_per_employee):,}/month"
+        },
+        "benchmark_messages": [
+            f"Target Hours: {target_hours} hrs/month",
+            f"Utilisation Benchmark: {utilisation_benchmark}%",
+            f"Absenteeism Benchmark: {absenteeism_benchmark} days/month",
+            f"Overtime Dependency Benchmark: {overtime_benchmark}%",
+        ],
+        "straight_talk": f"These hidden gaps are costing up to AUD ${round(absenteeism_cost + underutilisation_cost):,} per month in missed productivity."
+    }
