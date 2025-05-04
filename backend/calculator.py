@@ -12,7 +12,7 @@ def load_benchmark_data():
 
 
 def industry_benchmarks(industry):
-    df = load_benchmark_data()  # Load fresh on each call
+    df = load_benchmark_data()
     if industry not in df.index:
         raise ValueError(f"Industry '{industry}' not found in benchmarks.")
     return df.loc[industry]
@@ -164,14 +164,14 @@ def calculate_productivity_metrics_dive(data):
     absenteeism_days = data.absenteeism_days or absenteeism_benchmark
     avg_hours = data.avg_hours or target_hours
 
-    # Utilisation calc
+    # Utilisation gap
     utilisation_gap = max(0, (target_hours - avg_hours) / target_hours)
     underutilisation_cost = utilisation_gap * \
         output_per_employee * data.total_employees
 
-    # Absenteeism cost
-    absenteeism_cost = (absenteeism_days / 22) * \
-        monthly_salary * data.total_employees
+    # === FIXED: Absenteeism cost (realistic daily rate method) ===
+    avg_daily_salary = data.avg_salary / 260  # 260 = avg workdays/year
+    absenteeism_cost = absenteeism_days * avg_daily_salary
 
     return {
         "formatted_labels": {
