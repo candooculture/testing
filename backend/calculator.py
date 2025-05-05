@@ -94,13 +94,18 @@ def calculate_leadership_drag_loss(data):
     annual_loss = data.avg_salary * drag_rate * data.total_employees
     industry_avg = b.get('Leadership Drag Impact (%) (Value)', 10.0)
 
+    excess_drag = max(0, data.leadership_drag - industry_avg) / 100
+    excess_monthly_cost = round(
+        (data.avg_salary * data.total_employees * excess_drag) / 12)
+
     return {
         "formatted_labels": {
             "Monthly Leadership Drag Loss": f"AUD ${round(monthly_loss):,}",
-            "Annual Leadership Drag Loss": f"AUD ${round(annual_loss):,}"
+            "Annual Leadership Drag Loss": f"AUD ${round(annual_loss):,}",
+            "Excess Drag Monthly Cost": f"AUD ${excess_monthly_cost:,}"
         },
         "benchmark_messages": [
-            f"Your leadership drag factor of {data.leadership_drag}% compared to {data.industry} industry average of {industry_avg}%."
+            f"Your leadership drag factor of {data.leadership_drag}% compared to {data.industry} industry average of {industry_avg}%"
         ]
     }
 
@@ -129,9 +134,9 @@ def calculate_productivity_metrics(data):
 
     return {
         "formatted_labels": {
-            "🧾 Revenue per Employee": f"AUD ${revenue_per_employee:,.2f}",
+            "🧞 Revenue per Employee": f"AUD ${revenue_per_employee:,.2f}",
             "🛠️ Payroll Efficiency": f"{payroll_efficiency:.1f}%",
-            "🏗️ Utilisation Rate": f"{utilisation_rate:.1f}%",
+            "🌇 Utilisation Rate": f"{utilisation_rate:.1f}%",
             "🛌 Absenteeism": f"{absenteeism_rate:.1f}%",
             "🔥 Overtime": f"{overtime_rate:.1f}%",
             "🚀 Opportunity Gain (from 5% better utilisation)": f"AUD ${opportunity_gain:,.2f}"
@@ -141,13 +146,7 @@ def calculate_productivity_metrics(data):
         ]
     }
 
-# === 8. EXPORT FOR ADMIN PANEL ===
-
-
-def get_industry_benchmarks():
-    return load_benchmark_data().to_dict(orient="index")
-
-# === 9. PRODUCTIVITY METRICS DEEP DIVE ===
+# === 8. PRODUCTIVITY DEEP DIVE ===
 
 
 def calculate_productivity_metrics_dive(data):
@@ -160,17 +159,13 @@ def calculate_productivity_metrics_dive(data):
     output_per_employee = b.get(
         "Output per Employee (AUD/month) (Value)", 12000)
 
-    # Use provided or fallback to benchmark
     absenteeism_days = data.absenteeism_days or absenteeism_benchmark
     avg_hours = data.avg_hours or target_hours
 
-    # Utilisation gap
     utilisation_gap = max(0, (target_hours - avg_hours) / target_hours)
     underutilisation_cost = utilisation_gap * \
         output_per_employee * data.total_employees
-
-    # === FIXED: Absenteeism cost (realistic daily rate method) ===
-    avg_daily_salary = data.avg_salary / 260  # 260 = avg workdays/year
+    avg_daily_salary = data.avg_salary / 260
     absenteeism_cost = absenteeism_days * avg_daily_salary
 
     return {
@@ -188,3 +183,9 @@ def calculate_productivity_metrics_dive(data):
         ],
         "straight_talk": f"These hidden gaps are costing up to AUD ${round(absenteeism_cost + underutilisation_cost):,} per month in missed productivity."
     }
+
+# === 9. EXPORT FOR ADMIN PANEL ===
+
+
+def get_industry_benchmarks():
+    return load_benchmark_data().to_dict(orient="index")
