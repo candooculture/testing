@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Efficiency Test</title>
+</head>
+
+<body>
+    <h1>Test: Run Efficiency Calculator</h1>
+    <form id="test-form">
+        <label>Industry:
+            <input type="text" name="industry" value="Construction" required>
+        </label><br>
+        <label>Total Employees:
+            <input type="number" name="total_employees" value="50" required>
+        </label><br>
+        <label>Average Salary:
+            <input type="number" name="avg_salary" value="70000" required>
+        </label><br>
+        <label>Improvement Rate (%):
+            <input type="number" name="improvement_rate" value="10" required>
+        </label><br>
+        <button type="submit">Submit</button>
+    </form>
+
+    <pre id="output" style="margin-top:20px; white-space:pre-wrap;"></pre>
+
+    <script>
+        document.getElementById("test-form").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            for (let key in data) if (!isNaN(data[key])) data[key] = Number(data[key]);
+
+            const output = document.getElementById("output");
+            output.innerText = "Sending request...";
+
+            try {
+                const res = await fetch("https://loss-calc-api.onrender.com/run-efficiency-calculator", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+                const json = await res.json();
+                output.innerText = JSON.stringify(json, null, 2);
+            } catch (err) {
+                output.innerText = "Error:\n" + err.message;
+            }
+        });
+    </script>
+</body>
+
+</html>
