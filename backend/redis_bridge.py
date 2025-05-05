@@ -20,7 +20,7 @@ class SharedData(BaseModel):
     key: str
     value: dict
 
-# === ROUTES ===
+# === ROUTES (FOR API ACCESS / TESTING) ===
 
 
 @router.post("/store-shared-data")
@@ -48,3 +48,29 @@ async def get_shared_data(key: str):
         return {"data": data.get("value")}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# === INTERNAL FUNCTIONS (FOR MAIN.PY USE) ===
+
+
+def store_input(key: str, value: dict):
+    try:
+        response = httpx.post(
+            f"{REDIS_URL}/set/{key}",
+            headers=HEADERS,
+            json={"value": value}
+        )
+        response.raise_for_status()
+        return True
+    except Exception as e:
+        print("Redis store error:", e)
+        return False
+
+
+def retrieve_input(key: str):
+    try:
+        response = httpx.get(f"{REDIS_URL}/get/{key}", headers=HEADERS)
+        response.raise_for_status()
+        return response.json().get("value")
+    except Exception as e:
+        print("Redis retrieve error:", e)
+        return None
