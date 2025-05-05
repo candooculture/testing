@@ -11,6 +11,7 @@ from calculator import (
     calculate_productivity_metrics,
     calculate_productivity_metrics_dive
 )
+from redis_bridge import store_input, retrieve_input
 import pandas as pd
 
 app = FastAPI()
@@ -77,6 +78,7 @@ class ProductivityDeepDiveInput(BaseModel):
 @app.post("/run-efficiency-calculator")
 def run_efficiency_calculator(data: EfficiencyAutoInput):
     try:
+        store_input("payroll-waste-inputs", data.dict())
         return calculate_efficiency_loss_and_roi(data)
     except Exception as e:
         return {"error": str(e)}
@@ -85,6 +87,7 @@ def run_efficiency_calculator(data: EfficiencyAutoInput):
 @app.post("/run-churn-calculator")
 def run_churn_calculator(data: ChurnCalculatorRequest):
     try:
+        store_input("customer-churn-inputs", data.dict())
         return calculate_customer_churn_loss(data)
     except Exception as e:
         return {"error": str(e)}
@@ -93,6 +96,7 @@ def run_churn_calculator(data: ChurnCalculatorRequest):
 @app.post("/run-leadership-drag-calculator")
 def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
     try:
+        store_input("leadership-drag-inputs", data.dict())
         return calculate_leadership_drag_loss(data)
     except Exception as e:
         return {"error": str(e)}
@@ -101,6 +105,7 @@ def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
 @app.post("/run-productivity-snapshot")
 def run_productivity_snapshot(data: ProductivityInput):
     try:
+        store_input("workforce-productivity-inputs", data.dict())
         return calculate_productivity_metrics(data)
     except Exception as e:
         return {"error": str(e)}
@@ -109,6 +114,7 @@ def run_productivity_snapshot(data: ProductivityInput):
 @app.post("/run-productivity-dive")
 def run_productivity_deep_dive(data: ProductivityDeepDiveInput):
     try:
+        store_input("productivity-dive-inputs", data.dict())
         return calculate_productivity_metrics_dive(data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
