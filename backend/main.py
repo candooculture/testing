@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, conint, confloat
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 from typing import Optional
 from admin import admin_router
 from calculator import (
@@ -11,9 +11,8 @@ from calculator import (
     calculate_productivity_metrics,
     calculate_productivity_metrics_dive
 )
+from operational_risk import run_operational_risk  # ✅ Correct usage
 from redis_bridge import store_input, retrieve_input
-# ✅ include router, not function
-from operational_risk import router as risk_router
 import pandas as pd
 
 app = FastAPI()
@@ -27,53 +26,52 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# === Include Routers ===
+# === Admin Router ===
 app.include_router(admin_router)
-app.include_router(risk_router)  # ✅ mount the operational risk routes here
 
 # === Input Models ===
 
 
 class EfficiencyAutoInput(BaseModel):
     industry: str
-    total_employees: conint(gt=0)
-    avg_salary: confloat(gt=0)
-    improvement_rate: confloat(gt=0, lt=100)
+    total_employees: int = Field(..., gt=0)
+    avg_salary: float = Field(..., gt=0)
+    improvement_rate: float = Field(..., gt=0, lt=100)
 
 
 class ChurnCalculatorRequest(BaseModel):
-    num_customers: conint(gt=0)
-    churn_rate: confloat(gt=0, lt=100)
-    avg_revenue: confloat(gt=0)
-    cac: confloat(ge=0)
-    desired_improvement: confloat(gt=0, lt=100)
+    num_customers: int = Field(..., gt=0)
+    churn_rate: float = Field(..., gt=0, lt=100)
+    avg_revenue: float = Field(..., gt=0)
+    cac: float = Field(..., ge=0)
+    desired_improvement: float = Field(..., gt=0, lt=100)
     industry: str
 
 
 class LeadershipDragCalculatorRequest(BaseModel):
     industry: str
-    total_employees: conint(gt=0)
-    avg_salary: confloat(gt=0)
-    leadership_drag: confloat(gt=0, lt=100)
+    total_employees: int = Field(..., gt=0)
+    avg_salary: float = Field(..., gt=0)
+    leadership_drag: float = Field(..., gt=0, lt=100)
 
 
 class ProductivityInput(BaseModel):
     industry: str
-    total_revenue: confloat(gt=0)
-    payroll_cost: confloat(gt=0)
-    num_employees: conint(gt=0)
-    productive_hours: confloat(gt=0)
-    target_hours_per_employee: confloat(gt=0)
-    overtime_hours: confloat(ge=0) = 0
-    absenteeism_days: confloat(ge=0) = 0
+    total_revenue: float = Field(..., gt=0)
+    payroll_cost: float = Field(..., gt=0)
+    num_employees: int = Field(..., gt=0)
+    productive_hours: float = Field(..., gt=0)
+    target_hours_per_employee: float = Field(..., gt=0)
+    overtime_hours: float = Field(0, ge=0)
+    absenteeism_days: float = Field(0, ge=0)
 
 
 class ProductivityDeepDiveInput(BaseModel):
     industry: str
-    total_employees: conint(gt=0)
-    avg_salary: confloat(gt=0)
-    absenteeism_days: Optional[confloat(ge=0)] = None
-    avg_hours: Optional[confloat(ge=0)] = None
+    total_employees: int = Field(..., gt=0)
+    avg_salary: float = Field(..., gt=0)
+    absenteeism_days: Optional[float] = Field(None, ge=0)
+    avg_hours: Optional[float] = Field(None, ge=0)
 
 # === Calculator Endpoints ===
 
@@ -122,6 +120,14 @@ def run_productivity_deep_dive(data: ProductivityDeepDiveInput):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+@app.post("/run-operational-risk")
+def run_operational_risk_calculator():
+    try:
+        return run_operational_risk()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # === GET Industry Benchmarks for Frontend Pre-Fill ===
 
 
@@ -139,8 +145,6 @@ def get_industry_benchmarks(industry: str):
         }
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
-
-# === GET Alphabetised Industry List ===
 
 
 @app.get("/get-all-industries")
