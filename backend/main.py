@@ -11,10 +11,9 @@ from calculator import (
     calculate_productivity_metrics,
     calculate_productivity_metrics_dive
 )
-from operational_risk import calculate_operational_risk  # ✅ Corrected source
 from redis_bridge import store_input, retrieve_input
+from operational_risk import router as risk_router  # ✅ Corrected import
 import pandas as pd
-
 
 app = FastAPI()
 
@@ -29,6 +28,7 @@ app.add_middleware(
 
 # === Admin Router ===
 app.include_router(admin_router)
+app.include_router(risk_router)  # ✅ Include Operational Risk Routes
 
 # === Input Models ===
 
@@ -120,14 +120,6 @@ def run_productivity_deep_dive(data: ProductivityDeepDiveInput):
         return calculate_productivity_metrics_dive(data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-
-@app.post("/run-operational-risk")  # 🚨 NEW
-def run_operational_risk_calculator():
-    try:
-        return calculate_operational_risk()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 # === GET Industry Benchmarks for Frontend Pre-Fill ===
 
