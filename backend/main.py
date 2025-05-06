@@ -9,7 +9,8 @@ from calculator import (
     calculate_efficiency_loss_and_roi,
     calculate_leadership_drag_loss,
     calculate_productivity_metrics,
-    calculate_productivity_metrics_dive
+    calculate_productivity_metrics_dive,
+    calculate_operational_risk  # NEW import
 )
 from redis_bridge import store_input, retrieve_input
 import pandas as pd
@@ -118,6 +119,14 @@ def run_productivity_deep_dive(data: ProductivityDeepDiveInput):
         return calculate_productivity_metrics_dive(data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/run-operational-risk")  # 🚨 NEW
+def run_operational_risk_calculator():
+    try:
+        return calculate_operational_risk()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # === GET Industry Benchmarks for Frontend Pre-Fill ===
 
