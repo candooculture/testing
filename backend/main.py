@@ -9,11 +9,12 @@ from calculator import (
     calculate_efficiency_loss_and_roi,
     calculate_leadership_drag_loss,
     calculate_productivity_metrics,
-    calculate_productivity_metrics_dive,
-    calculate_operational_risk  # NEW import
+    calculate_productivity_metrics_dive
 )
+from operational_risk import calculate_operational_risk  # ✅ Corrected source
 from redis_bridge import store_input, retrieve_input
 import pandas as pd
+
 
 app = FastAPI()
 

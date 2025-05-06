@@ -1,24 +1,18 @@
-# === operational_risk.py ===
-
-from fastapi import APIRouter, HTTPException
+from fastapi import HTTPException
 from pydantic import BaseModel
-from .redis_logic import retrieve_input
-
-router = APIRouter()
+from redis_bridge import retrieve_input  # ✅ Correct import
 
 # === INPUT MODEL ===
 
 
 class DummyInput(BaseModel):
-    user_id: str  # Used to namespace keys per user (optional upgrade)
+    user_id: str  # For future use, not currently implemented
 
 # === RISK SCORE ENDPOINT ===
 
 
-@router.post("/run-operational-risk")
-def run_operational_risk(_: DummyInput):
+def calculate_operational_risk():
     try:
-        # Keys for stored inputs (assuming one user for now)
         keys = [
             "payroll-waste-inputs",
             "customer-churn-inputs",
@@ -37,8 +31,7 @@ def run_operational_risk(_: DummyInput):
             raise HTTPException(
                 status_code=400, detail="No module inputs found. Run modules first.")
 
-        # === SAMPLE LOGIC (replace with proper score formula) ===
-        # Just tally up presence of modules as a dummy score
+        # === SAMPLE LOGIC ===
         score = len(inputs) * 20
         tier = ("Low" if score <= 40 else "Moderate" if score <= 80 else "High")
 
