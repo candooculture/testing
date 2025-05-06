@@ -75,8 +75,8 @@ class ProductivityDeepDiveInput(BaseModel):
 # === Calculator Endpoints ===
 
 
-@app.post("/run-efficiency-calculator")
-def run_efficiency_calculator(data: EfficiencyAutoInput):
+@app.post("/run-payroll-waste")
+def run_payroll_waste_calculator(data: EfficiencyAutoInput):
     try:
         store_input("payroll-waste-inputs", data.dict())
         return calculate_efficiency_loss_and_roi(data)
@@ -102,8 +102,8 @@ def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
         return {"error": str(e)}
 
 
-@app.post("/run-productivity-snapshot")
-def run_productivity_snapshot(data: ProductivityInput):
+@app.post("/run-workforce-productivity")
+def run_workforce_productivity_calculator(data: ProductivityInput):
     try:
         store_input("workforce-productivity-inputs", data.dict())
         return calculate_productivity_metrics(data)
