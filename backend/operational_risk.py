@@ -1,17 +1,17 @@
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from redis_bridge import retrieve_input  # ✅ Correct import
+# No dot-import when same directory level
+from redis_bridge import retrieve_input
 
-# === INPUT MODEL ===
+router = APIRouter()
 
 
 class DummyInput(BaseModel):
-    user_id: str  # For future use, not currently implemented
-
-# === RISK SCORE ENDPOINT ===
+    pass  # Placeholder for future user ID / token logic
 
 
-def calculate_operational_risk():
+@router.post("/run-operational-risk")
+def run_operational_risk(_: DummyInput):
     try:
         keys = [
             "payroll-waste-inputs",
@@ -21,19 +21,14 @@ def calculate_operational_risk():
             "productivity-dive-inputs"
         ]
 
-        inputs = {}
-        for key in keys:
-            value = retrieve_input(key)
-            if value:
-                inputs[key] = value
+        inputs = {k: retrieve_input(k) for k in keys if retrieve_input(k)}
 
         if not inputs:
             raise HTTPException(
                 status_code=400, detail="No module inputs found. Run modules first.")
 
-        # === SAMPLE LOGIC ===
         score = len(inputs) * 20
-        tier = ("Low" if score <= 40 else "Moderate" if score <= 80 else "High")
+        tier = "Low" if score <= 40 else "Moderate" if score <= 80 else "High"
 
         return {
             "formatted_labels": {

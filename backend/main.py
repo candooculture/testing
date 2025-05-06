@@ -12,7 +12,8 @@ from calculator import (
     calculate_productivity_metrics_dive
 )
 from redis_bridge import store_input, retrieve_input
-from operational_risk import router as risk_router  # ✅ Corrected import
+# ✅ include router, not function
+from operational_risk import router as risk_router
 import pandas as pd
 
 app = FastAPI()
@@ -26,9 +27,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# === Admin Router ===
+# === Include Routers ===
 app.include_router(admin_router)
-app.include_router(risk_router)  # ✅ Include Operational Risk Routes
+app.include_router(risk_router)  # ✅ mount the operational risk routes here
 
 # === Input Models ===
 
