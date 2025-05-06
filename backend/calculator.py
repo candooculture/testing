@@ -134,12 +134,12 @@ def calculate_productivity_metrics(data):
 
     return {
         "formatted_labels": {
-            "🧞 Revenue per Employee": f"AUD ${revenue_per_employee:,.2f}",
-            "🛠️ Payroll Efficiency": f"{payroll_efficiency:.1f}%",
-            "🌇 Utilisation Rate": f"{utilisation_rate:.1f}%",
-            "🛌 Absenteeism": f"{absenteeism_rate:.1f}%",
-            "🔥 Overtime": f"{overtime_rate:.1f}%",
-            "🚀 Opportunity Gain (from 5% better utilisation)": f"AUD ${opportunity_gain:,.2f}"
+            "revenue_per_employee": f"AUD ${revenue_per_employee:,.2f}",
+            "payroll_efficiency": f"{payroll_efficiency:.1f}%",
+            "utilisation_rate": f"{utilisation_rate:.1f}%",
+            "absenteeism_rate": f"{absenteeism_rate:.1f}%",
+            "overtime_rate": f"{overtime_rate:.1f}%",
+            "opportunity_gain": f"AUD ${opportunity_gain:,.2f}"
         },
         "benchmark_messages": [
             f"Target utilisation boost of 5% across {data.num_employees} employees."
