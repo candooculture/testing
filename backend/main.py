@@ -59,7 +59,7 @@ class ProductivityInput(BaseModel):
     industry: str
     total_revenue: float = Field(..., gt=0)
     payroll_cost: float = Field(..., gt=0)
-    num_employees: int = Field(..., gt=0)
+    total_employees: int = Field(..., gt=0)
     productive_hours: float = Field(..., gt=0)
     target_hours_per_employee: float = Field(..., gt=0)
     overtime_hours: float = Field(0, ge=0)

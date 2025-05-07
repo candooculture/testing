@@ -114,22 +114,34 @@ def calculate_leadership_drag_loss(data):
 
 def calculate_productivity_metrics(data):
     b = industry_benchmarks(data.industry)
-    total_target_hours = data.num_employees * data.target_hours_per_employee
-    lost_hours = data.absenteeism_days * 7.6 * data.num_employees
+    total_target_hours = data.total_employees * data.target_hours_per_employee
+    lost_hours = data.absenteeism_days * 7.6 * data.total_employees
     extra_hours = 0.05 * total_target_hours
 
-    revenue_per_employee = data.total_revenue / \
-        data.num_employees if data.num_employees else 0
-    payroll_efficiency = (data.total_revenue /
-                          data.payroll_cost) * 100 if data.payroll_cost else 0
-    utilisation_rate = (data.productive_hours /
-                        total_target_hours) * 100 if total_target_hours else 0
-    absenteeism_rate = (lost_hours / total_target_hours) * \
-        100 if total_target_hours else 0
-    overtime_rate = (data.overtime_hours / data.productive_hours) * \
-        100 if data.productive_hours else 0
-    revenue_per_hour = data.total_revenue / \
-        data.productive_hours if data.productive_hours else 0
+    revenue_per_employee = (
+        data.total_revenue / data.total_employees
+        if data.total_employees else 0
+    )
+    payroll_efficiency = (
+        (data.total_revenue / data.payroll_cost) * 100
+        if data.payroll_cost else 0
+    )
+    utilisation_rate = (
+        (data.productive_hours / total_target_hours) * 100
+        if total_target_hours else 0
+    )
+    absenteeism_rate = (
+        (lost_hours / total_target_hours) * 100
+        if total_target_hours else 0
+    )
+    overtime_rate = (
+        (data.overtime_hours / data.productive_hours) * 100
+        if data.productive_hours else 0
+    )
+    revenue_per_hour = (
+        data.total_revenue / data.productive_hours
+        if data.productive_hours else 0
+    )
     opportunity_gain = extra_hours * revenue_per_hour
 
     return {
@@ -142,7 +154,7 @@ def calculate_productivity_metrics(data):
             "opportunity_gain": f"AUD ${opportunity_gain:,.2f}"
         },
         "benchmark_messages": [
-            f"Target utilisation boost of 5% across {data.num_employees} employees."
+            f"Target utilisation boost of 5% across {data.total_employees} employees."
         ]
     }
 
