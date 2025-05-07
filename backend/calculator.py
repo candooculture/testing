@@ -115,7 +115,7 @@ def calculate_leadership_drag_loss(data):
 def calculate_productivity_metrics(data):
     b = industry_benchmarks(data.industry)
     total_target_hours = data.total_employees * data.target_hours_per_employee
-    lost_hours = data.absenteeism_days * 7.6 * data.total_employees
+    lost_hours = data.absenteeism_days * 7.6
     extra_hours = 0.05 * total_target_hours
 
     revenue_per_employee = (
