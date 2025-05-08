@@ -201,3 +201,12 @@ def calculate_productivity_metrics_dive(data):
 
 def get_industry_benchmarks():
     return load_benchmark_data().to_dict(orient="index")
+
+# === 10. ROUTE ALIASES FOR MAIN ===
+
+
+run_payroll_waste = calculate_efficiency_loss_and_roi
+run_customer_churn = calculate_customer_churn_loss
+run_leadership_drag = calculate_leadership_drag_loss
+run_workforce_productivity = calculate_productivity_metrics
+run_productivity_dive = calculate_productivity_metrics_dive
