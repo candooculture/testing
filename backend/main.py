@@ -9,9 +9,9 @@ from calculator import (
     calculate_efficiency_loss_and_roi,
     calculate_leadership_drag_loss,
     calculate_productivity_metrics,
-    calculate_productivity_metrics_dive
+    calculate_productivity_metrics_dive,
 )
-from operational_risk import run_operational_risk  # ✅ Correct usage
+from operational_risk import run_operational_risk
 import pandas as pd
 
 app = FastAPI()
@@ -19,10 +19,10 @@ app = FastAPI()
 # === CORS Middleware ===
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://jamescandoo.github.io"],
+    allow_origins=["*"],  # Use wildcard or specify your frontend domain
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
 
 # === Admin Router ===
@@ -78,7 +78,6 @@ class ProductivityDeepDiveInput(BaseModel):
 @app.post("/run-payroll-waste")
 def run_payroll_waste_calculator(data: EfficiencyAutoInput):
     try:
-        store_input("payroll-waste-inputs", data.dict())
         return calculate_efficiency_loss_and_roi(data)
     except Exception as e:
         return {"error": str(e)}
@@ -87,7 +86,6 @@ def run_payroll_waste_calculator(data: EfficiencyAutoInput):
 @app.post("/run-churn-calculator")
 def run_churn_calculator(data: ChurnCalculatorRequest):
     try:
-        store_input("customer-churn-inputs", data.dict())
         return calculate_customer_churn_loss(data)
     except Exception as e:
         return {"error": str(e)}
@@ -96,7 +94,6 @@ def run_churn_calculator(data: ChurnCalculatorRequest):
 @app.post("/run-leadership-drag-calculator")
 def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
     try:
-        store_input("leadership-drag-inputs", data.dict())
         return calculate_leadership_drag_loss(data)
     except Exception as e:
         return {"error": str(e)}
@@ -105,7 +102,6 @@ def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
 @app.post("/run-workforce-productivity")
 def run_workforce_productivity_calculator(data: ProductivityInput):
     try:
-        store_input("workforce-productivity-inputs", data.dict())
         return calculate_productivity_metrics(data)
     except Exception as e:
         return {"error": str(e)}
@@ -114,7 +110,6 @@ def run_workforce_productivity_calculator(data: ProductivityInput):
 @app.post("/run-productivity-dive")
 def run_productivity_deep_dive(data: ProductivityDeepDiveInput):
     try:
-        store_input("productivity-dive-inputs", data.dict())
         return calculate_productivity_metrics_dive(data)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -126,8 +121,6 @@ def run_operational_risk_calculator():
         return run_operational_risk()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# === GET Industry Benchmarks for Frontend Pre-Fill ===
 
 
 @app.get("/get-industry-benchmarks")
