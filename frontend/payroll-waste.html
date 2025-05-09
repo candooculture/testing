@@ -186,7 +186,7 @@
         localStorage.setItem("payroll-waste-inputs", JSON.stringify(data));
 
         try {
-          const res = await fetch("https://loss-calc-api.onrender.com/run-payroll-waste", {
+          const res = await fetch("https://candoo-clarity.onrender.com/run-payroll-waste", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)

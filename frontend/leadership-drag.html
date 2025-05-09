@@ -206,7 +206,7 @@
                 const industry = industrySelect.value;
                 if (!industry) return;
                 try {
-                    const res = await fetch(`https://loss-calc-api.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
+                    const res = await fetch(`https://candoo-clarity.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
                     const data = await res.json();
                     if (data.leadership_drag != null) markPrefilled(dragInput, labelDrag, data.leadership_drag);
                 } catch (err) {
@@ -226,7 +226,7 @@
                 localStorage.setItem('leadership-drag-inputs', JSON.stringify(data));
 
                 try {
-                    const response = await fetch("https://loss-calc-api.onrender.com/run-leadership-drag-calculator", {
+                    const response = await fetch("https://candoo-clarity.onrender.com/run-leadership-drag-calculator", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)

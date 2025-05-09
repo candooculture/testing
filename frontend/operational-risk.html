@@ -134,7 +134,7 @@
             combined.last_updated = Date.now();
 
             try {
-                const response = await fetch("https://loss-calc-api.onrender.com/run-operational-risk", {
+                const response = await fetch("https://candoo-clarity.onrender.com/run-operational-risk", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(combined)

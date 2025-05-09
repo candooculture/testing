@@ -111,7 +111,7 @@
     <h2>Industry Benchmarks (Editable)</h2>
     <div id="benchmarks"></div>
     <button onclick="saveBenchmarks()">Save Benchmark Changes</button>
-    <a href="https://loss-calc-api.onrender.com/admin/download-csv" download>
+    <a href="https://candoo-clarity.onrender.com/admin/download-csv" download>
         <button style="margin-top: 10px;">⬇️ Download Latest CSV</button>
     </a>
     <div id="benchmark-status" class="status-message"></div>
@@ -130,7 +130,7 @@
 
         async function fetchVisibility() {
             try {
-                const response = await fetch('https://loss-calc-api.onrender.com/admin/get-visibility');
+                const response = await fetch('https://candoo-clarity.onrender.com/admin/get-visibility');
                 const result = await response.json();
                 const togglesDiv = document.getElementById('toggles');
                 togglesDiv.innerHTML = '';
@@ -170,7 +170,7 @@
             statusDiv.textContent = '';
 
             try {
-                const response = await fetch('https://loss-calc-api.onrender.com/admin/set-visibility', {
+                const response = await fetch('https://candoo-clarity.onrender.com/admin/set-visibility', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ updated_visibility: data })
@@ -194,7 +194,7 @@
 
         async function fetchBenchmarks() {
             try {
-                const response = await fetch('https://loss-calc-api.onrender.com/admin/get-benchmarks');
+                const response = await fetch('https://candoo-clarity.onrender.com/admin/get-benchmarks');
                 const result = await response.json();
 
                 currentBenchmarks = result.data;
@@ -246,7 +246,7 @@
             statusDiv.textContent = '';
 
             try {
-                const response = await fetch('https://loss-calc-api.onrender.com/admin/update-benchmarks', {
+                const response = await fetch('https://candoo-clarity.onrender.com/admin/update-benchmarks', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(currentBenchmarks)
