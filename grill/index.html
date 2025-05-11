@@ -90,7 +90,8 @@
 
   <script>
     const calculators = {
-      team_efficiency: { name: "💸 Payroll Waste", file: "payroll-waste.html" }
+      team_efficiency: { name: "💸 Payroll Waste", file: "payroll-waste.html" },
+      __admin__: { name: "⚙️ Admin", file: "admin.html", protected: true }
     };
 
     function loadVisibility() {
@@ -99,29 +100,44 @@
       tabsDiv.innerHTML = '';
 
       Object.keys(calculators).forEach((key) => {
+        const { name } = calculators[key];
+
         const tab = document.createElement('div');
         tab.className = 'tab';
-        tab.innerHTML = calculators[key].name;
+        tab.innerHTML = name;
         tab.onclick = () => switchTab(key, tab);
         tabsDiv.appendChild(tab);
       });
 
+      const firstKey = Object.keys(calculators).find(k => !calculators[k].protected);
       const firstTab = tabsDiv.querySelector('.tab');
-      if (firstTab) {
+      if (firstTab && firstKey) {
         firstTab.classList.add('active');
-        switchTab(Object.keys(calculators)[0], firstTab);
+        switchTab(firstKey, firstTab);
       }
     }
 
     async function switchTab(key, tabEl) {
+      const module = calculators[key];
+      if (!module) return;
+
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       tabEl.classList.add('active');
 
       const container = document.getElementById('contentContainer');
       container.innerHTML = '<p>Loading...</p>';
 
+      // Password prompt for protected tab
+      if (module.protected) {
+        const password = prompt("Enter admin password:");
+        if (password !== "toolbox12103032") {
+          container.innerHTML = '<p style="color:red;">Access denied.</p>';
+          return;
+        }
+      }
+
       try {
-        const response = await fetch(calculators[key].file);
+        const response = await fetch(module.file);
         const html = await response.text();
 
         // Clean previous scripts
@@ -152,6 +168,7 @@
     }
 
     window.onload = loadVisibility;
+
   </script>
 </body>
 
