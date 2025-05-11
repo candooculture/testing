@@ -193,6 +193,7 @@
 
   <script>
     window.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("churn-form");
       const industrySelect = document.getElementById("industry");
       const churnInput = document.getElementById("churn_rate");
       const cacInput = document.getElementById("cac");
@@ -200,18 +201,26 @@
       const labelCAC = document.getElementById("label-cac");
       const resultBox = document.getElementById("churn-result");
       const cta = document.getElementById("cta-bottom");
-      const form = document.getElementById("churn-form");
 
-      if (!industrySelect || !form || !resultBox || !cta) {
-        console.error("Critical element missing in DOM.");
+      const MODULE = "customer-churn";
+      const API_BASE = "https://testing-gh0h.onrender.com";
+
+      if (!form || !industrySelect || !churnInput || !cacInput || !resultBox || !cta) {
+        console.error(`[${MODULE}] Critical DOM element missing.`);
         return;
       }
 
+      function log(...args) {
+        console.log(`[${MODULE}]`, ...args);
+      }
+
       function markPrefilled(input, label, value) {
-        if (input && input.value.trim() === "") {
+        if (!input || !label) return;
+        if (input.value.trim() === "") {
           input.value = value;
           input.classList.add("prefilled");
-          if (label) label.style.display = "block";
+          label.style.display = "block";
+          log("Prefilled", input.name, "→", value);
         }
       }
 
@@ -227,51 +236,58 @@
       clearOnEdit(cacInput, labelCAC);
 
       async function fetchBenchmarks(industry) {
+        if (!industry) return;
         try {
-          const res = await fetch(`https://testing-gh0h.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
+          log("Fetching benchmarks for", industry);
+          const res = await fetch(`${API_BASE}/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
           const data = await res.json();
           if (data.churn_rate != null) markPrefilled(churnInput, labelChurn, data.churn_rate);
           if (data.cac != null) markPrefilled(cacInput, labelCAC, data.cac);
         } catch (err) {
-          console.error("Benchmark fetch failed", err);
+          console.error(`[${MODULE}] Benchmark fetch error:`, err);
         }
       }
 
-      industrySelect.addEventListener("change", () => {
+      function handleIndustryChange(source = MODULE) {
         const selected = industrySelect.value;
-        sessionStorage.setItem("industry", selected);
+        if (!selected) return;
 
-        // Update other dropdowns
-        document.querySelectorAll('select[name="industry"]').forEach((dropdown) => {
+        sessionStorage.setItem("industry", selected);
+        log("Industry selected:", selected);
+
+        document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
           if (dropdown !== industrySelect) dropdown.value = selected;
         });
 
-        // Fetch benchmarks for this module
         fetchBenchmarks(selected);
 
-        // Notify other modules
+        // Broadcast to other modules
         window.dispatchEvent(new CustomEvent("benchmark-autofill", {
-          detail: { source: "customer-churn", industry: selected },
+          detail: { source, industry: selected }
         }));
-      });
+      }
 
+      industrySelect.addEventListener("change", () => handleIndustryChange());
+
+      // Cross-module listener
       window.addEventListener("benchmark-autofill", (e) => {
         const { source, industry } = e.detail || {};
-        if (source === "customer-churn") return;
-        if (industrySelect.value === industry) {
-          fetchBenchmarks(industry);
-        } else {
+        if (source === MODULE) return;
+
+        if (industrySelect.value !== industry) {
+          log("Syncing industry from", source, "→", industry);
           industrySelect.value = industry;
         }
+
+        fetchBenchmarks(industry);
       });
 
-      // Ensure benchmark fetch triggers only AFTER listeners are bound
+      // Restore saved industry
       const saved = sessionStorage.getItem("industry");
       if (saved) {
-        setTimeout(() => {
-          industrySelect.value = saved;
-          industrySelect.dispatchEvent(new Event("change"));
-        }, 0);
+        log("Restoring saved industry:", saved);
+        industrySelect.value = saved;
+        handleIndustryChange(); // triggers local fetch and sync
       }
 
       form.addEventListener("submit", async (e) => {
@@ -285,10 +301,10 @@
           if (!isNaN(data[key])) data[key] = Number(data[key]);
         }
         data.last_updated = Date.now();
-        localStorage.setItem("customer-churn-inputs", JSON.stringify(data));
+        localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
 
         try {
-          const response = await fetch("https://testing-gh0h.onrender.com/run-churn-calculator", {
+          const response = await fetch(`${API_BASE}/run-churn-calculator`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
@@ -321,7 +337,7 @@
             resultBox.style.display = "block";
           }
         } catch (err) {
-          console.error(err);
+          console.error(`[${MODULE}] API error:`, err);
           resultBox.innerText = "API error. Try again.";
           resultBox.style.display = "block";
         }
