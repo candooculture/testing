@@ -79,7 +79,7 @@
             border: none;
             cursor: pointer;
             border-radius: 8px;
-            transition: background 0.2s ease-in-out;
+            transition: background-color 0.2s ease-in-out;
         }
 
         button:hover {
@@ -192,32 +192,37 @@
         <h3>🌟 Seeing the numbers is the start. Now turn them into action.</h3>
         <button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
         <button
-            onclick="window.location.href='mailto:admin@candooculture.com?subject=Workforce%20Productivity%20-%20Next%20Steps'">📧
-            Prefer Email? Let’s Help You Understand What to Do Next</button>
+            onclick="window.location.href='mailto:admin@candooculture.com?subject=Workforce%20Productivity%20-%20Next%20Steps'">
+            📧 Prefer Email? Let’s Help You Understand What to Do Next
+        </button>
     </div>
 
     <script>
         (() => {
-            const industrySelect = document.getElementById('industry');
-            const targetInput = document.getElementById('target_hours');
-            const absentInput = document.getElementById('absenteeism_days');
-            const labelHours = document.getElementById('label-hours');
-            const labelAbsent = document.getElementById('label-absent');
-            const resultBox = document.getElementById('productivity-result');
-            const cta = document.getElementById('cta-bottom');
+            const MODULE = "workforce-productivity";
+            const API_BASE = "https://testing-gh0h.onrender.com";
+
+            const form = document.getElementById("productivity-form");
+            const industrySelect = document.getElementById("industry");
+            const targetInput = document.getElementById("target_hours");
+            const absentInput = document.getElementById("absenteeism_days");
+            const labelHours = document.getElementById("label-hours");
+            const labelAbsent = document.getElementById("label-absent");
+            const resultBox = document.getElementById("productivity-result");
+            const cta = document.getElementById("cta-bottom");
 
             function markPrefilled(input, label, value) {
                 if (input.value.trim() === "") {
                     input.value = value;
-                    input.classList.add('prefilled');
-                    label.style.display = 'block';
+                    input.classList.add("prefilled");
+                    label.style.display = "block";
                 }
             }
 
             function clearOnEdit(input, label) {
-                input.addEventListener('input', () => {
-                    input.classList.remove('prefilled');
-                    label.style.display = 'none';
+                input.addEventListener("input", () => {
+                    input.classList.remove("prefilled");
+                    label.style.display = "none";
                 });
             }
 
@@ -226,65 +231,72 @@
 
             async function fetchBenchmarks(industry) {
                 try {
-                    const res = await fetch(`https://testing-gh0h.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
+                    const res = await fetch(`${API_BASE}/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
                     const data = await res.json();
                     if (data.target_hours_per_employee != null) markPrefilled(targetInput, labelHours, data.target_hours_per_employee);
                     if (data.absenteeism_days != null) markPrefilled(absentInput, labelAbsent, data.absenteeism_days);
                 } catch (err) {
-                    console.error("Benchmark fetch failed", err);
+                    console.error(`[${MODULE}] Benchmark fetch failed`, err);
                 }
             }
 
-            industrySelect.addEventListener('change', () => {
+            industrySelect.addEventListener("change", () => {
                 const selected = industrySelect.value;
-                sessionStorage.setItem("industry", selected);
+                localStorage.setItem("industry", selected);
 
                 document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
                     if (dropdown !== industrySelect) dropdown.value = selected;
                 });
 
                 fetchBenchmarks(selected);
-
                 window.dispatchEvent(new CustomEvent("benchmark-autofill", {
-                    detail: { source: "workforce-productivity", industry: selected }
+                    detail: { source: MODULE, industry: selected }
                 }));
             });
 
-            window.addEventListener("benchmark-autofill", (e) => {
+            window.addEventListener("benchmark-autofill", e => {
                 const { source, industry } = e.detail || {};
-                if (source === "workforce-productivity") return;
-                if (industrySelect.value === industry) fetchBenchmarks(industry);
-            });
-
-            window.addEventListener("DOMContentLoaded", () => {
-                const saved = sessionStorage.getItem("industry");
-                if (saved) {
-                    industrySelect.value = saved;
-                    setTimeout(() => {
-                        industrySelect.dispatchEvent(new Event("change"));
-                    }, 100);
+                if (source === MODULE) return;
+                if (industrySelect.value !== industry) {
+                    industrySelect.value = industry;
+                    fetchBenchmarks(industry);
                 }
             });
 
-            document.getElementById('productivity-form').addEventListener('submit', async e => {
-                e.preventDefault();
-                resultBox.style.display = 'none';
-                cta.style.display = 'none';
+            const saved = localStorage.getItem("industry");
+            if (saved) {
+                industrySelect.value = saved;
+                fetchBenchmarks(saved);
+            }
 
-                const formData = new FormData(e.target);
-                const data = Object.fromEntries(formData.entries());
-                for (let key in data) if (!isNaN(data[key])) data[key] = Number(data[key]);
+            let lastIndustry = saved || "";
+            setInterval(() => {
+                const current = localStorage.getItem("industry");
+                if (current && current !== lastIndustry) {
+                    lastIndustry = current;
+                    industrySelect.value = current;
+                    fetchBenchmarks(current);
+                }
+            }, 1000);
+
+            form.addEventListener("submit", async e => {
+                e.preventDefault();
+                resultBox.style.display = "none";
+                cta.style.display = "none";
+
+                const data = Object.fromEntries(new FormData(form).entries());
+                Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]); });
                 data.last_updated = Date.now();
-                localStorage.setItem('workforce-productivity-inputs', JSON.stringify(data));
+                localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
 
                 try {
-                    const res = await fetch("https://testing-gh0h.onrender.com/run-workforce-productivity", {
+                    const res = await fetch(`${API_BASE}/run-workforce-productivity`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)
                     });
-                    const result = await res.json();
 
+                    const result = await res.json();
                     if (result.formatted_labels) {
                         const r = result.formatted_labels;
                         let out = `📊 Workforce Productivity Overview\n\n`;
@@ -296,16 +308,16 @@
                         out += `🚀 Opportunity Gain (from 5% Utilisation Uplift): ${r.opportunity_gain}\n\tAssumes additional 5% of target hours at current revenue/hour`;
 
                         resultBox.innerText = out;
-                        resultBox.style.display = 'block';
-                        cta.style.display = 'block';
+                        resultBox.style.display = "block";
+                        cta.style.display = "block";
                     } else {
                         resultBox.innerText = "Something went wrong.";
-                        resultBox.style.display = 'block';
+                        resultBox.style.display = "block";
                     }
                 } catch (err) {
-                    console.error(err);
+                    console.error(`[${MODULE}] API error`, err);
                     resultBox.innerText = "API error. Try again.";
-                    resultBox.style.display = 'block';
+                    resultBox.style.display = "block";
                 }
             });
         })();
