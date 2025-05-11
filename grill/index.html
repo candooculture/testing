@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <title>Candoo Clarity Toolbox</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="clarity-style.css">
   <style>
     body {
       font-family: 'DM Sans', sans-serif;
@@ -146,6 +147,10 @@
 
         container.innerHTML = html;
 
+        // Always show intro unless admin hides it
+        document.querySelector('.intro')?.classList.remove('hidden');
+
+        // Inject and run scripts from loaded HTML
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = html;
         const newScripts = tempDiv.querySelectorAll('script');
@@ -168,7 +173,6 @@
     }
 
     window.onload = loadVisibility;
-
   </script>
 </body>
 
