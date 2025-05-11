@@ -131,8 +131,8 @@
                 <option value="Finance & Insurance">Finance & Insurance</option>
                 <option value="Government / Public Sector">Government / Public Sector</option>
                 <option value="Healthcare">Healthcare</option>
-                <option value="Integrated Services">Integrated Services</option>
                 <option value="Hospitality">Hospitality</option>
+                <option value="Integrated Services">Integrated Services</option>
                 <option value="Logistics & Transport">Logistics & Transport</option>
                 <option value="Manufacturing">Manufacturing</option>
                 <option value="Media / Creative / Comms">Media / Creative / Comms</option>
@@ -188,9 +188,11 @@
             const cta = document.getElementById('cta-bottom');
 
             function markPrefilled(input, label, value) {
-                input.value = value;
-                input.classList.add('prefilled');
-                label.style.display = 'block';
+                if (input.value.trim() === "") {
+                    input.value = value;
+                    input.classList.add('prefilled');
+                    label.style.display = 'block';
+                }
             }
 
             function clearOnEdit(input, label) {
@@ -202,15 +204,50 @@
 
             clearOnEdit(dragInput, labelDrag);
 
-            industrySelect.addEventListener('change', async () => {
-                const industry = industrySelect.value;
-                if (!industry) return;
+            async function fetchBenchmark(industry) {
                 try {
-                    const res = await fetch(`https://candoo-clarity.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
+                    const res = await fetch(`https://testing-gh0h.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
                     const data = await res.json();
-                    if (data.leadership_drag != null) markPrefilled(dragInput, labelDrag, data.leadership_drag);
+                    if (data.leadership_drag != null) {
+                        markPrefilled(dragInput, labelDrag, data.leadership_drag);
+                    }
                 } catch (err) {
                     console.error("Benchmark fetch failed", err);
+                }
+            }
+
+            industrySelect.addEventListener('change', () => {
+                const selected = industrySelect.value;
+                sessionStorage.setItem("industry", selected);
+
+                document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
+                    if (dropdown !== industrySelect) {
+                        dropdown.value = selected;
+                    }
+                });
+
+                fetchBenchmark(selected);
+
+                window.dispatchEvent(new CustomEvent("benchmark-autofill", {
+                    detail: { source: "leadership-drag", industry: selected }
+                }));
+            });
+
+            window.addEventListener("benchmark-autofill", (e) => {
+                const { source, industry } = e.detail || {};
+                if (source === "leadership-drag") return;
+                if (industrySelect.value === industry) {
+                    fetchBenchmark(industry);
+                }
+            });
+
+            window.addEventListener("DOMContentLoaded", () => {
+                const saved = sessionStorage.getItem("industry");
+                if (saved) {
+                    industrySelect.value = saved;
+                    setTimeout(() => {
+                        industrySelect.dispatchEvent(new Event("change"));
+                    }, 100);
                 }
             });
 
@@ -226,7 +263,7 @@
                 localStorage.setItem('leadership-drag-inputs', JSON.stringify(data));
 
                 try {
-                    const response = await fetch("https://candoo-clarity.onrender.com/run-leadership-drag-calculator", {
+                    const response = await fetch("https://testing-gh0h.onrender.com/run-leadership-drag-calculator", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)
@@ -266,7 +303,6 @@
                     resultBox.style.display = 'block';
                 }
             });
-
         })();
     </script>
 </body>

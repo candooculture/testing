@@ -202,11 +202,15 @@
             const absentInput = document.getElementById('absenteeism_days');
             const labelHours = document.getElementById('label-hours');
             const labelAbsent = document.getElementById('label-absent');
+            const resultBox = document.getElementById("dive-result");
+            const cta = document.getElementById("cta-bottom");
 
             function markPrefilled(input, label, value) {
-                input.value = value;
-                input.classList.add('prefilled');
-                label.style.display = 'block';
+                if (input.value.trim() === "") {
+                    input.value = value;
+                    input.classList.add('prefilled');
+                    label.style.display = 'block';
+                }
             }
 
             function clearOnEdit(input, label) {
@@ -219,51 +223,74 @@
             clearOnEdit(hoursInput, labelHours);
             clearOnEdit(absentInput, labelAbsent);
 
-            industrySelect.addEventListener('change', async () => {
-                const industry = industrySelect.value;
-                if (!industry) return;
+            async function fetchBenchmarks(industry) {
                 try {
-                    const res = await fetch(`https://candoo-clarity.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
+                    const res = await fetch(`https://testing-gh0h.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
                     const data = await res.json();
                     if (data.target_hours_per_employee != null) markPrefilled(hoursInput, labelHours, data.target_hours_per_employee);
                     if (data.absenteeism_days != null) markPrefilled(absentInput, labelAbsent, data.absenteeism_days);
                 } catch (err) {
                     console.error('Benchmark fetch failed', err);
                 }
+            }
+
+            industrySelect.addEventListener('change', () => {
+                const selected = industrySelect.value;
+                sessionStorage.setItem("industry", selected);
+
+                document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
+                    if (dropdown !== industrySelect) dropdown.value = selected;
+                });
+
+                fetchBenchmarks(selected);
+
+                window.dispatchEvent(new CustomEvent("benchmark-autofill", {
+                    detail: { source: "productivity-deep-dive", industry: selected }
+                }));
+            });
+
+            window.addEventListener("benchmark-autofill", (e) => {
+                const { source, industry } = e.detail || {};
+                if (source === "productivity-deep-dive") return;
+                if (industrySelect.value === industry) fetchBenchmarks(industry);
+            });
+
+            window.addEventListener("DOMContentLoaded", () => {
+                const saved = sessionStorage.getItem("industry");
+                if (saved) {
+                    industrySelect.value = saved;
+                    setTimeout(() => {
+                        industrySelect.dispatchEvent(new Event("change"));
+                    }, 100);
+                }
             });
 
             document.getElementById("dive-form").addEventListener("submit", async function (e) {
                 e.preventDefault();
                 const data = Object.fromEntries(new FormData(e.target).entries());
-                Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]) });
+                Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]); });
                 localStorage.setItem("productivity-dive-inputs", JSON.stringify(data));
 
                 try {
-                    const response = await fetch("https://candoo-clarity.onrender.com/run-productivity-dive", {
+                    const response = await fetch("https://testing-gh0h.onrender.com/run-productivity-dive", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)
                     });
 
                     const result = await response.json();
-                    const resultBox = document.getElementById("dive-result");
-                    const cta = document.getElementById("cta-bottom");
 
                     if (result.formatted_labels) {
                         const r = result.formatted_labels;
-
                         let output = `💰 Absenteeism Cost: ${r["Absenteeism Cost"]}\n`;
                         output += `🔧 Utilisation Gap: ${r["Utilisation Gap"]}\n`;
                         output += `📉 Output Loss: ${r["Output Loss from Under-utilisation"]}\n`;
                         output += `📊 Output per Employee: ${r["Output per Employee"]}\n\n`;
-
                         output += `📊 Benchmark Check — ${data.industry} Industry\n`;
                         result.benchmark_messages.forEach(msg => {
                             output += `- ${msg}\n`;
                         });
-
                         output += `\n🧠 Straight Talk\n${result.straight_talk}`;
-
                         resultBox.innerText = output;
                         resultBox.style.display = "block";
                         cta.style.display = "block";
@@ -273,7 +300,6 @@
                     }
                 } catch (err) {
                     console.error(err);
-                    const resultBox = document.getElementById("dive-result");
                     resultBox.innerText = "API error. Try again.";
                     resultBox.style.display = "block";
                 }

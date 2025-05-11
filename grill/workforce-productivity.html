@@ -125,23 +125,23 @@
         <label>Industry:
             <select name="industry" id="industry" required>
                 <option value="">Select your industry</option>
-                <option>Agriculture / Farming</option>
-                <option>Construction</option>
-                <option>Education & Training</option>
-                <option>Finance & Insurance</option>
-                <option>Government / Public Sector</option>
-                <option>Healthcare</option>
-                <option>Integrated Services</option>
-                <option>Hospitality</option>
-                <option>Logistics & Transport</option>
-                <option>Manufacturing</option>
-                <option>Media / Creative / Comms</option>
-                <option>Non-Profit</option>
-                <option>Professional Services</option>
-                <option>Real Estate & Property</option>
-                <option>Retail</option>
-                <option>Technology / SaaS</option>
-                <option>Utilities / Energy / Waste</option>
+                <option value="Agriculture / Farming">Agriculture / Farming</option>
+                <option value="Construction">Construction</option>
+                <option value="Education & Training">Education & Training</option>
+                <option value="Finance & Insurance">Finance & Insurance</option>
+                <option value="Government / Public Sector">Government / Public Sector</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Hospitality">Hospitality</option>
+                <option value="Integrated Services">Integrated Services</option>
+                <option value="Logistics & Transport">Logistics & Transport</option>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Media / Creative / Comms">Media / Creative / Comms</option>
+                <option value="Non-Profit">Non-Profit</option>
+                <option value="Professional Services">Professional Services</option>
+                <option value="Real Estate & Property">Real Estate & Property</option>
+                <option value="Retail">Retail</option>
+                <option value="Technology / SaaS">Technology / SaaS</option>
+                <option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
             </select>
         </label>
 
@@ -207,9 +207,11 @@
             const cta = document.getElementById('cta-bottom');
 
             function markPrefilled(input, label, value) {
-                input.value = value;
-                input.classList.add('prefilled');
-                label.style.display = 'block';
+                if (input.value.trim() === "") {
+                    input.value = value;
+                    input.classList.add('prefilled');
+                    label.style.display = 'block';
+                }
             }
 
             function clearOnEdit(input, label) {
@@ -222,16 +224,45 @@
             clearOnEdit(targetInput, labelHours);
             clearOnEdit(absentInput, labelAbsent);
 
-            industrySelect.addEventListener('change', async () => {
-                const industry = industrySelect.value;
-                if (!industry) return;
+            async function fetchBenchmarks(industry) {
                 try {
-                    const res = await fetch(`https://candoo-clarity.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
+                    const res = await fetch(`https://testing-gh0h.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
                     const data = await res.json();
                     if (data.target_hours_per_employee != null) markPrefilled(targetInput, labelHours, data.target_hours_per_employee);
                     if (data.absenteeism_days != null) markPrefilled(absentInput, labelAbsent, data.absenteeism_days);
                 } catch (err) {
                     console.error("Benchmark fetch failed", err);
+                }
+            }
+
+            industrySelect.addEventListener('change', () => {
+                const selected = industrySelect.value;
+                sessionStorage.setItem("industry", selected);
+
+                document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
+                    if (dropdown !== industrySelect) dropdown.value = selected;
+                });
+
+                fetchBenchmarks(selected);
+
+                window.dispatchEvent(new CustomEvent("benchmark-autofill", {
+                    detail: { source: "workforce-productivity", industry: selected }
+                }));
+            });
+
+            window.addEventListener("benchmark-autofill", (e) => {
+                const { source, industry } = e.detail || {};
+                if (source === "workforce-productivity") return;
+                if (industrySelect.value === industry) fetchBenchmarks(industry);
+            });
+
+            window.addEventListener("DOMContentLoaded", () => {
+                const saved = sessionStorage.getItem("industry");
+                if (saved) {
+                    industrySelect.value = saved;
+                    setTimeout(() => {
+                        industrySelect.dispatchEvent(new Event("change"));
+                    }, 100);
                 }
             });
 
@@ -247,7 +278,7 @@
                 localStorage.setItem('workforce-productivity-inputs', JSON.stringify(data));
 
                 try {
-                    const res = await fetch("https://candoo-clarity.onrender.com/run-workforce-productivity", {
+                    const res = await fetch("https://testing-gh0h.onrender.com/run-workforce-productivity", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)
@@ -271,13 +302,11 @@
                         resultBox.innerText = "Something went wrong.";
                         resultBox.style.display = 'block';
                     }
-
                 } catch (err) {
                     console.error(err);
                     resultBox.innerText = "API error. Try again.";
                     resultBox.style.display = 'block';
                 }
-
             });
         })();
     </script>
