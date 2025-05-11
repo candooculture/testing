@@ -154,7 +154,8 @@
             <small>Annual salary including super, across the team</small>
         </label>
 
-        <label>Estimated Leadership Drag (% of Salary Base):
+        <label for="leadership_drag">
+            Estimated Leadership Drag (% of Salary Base):
             <input type="number" name="leadership_drag" id="leadership_drag" step="0.1" required>
             <span class="benchmark-label" id="label-leadership">(Using industry average)</span>
             <small>Estimate the % of total payroll lost to poor leadership impact</small>
@@ -181,95 +182,101 @@
 
     <script>
         (() => {
-            const industrySelect = document.getElementById('industry');
-            const dragInput = document.getElementById('leadership_drag');
-            const labelDrag = document.getElementById('label-leadership');
-            const resultBox = document.getElementById('leadership-result');
-            const cta = document.getElementById('cta-bottom');
+            const MODULE = "leadership-drag";
+            const API_BASE = "https://testing-gh0h.onrender.com";
+
+            const form = document.getElementById("leadership-drag-form");
+            const industrySelect = document.getElementById("industry");
+            const dragInput = document.getElementById("leadership_drag");
+            const labelDrag = document.getElementById("label-leadership");
+            const resultBox = document.getElementById("leadership-result");
+            const cta = document.getElementById("cta-bottom");
 
             function markPrefilled(input, label, value) {
                 if (input.value.trim() === "") {
                     input.value = value;
-                    input.classList.add('prefilled');
-                    label.style.display = 'block';
+                    input.classList.add("prefilled");
+                    label.style.display = "block";
                 }
             }
 
             function clearOnEdit(input, label) {
-                input.addEventListener('input', () => {
-                    input.classList.remove('prefilled');
-                    label.style.display = 'none';
+                input.addEventListener("input", () => {
+                    input.classList.remove("prefilled");
+                    label.style.display = "none";
                 });
             }
 
             clearOnEdit(dragInput, labelDrag);
 
-            async function fetchBenchmark(industry) {
+            async function fetchBenchmarks(industry) {
                 try {
-                    const res = await fetch(`https://testing-gh0h.onrender.com/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
+                    const res = await fetch(`${API_BASE}/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
                     const data = await res.json();
-                    if (data.leadership_drag != null) {
-                        markPrefilled(dragInput, labelDrag, data.leadership_drag);
-                    }
+                    if (data.leadership_drag != null) markPrefilled(dragInput, labelDrag, data.leadership_drag);
                 } catch (err) {
-                    console.error("Benchmark fetch failed", err);
+                    console.error(`[${MODULE}] Benchmark fetch failed`, err);
                 }
             }
 
-            industrySelect.addEventListener('change', () => {
+            industrySelect.addEventListener("change", () => {
                 const selected = industrySelect.value;
-                sessionStorage.setItem("industry", selected);
+                localStorage.setItem("industry", selected);
 
                 document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
-                    if (dropdown !== industrySelect) {
-                        dropdown.value = selected;
-                    }
+                    if (dropdown !== industrySelect) dropdown.value = selected;
                 });
 
-                fetchBenchmark(selected);
-
+                fetchBenchmarks(selected);
                 window.dispatchEvent(new CustomEvent("benchmark-autofill", {
-                    detail: { source: "leadership-drag", industry: selected }
+                    detail: { source: MODULE, industry: selected }
                 }));
             });
 
-            window.addEventListener("benchmark-autofill", (e) => {
+            window.addEventListener("benchmark-autofill", e => {
                 const { source, industry } = e.detail || {};
-                if (source === "leadership-drag") return;
-                if (industrySelect.value === industry) {
-                    fetchBenchmark(industry);
+                if (source === MODULE) return;
+
+                if (industrySelect.value !== industry) {
+                    industrySelect.value = industry;
+                    fetchBenchmarks(industry);
                 }
             });
 
-            window.addEventListener("DOMContentLoaded", () => {
-                const saved = sessionStorage.getItem("industry");
-                if (saved) {
-                    industrySelect.value = saved;
-                    setTimeout(() => {
-                        industrySelect.dispatchEvent(new Event("change"));
-                    }, 100);
-                }
-            });
+            const saved = localStorage.getItem("industry");
+            if (saved) {
+                industrySelect.value = saved;
+                fetchBenchmarks(saved);
+            }
 
-            document.getElementById('leadership-drag-form').addEventListener('submit', async e => {
+            let lastIndustry = saved || "";
+            setInterval(() => {
+                const current = localStorage.getItem("industry");
+                if (current && current !== lastIndustry) {
+                    lastIndustry = current;
+                    industrySelect.value = current;
+                    fetchBenchmarks(current);
+                }
+            }, 1000);
+
+            form.addEventListener("submit", async e => {
                 e.preventDefault();
-                resultBox.style.display = 'none';
-                cta.style.display = 'none';
+                resultBox.style.display = "none";
+                cta.style.display = "none";
 
-                const formData = new FormData(e.target);
-                const data = Object.fromEntries(formData.entries());
-                for (let key in data) if (!isNaN(data[key])) data[key] = Number(data[key]);
+                const data = Object.fromEntries(new FormData(form).entries());
+                Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]); });
                 data.last_updated = Date.now();
-                localStorage.setItem('leadership-drag-inputs', JSON.stringify(data));
+                localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
 
                 try {
-                    const response = await fetch("https://testing-gh0h.onrender.com/run-leadership-drag-calculator", {
+                    const response = await fetch(`${API_BASE}/run-leadership-drag-calculator`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)
                     });
-                    const result = await response.json();
 
+                    const result = await response.json();
                     if (result.formatted_labels) {
                         const r = result.formatted_labels;
                         const dragRate = data.leadership_drag.toFixed(1);
@@ -291,16 +298,16 @@
                         if (delta > 0) output += `Even a modest ${delta}% reduction could recapture over ${excessCost} — without adding a single new hire.\n`;
 
                         resultBox.innerText = output;
-                        resultBox.style.display = 'block';
-                        cta.style.display = 'block';
+                        resultBox.style.display = "block";
+                        cta.style.display = "block";
                     } else {
                         resultBox.innerText = "Something went wrong.";
-                        resultBox.style.display = 'block';
+                        resultBox.style.display = "block";
                     }
                 } catch (err) {
-                    console.error(err);
+                    console.error(`[${MODULE}] API error`, err);
                     resultBox.innerText = "API error. Try again.";
-                    resultBox.style.display = 'block';
+                    resultBox.style.display = "block";
                 }
             });
         })();
