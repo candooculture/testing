@@ -252,13 +252,8 @@
       const { source, industry } = e.detail || {};
       if (source === MODULE) return;
 
-      const current = industrySelect.value.trim();
-      const incoming = industry.trim();
-
-      if (current !== incoming) {
-        industrySelect.value = incoming;
-      }
-      fetchBenchmarks(incoming);
+      industrySelect.value = industry.trim();     // Always set visually
+      fetchBenchmarks(industry.trim());          // Always fetch benchmarks
     });
 
     const saved = sessionStorage.getItem("industry");
