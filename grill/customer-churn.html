@@ -223,6 +223,7 @@
     clearOnEdit(cacInput, labelCAC);
 
     async function fetchBenchmarks(industry) {
+      if (!industry) return;
       try {
         const res = await fetch(`${API_BASE}/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
         const data = await res.json();
@@ -233,42 +234,33 @@
       }
     }
 
+    // Run on dropdown change
     industrySelect.addEventListener("change", () => {
       const selected = industrySelect.value;
       sessionStorage.setItem("industry", selected);
-
-      document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
-        if (dropdown !== industrySelect) dropdown.value = selected;
-      });
-
       fetchBenchmarks(selected);
-
-      window.dispatchEvent(new CustomEvent("benchmark-autofill", {
-        detail: { source: MODULE, industry: selected }
-      }));
     });
 
-    window.addEventListener("benchmark-autofill", e => {
-      const { source, industry } = e.detail || {};
-      console.log(`[${MODULE}] benchmark-autofill received from ${source} →`, industry);
-
-      if (source === MODULE) {
-        console.log(`[${MODULE}] Ignoring own dispatch`);
-        return;
+    // Poll for changes every 1s
+    let lastIndustry = sessionStorage.getItem("industry") || "";
+    setInterval(() => {
+      const current = sessionStorage.getItem("industry");
+      if (current && current !== lastIndustry) {
+        lastIndustry = current;
+        industrySelect.value = current;
+        fetchBenchmarks(current);
+        console.log(`[${MODULE}] Cross-module industry sync → ${current}`);
       }
+    }, 1000);
 
-      industrySelect.value = industry.trim();
-      console.log(`[${MODULE}] Updated dropdown to:`, industrySelect.value);
-
-      fetchBenchmarks(industry.trim());
-    });
-
+    // Restore on load
     const saved = sessionStorage.getItem("industry");
     if (saved) {
       industrySelect.value = saved;
-      fetchBenchmarks(saved.trim());
+      fetchBenchmarks(saved);
     }
 
+    // Handle form submit
     form.addEventListener("submit", async e => {
       e.preventDefault();
       resultBox.style.display = "none";
