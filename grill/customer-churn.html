@@ -183,7 +183,7 @@
 
   <pre id="churn-result"></pre>
 
-  <div id="cta-bottom" class="cta">
+  <div class="cta" id="cta-bottom">
     <h3>🎯 If churn feels invisible, it’s because it is. Let’s surface it.</h3>
     <button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
     <button onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand What to Do Next'">
@@ -192,159 +192,130 @@
   </div>
 
   <script>
-    window.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("churn-form");
-      const industrySelect = document.getElementById("industry");
-      const churnInput = document.getElementById("churn_rate");
-      const cacInput = document.getElementById("cac");
-      const labelChurn = document.getElementById("label-churn");
-      const labelCAC = document.getElementById("label-cac");
-      const resultBox = document.getElementById("churn-result");
-      const cta = document.getElementById("cta-bottom");
+    const MODULE = "customer-churn";
+    const API_BASE = "https://testing-gh0h.onrender.com";
 
-      const MODULE = "customer-churn";
-      const API_BASE = "https://testing-gh0h.onrender.com";
+    const form = document.getElementById("churn-form");
+    const industrySelect = document.getElementById("industry");
+    const churnInput = document.getElementById("churn_rate");
+    const cacInput = document.getElementById("cac");
+    const labelChurn = document.getElementById("label-churn");
+    const labelCAC = document.getElementById("label-cac");
+    const resultBox = document.getElementById("churn-result");
+    const cta = document.getElementById("cta-bottom");
 
-      if (!form || !industrySelect || !churnInput || !cacInput || !resultBox || !cta) {
-        console.error(`[${MODULE}] Critical DOM element missing.`);
-        return;
+    function markPrefilled(input, label, value) {
+      if (input.value.trim() === "") {
+        input.value = value;
+        input.classList.add("prefilled");
+        label.style.display = "block";
       }
+    }
 
-      function log(...args) {
-        console.log(`[${MODULE}]`, ...args);
+    function clearOnEdit(input, label) {
+      input.addEventListener("input", () => {
+        input.classList.remove("prefilled");
+        label.style.display = "none";
+      });
+    }
+
+    clearOnEdit(churnInput, labelChurn);
+    clearOnEdit(cacInput, labelCAC);
+
+    async function fetchBenchmarks(industry) {
+      try {
+        const res = await fetch(`${API_BASE}/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
+        const data = await res.json();
+        if (data.churn_rate != null) markPrefilled(churnInput, labelChurn, data.churn_rate);
+        if (data.cac != null) markPrefilled(cacInput, labelCAC, data.cac);
+      } catch (err) {
+        console.error(`[${MODULE}] Benchmark fetch failed`, err);
       }
+    }
 
-      function markPrefilled(input, label, value) {
-        if (!input || !label) return;
-        if (input.value.trim() === "") {
-          input.value = value;
-          input.classList.add("prefilled");
-          label.style.display = "block";
-          log("Prefilled", input.name, "→", value);
-        }
-      }
+    industrySelect.addEventListener("change", () => {
+      const selected = industrySelect.value;
+      sessionStorage.setItem("industry", selected);
 
-      function clearOnEdit(input, label) {
-        if (!input || !label) return;
-        input.addEventListener("input", () => {
-          input.classList.remove("prefilled");
-          label.style.display = "none";
-        });
-      }
-
-      clearOnEdit(churnInput, labelChurn);
-      clearOnEdit(cacInput, labelCAC);
-
-      async function fetchBenchmarks(industry) {
-        if (!industry) return;
-        try {
-          log("Fetching benchmarks for", industry);
-          const res = await fetch(`${API_BASE}/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
-          const data = await res.json();
-          if (data.churn_rate != null) markPrefilled(churnInput, labelChurn, data.churn_rate);
-          if (data.cac != null) markPrefilled(cacInput, labelCAC, data.cac);
-        } catch (err) {
-          console.error(`[${MODULE}] Benchmark fetch error:`, err);
-        }
-      }
-
-      function handleIndustryChange(source = MODULE) {
-        const selected = industrySelect.value;
-        if (!selected) return;
-
-        sessionStorage.setItem("industry", selected);
-        log("Industry selected:", selected);
-
-        document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
-          if (dropdown !== industrySelect) dropdown.value = selected;
-        });
-
-        fetchBenchmarks(selected);
-
-        // Broadcast to other modules
-        window.dispatchEvent(new CustomEvent("benchmark-autofill", {
-          detail: { source, industry: selected }
-        }));
-      }
-
-      industrySelect.addEventListener("change", () => handleIndustryChange());
-
-      // Cross-module listener
-      window.addEventListener("benchmark-autofill", (e) => {
-        const { source, industry } = e.detail || {};
-        if (source === MODULE) return;
-
-        if (industrySelect.value !== industry) {
-          log("Syncing industry from", source, "→", industry);
-          industrySelect.value = industry;
-        }
-
-        fetchBenchmarks(industry);
+      document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
+        if (dropdown !== industrySelect) dropdown.value = selected;
       });
 
-      // Restore saved industry
-      const saved = sessionStorage.getItem("industry");
-      if (saved) {
-        log("Restoring saved industry:", saved);
-        industrySelect.value = saved;
-        handleIndustryChange(); // triggers local fetch and sync
+      fetchBenchmarks(selected);
+
+      window.dispatchEvent(new CustomEvent("benchmark-autofill", {
+        detail: { source: MODULE, industry: selected }
+      }));
+    });
+
+    window.addEventListener("benchmark-autofill", e => {
+      const { source, industry } = e.detail || {};
+      if (source === MODULE) return;
+      if (industrySelect.value !== industry) {
+        industrySelect.value = industry;
+        fetchBenchmarks(industry);
       }
+    });
 
-      form.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        resultBox.style.display = "none";
-        cta.style.display = "none";
+    const saved = sessionStorage.getItem("industry");
+    if (saved) {
+      industrySelect.value = saved;
+      fetchBenchmarks(saved);
+    }
 
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData.entries());
-        for (let key in data) {
-          if (!isNaN(data[key])) data[key] = Number(data[key]);
-        }
-        data.last_updated = Date.now();
-        localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
+    form.addEventListener("submit", async e => {
+      e.preventDefault();
+      resultBox.style.display = "none";
+      cta.style.display = "none";
 
-        try {
-          const response = await fetch(`${API_BASE}/run-churn-calculator`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data),
-          });
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+      for (let key in data) {
+        if (!isNaN(data[key])) data[key] = Number(data[key]);
+      }
+      data.last_updated = Date.now();
+      localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
 
-          const result = await response.json();
+      try {
+        const response = await fetch(`${API_BASE}/run-churn-calculator`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
 
-          if (result.revenue_loss != null) {
-            const totalLoss = result.revenue_loss + result.replacement_cost;
-            const recoveryOpportunity = (result.potential_gain / totalLoss) * 100;
+        const result = await response.json();
 
-            let output = `💸 Total Annual Loss from Customer Churn: AUD $${totalLoss.toLocaleString()}\n`;
-            output += ` • Lost Revenue from Churned Customers: AUD $${result.revenue_loss.toLocaleString()}\n`;
-            output += ` • Replacement Cost (CAC): AUD $${result.replacement_cost.toLocaleString()}\n\n`;
-            output += `✅ Based on Your Inputs\n`;
-            output += `🎯 Projected Annual Recovery from ${data.desired_improvement}% Reduction in Churn Rate: AUD $${result.potential_gain.toLocaleString()}\n\n`;
-            output += `📈 Opportunity\n`;
-            output += `💰 Estimated Recovery = ${recoveryOpportunity.toFixed(1)}% of Total Churn Loss (via ${data.desired_improvement}% churn reduction)\n\n`;
-            output += `📊 Benchmark Check — ${data.industry} Industry\n`;
-            output += `- ${result.benchmark_message}\n\n`;
-            output += `🧠 Straight Talk\n`;
-            output += `You're leaking AUD $${totalLoss.toLocaleString()} every year through churned customers and acquisition costs.\n`;
-            output += `Even a small improvement delivers AUD $${result.potential_gain.toLocaleString()} straight to your bottom line.`;
+        if (result.revenue_loss != null) {
+          const totalLoss = result.revenue_loss + result.replacement_cost;
+          const recoveryOpportunity = (result.potential_gain / totalLoss) * 100;
 
-            resultBox.innerText = output;
-            resultBox.style.display = "block";
-            cta.style.display = "block";
-          } else {
-            resultBox.innerText = "Something went wrong.";
-            resultBox.style.display = "block";
-          }
-        } catch (err) {
-          console.error(`[${MODULE}] API error:`, err);
-          resultBox.innerText = "API error. Try again.";
+          let output = `💸 Total Annual Loss from Customer Churn: AUD $${totalLoss.toLocaleString()}\n`;
+          output += ` • Lost Revenue from Churned Customers: AUD $${result.revenue_loss.toLocaleString()}\n`;
+          output += ` • Replacement Cost (CAC): AUD $${result.replacement_cost.toLocaleString()}\n\n`;
+          output += `✅ Based on Your Inputs\n`;
+          output += `🎯 Projected Annual Recovery from ${data.desired_improvement}% Reduction in Churn Rate: AUD $${result.potential_gain.toLocaleString()}\n\n`;
+          output += `📈 Opportunity\n`;
+          output += `💰 Estimated Recovery = ${recoveryOpportunity.toFixed(1)}% of Total Churn Loss (via ${data.desired_improvement}% churn reduction)\n\n`;
+          output += `📊 Benchmark Check — ${data.industry} Industry\n`;
+          output += `- ${result.benchmark_message}\n\n`;
+          output += `🧠 Straight Talk\n`;
+          output += `You're leaking AUD $${totalLoss.toLocaleString()} every year through churned customers and acquisition costs.\n`;
+          output += `Even a small improvement delivers AUD $${result.potential_gain.toLocaleString()} straight to your bottom line.`;
+
+          resultBox.innerText = output;
+          resultBox.style.display = "block";
+          cta.style.display = "block";
+        } else {
+          resultBox.innerText = "Something went wrong.";
           resultBox.style.display = "block";
         }
-      });
+      } catch (err) {
+        console.error(`[${MODULE}] API error`, err);
+        resultBox.innerText = "API error. Try again.";
+        resultBox.style.display = "block";
+      }
     });
   </script>
-
 </body>
 
 </html>
