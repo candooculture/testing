@@ -19,6 +19,7 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
+        overflow-x: auto;
     }
 
     th,
@@ -53,9 +54,7 @@
 </style>
 
 <script>
-    // Hide intro when admin panel loads
     document.querySelector('.intro')?.classList.add('hidden');
-
     let currentBenchmarks = [];
 
     const labelMap = {
@@ -210,6 +209,10 @@
                     input.value = row[key];
                     input.dataset.index = rowIndex;
                     input.dataset.key = key;
+                    input.style.width = '100%';
+                    input.style.border = '1px solid #ccc';
+                    input.style.padding = '4px';
+                    input.style.borderRadius = '4px';
 
                     input.addEventListener('input', (e) => {
                         input.classList.add('edited-cell');
