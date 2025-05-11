@@ -235,9 +235,7 @@
         sessionStorage.setItem('industry', selected);
 
         document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
-          if (dropdown !== industrySelect) {
-            dropdown.value = selected;
-          }
+          if (dropdown !== industrySelect) dropdown.value = selected;
         });
 
         fetchBenchmarks(selected);
@@ -255,15 +253,14 @@
         }
       });
 
-      window.addEventListener("DOMContentLoaded", () => {
-        const saved = sessionStorage.getItem("industry");
-        if (saved) {
-          industrySelect.value = saved;
-          setTimeout(() => {
-            industrySelect.dispatchEvent(new Event("change"));
-          }, 100);
-        }
-      });
+      // 🔥 FIXED: immediate restore (no DOMContentLoaded)
+      const saved = sessionStorage.getItem("industry");
+      if (saved) {
+        industrySelect.value = saved;
+        setTimeout(() => {
+          industrySelect.dispatchEvent(new Event("change"));
+        }, 100);
+      }
 
       document.getElementById('churn-form').addEventListener('submit', async e => {
         e.preventDefault();
