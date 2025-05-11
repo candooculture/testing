@@ -250,10 +250,17 @@
 
     window.addEventListener("benchmark-autofill", e => {
       const { source, industry } = e.detail || {};
-      if (source === MODULE) return;
+      console.log(`[${MODULE}] benchmark-autofill received from ${source} →`, industry);
 
-      industrySelect.value = industry.trim();     // Always set visually
-      fetchBenchmarks(industry.trim());          // Always fetch benchmarks
+      if (source === MODULE) {
+        console.log(`[${MODULE}] Ignoring own dispatch`);
+        return;
+      }
+
+      industrySelect.value = industry.trim();
+      console.log(`[${MODULE}] Updated dropdown to:`, industrySelect.value);
+
+      fetchBenchmarks(industry.trim());
     });
 
     const saved = sessionStorage.getItem("industry");
