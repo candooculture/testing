@@ -3,6 +3,7 @@
 <h3>Module Visibility</h3>
 <div id="toggles"></div>
 <button onclick="saveVisibility()">Save Visibility Changes</button>
+<button onclick="initDefaultVisibility()">🔧 Load Default Visibility</button>
 <div id="visibility-status" class="status-message"></div>
 
 <h3>Industry Benchmarks (Editable)</h3>
@@ -12,6 +13,44 @@
     <button style="margin-top: 10px;">⬇️ Download Latest CSV</button>
 </a>
 <div id="benchmark-status" class="status-message"></div>
+
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th,
+    td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+    }
+
+    .status-message.success {
+        color: green;
+        margin-top: 10px;
+    }
+
+    .status-message.error {
+        color: red;
+        margin-top: 10px;
+    }
+
+    .edited-cell {
+        background-color: #ffffdd;
+    }
+
+    .calculator-toggle {
+        margin-bottom: 8px;
+    }
+</style>
 
 <script>
     // Hide intro when admin panel loads
@@ -34,6 +73,11 @@
             const result = await response.json();
             const togglesDiv = document.getElementById('toggles');
             togglesDiv.innerHTML = '';
+
+            if (!result.data || result.data.length === 0) {
+                togglesDiv.innerHTML = '<p style="color: #999;">No visibility settings found.</p>';
+                return;
+            }
 
             result.data.forEach(item => {
                 const div = document.createElement('div');
@@ -92,20 +136,63 @@
         }
     }
 
+    async function initDefaultVisibility() {
+        const defaultModules = [
+            { calculator: 'team_efficiency', visible: true },
+            { calculator: 'customer_churn', visible: true },
+            { calculator: 'leadership_drag', visible: true },
+            { calculator: 'workforce_productivity', visible: true },
+            { calculator: 'productivity_dive', visible: true },
+            { calculator: 'operational_risk', visible: true }
+        ];
+
+        const statusDiv = document.getElementById('visibility-status');
+        statusDiv.textContent = '';
+
+        try {
+            const response = await fetch('https://testing-gh0h.onrender.com/admin/set-visibility', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ updated_visibility: defaultModules })
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                statusDiv.textContent = '✅ Default visibility loaded!';
+                statusDiv.className = 'status-message success';
+                fetchVisibility();
+            } else {
+                statusDiv.textContent = '❌ Could not load default settings.';
+                statusDiv.className = 'status-message error';
+            }
+        } catch (error) {
+            console.error('Error loading defaults:', error);
+            statusDiv.textContent = '❌ API error. Try again.';
+            statusDiv.className = 'status-message error';
+        }
+    }
+
     async function fetchBenchmarks() {
         try {
             const response = await fetch('https://testing-gh0h.onrender.com/admin/get-benchmarks');
             const result = await response.json();
 
-            currentBenchmarks = result.data;
-            currentBenchmarks.sort((a, b) => a.Industry.localeCompare(b.Industry));
+            currentBenchmarks = result.data || [];
 
             const benchmarksDiv = document.getElementById('benchmarks');
             benchmarksDiv.innerHTML = '';
 
+            if (currentBenchmarks.length === 0) {
+                benchmarksDiv.innerHTML = '<p style="color: #999;">No benchmark data found.</p>';
+                return;
+            }
+
+            currentBenchmarks.sort((a, b) => a.Industry.localeCompare(b.Industry));
+
             const table = document.createElement('table');
             const headerRow = document.createElement('tr');
-            const headers = Object.keys(result.data[0]);
+            const headers = Object.keys(currentBenchmarks[0]);
 
             headers.forEach(header => {
                 const th = document.createElement('th');
