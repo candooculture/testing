@@ -6,69 +6,6 @@
   <title>Candoo Clarity Toolbox</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="clarity-style.css">
-  <style>
-    body {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      background-color: #ffffff;
-      color: #333333;
-      margin: 40px;
-      padding: 0;
-    }
-
-    h1 {
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    .intro {
-      max-width: 800px;
-      margin: 20px 0 30px 0;
-      font-size: 16px;
-      line-height: 1.5;
-      color: #555555;
-    }
-
-    .intro h2 {
-      font-size: 22px;
-      margin-bottom: 10px;
-      color: #333333;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    .tab {
-      padding: 12px 20px;
-      background-color: #f0f0f0;
-      border: 1px solid #ccc;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    .tab.active {
-      background-color: #ffffff;
-      border-bottom: 2px solid #48f191;
-    }
-
-    .content {
-      border: 1px solid #ccc;
-      padding: 20px;
-      border-radius: 8px;
-      background-color: #fff;
-    }
-
-    .beta-tag {
-      font-size: 12px;
-      color: #48f191;
-      margin-left: 6px;
-    }
-  </style>
 </head>
 
 <body>
@@ -107,7 +44,6 @@
 
       Object.keys(calculators).forEach((key) => {
         const { name } = calculators[key];
-
         const tab = document.createElement('div');
         tab.className = 'tab';
         tab.innerHTML = name;
@@ -133,7 +69,6 @@
       const container = document.getElementById('contentContainer');
       container.innerHTML = '<p>Loading...</p>';
 
-      // Password prompt for protected tab
       if (module.protected) {
         const password = prompt("Enter admin password:");
         if (password !== "toolbox12103032") {
@@ -146,21 +81,13 @@
         const response = await fetch(module.file);
         const html = await response.text();
 
-        // Clean previous scripts
-        const scripts = document.querySelectorAll('script[data-injected]');
-        scripts.forEach(script => script.remove());
-
+        document.querySelectorAll('script[data-injected]').forEach(script => script.remove());
         container.innerHTML = html;
-
-        // Always show intro unless admin hides it
         document.querySelector('.intro')?.classList.remove('hidden');
 
-        // Inject and run scripts from loaded HTML
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = html;
-        const newScripts = tempDiv.querySelectorAll('script');
-
-        newScripts.forEach(oldScript => {
+        tempDiv.querySelectorAll('script').forEach(oldScript => {
           const newScript = document.createElement('script');
           if (oldScript.src) {
             newScript.src = oldScript.src;
