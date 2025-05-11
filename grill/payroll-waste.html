@@ -177,23 +177,50 @@
   </div>
 
   <script>
-    // --- FORM SUBMISSION HANDLER ---
-    (function () {
-      document.getElementById("efficiency-form").addEventListener("submit", async function (e) {
+    (() => {
+      const MODULE = "payroll-waste";
+      const API_BASE = "https://testing-gh0h.onrender.com";
+
+      const form = document.getElementById("efficiency-form");
+      const industrySelect = document.getElementById("industry");
+      const resultBox = document.getElementById("efficiency-result");
+      const cta = document.getElementById("cta-bottom");
+
+      industrySelect.addEventListener("change", () => {
+        const selected = industrySelect.value;
+        localStorage.setItem("industry", selected);
+      });
+
+      const saved = localStorage.getItem("industry");
+      if (saved) industrySelect.value = saved;
+
+      let lastIndustry = saved || "";
+      setInterval(() => {
+        const current = localStorage.getItem("industry");
+        if (current && current !== lastIndustry) {
+          lastIndustry = current;
+          industrySelect.value = current;
+          console.log(`[${MODULE}] Industry synced: ${current}`);
+        }
+      }, 1000);
+
+      form.addEventListener("submit", async function (e) {
         e.preventDefault();
-        const data = Object.fromEntries(new FormData(e.target).entries());
+        resultBox.style.display = "none";
+        cta.style.display = "none";
+
+        const data = Object.fromEntries(new FormData(form).entries());
         Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]); });
         data.last_updated = Date.now();
-        localStorage.setItem("payroll-waste-inputs", JSON.stringify(data));
+        localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
 
         try {
-          const res = await fetch("https://testing-gh0h.onrender.com/run-payroll-waste", {
+          const res = await fetch(`${API_BASE}/run-payroll-waste`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
           });
           const result = await res.json();
-          const resultBox = document.getElementById("efficiency-result");
 
           if (result.formatted_labels) {
             const r = result.formatted_labels;
@@ -215,49 +242,18 @@
 
             resultBox.innerText = out;
             resultBox.style.display = "block";
-            document.getElementById("cta-bottom").style.display = "block";
+            cta.style.display = "block";
           } else {
             resultBox.innerText = "Something went wrong.";
             resultBox.style.display = "block";
           }
         } catch (err) {
-          console.error(err);
-          const resultBox = document.getElementById("efficiency-result");
+          console.error(`[${MODULE}] API error`, err);
           resultBox.innerText = "API error. Try again.";
           resultBox.style.display = "block";
         }
       });
     })();
-
-    // --- SESSION RESTORE + SYNC ---
-    window.addEventListener("DOMContentLoaded", () => {
-      const industrySelect = document.getElementById("industry");
-
-      // Restore from sessionStorage
-      const savedIndustry = sessionStorage.getItem("industry");
-      if (savedIndustry) {
-        industrySelect.value = savedIndustry;
-        setTimeout(() => {
-          industrySelect.dispatchEvent(new Event("change"));
-        }, 100);
-      }
-
-      // On industry change, save and broadcast
-      industrySelect.addEventListener("change", () => {
-        const selected = industrySelect.value;
-        sessionStorage.setItem("industry", selected);
-
-        document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
-          if (dropdown !== industrySelect) {
-            dropdown.value = selected;
-          }
-        });
-
-        window.dispatchEvent(new CustomEvent("benchmark-autofill", {
-          detail: { source: "payroll-waste", industry: selected }
-        }));
-      });
-    });
   </script>
 </body>
 
