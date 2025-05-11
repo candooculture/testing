@@ -251,16 +251,20 @@
     window.addEventListener("benchmark-autofill", e => {
       const { source, industry } = e.detail || {};
       if (source === MODULE) return;
-      if (industrySelect.value !== industry) {
-        industrySelect.value = industry;
-        fetchBenchmarks(industry);
+
+      const current = industrySelect.value.trim();
+      const incoming = industry.trim();
+
+      if (current !== incoming) {
+        industrySelect.value = incoming;
       }
+      fetchBenchmarks(incoming);
     });
 
     const saved = sessionStorage.getItem("industry");
     if (saved) {
       industrySelect.value = saved;
-      fetchBenchmarks(saved);
+      fetchBenchmarks(saved.trim());
     }
 
     form.addEventListener("submit", async e => {
