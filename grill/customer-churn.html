@@ -241,12 +241,15 @@
         const selected = industrySelect.value;
         sessionStorage.setItem("industry", selected);
 
+        // Update other dropdowns
         document.querySelectorAll('select[name="industry"]').forEach((dropdown) => {
           if (dropdown !== industrySelect) dropdown.value = selected;
         });
 
+        // Fetch benchmarks for this module
         fetchBenchmarks(selected);
 
+        // Notify other modules
         window.dispatchEvent(new CustomEvent("benchmark-autofill", {
           detail: { source: "customer-churn", industry: selected },
         }));
@@ -257,15 +260,18 @@
         if (source === "customer-churn") return;
         if (industrySelect.value === industry) {
           fetchBenchmarks(industry);
+        } else {
+          industrySelect.value = industry;
         }
       });
 
+      // Ensure benchmark fetch triggers only AFTER listeners are bound
       const saved = sessionStorage.getItem("industry");
       if (saved) {
-        industrySelect.value = saved;
         setTimeout(() => {
+          industrySelect.value = saved;
           industrySelect.dispatchEvent(new Event("change"));
-        }, 100);
+        }, 0);
       }
 
       form.addEventListener("submit", async (e) => {
