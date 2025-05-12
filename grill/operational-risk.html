@@ -106,7 +106,7 @@
     <div id="riskSummary" class="status-box">⏳ Waiting for modules to complete...</div>
     <pre id="op-risk-result" class="result-box"></pre>
 
-    <button class="refresh-btn" onclick="updateStatus()">🔄 Refresh Status</button>
+    <button class="refresh-btn" id="refreshBtn">🔄 Refresh Status</button>
 
     <div id="cta-bottom" class="cta">
         <h3>📉 See the full picture — and where you’re exposed.</h3>
@@ -218,6 +218,7 @@
         }
 
         updateStatus();
+        document.getElementById("refreshBtn").addEventListener("click", updateStatus);
     </script>
 </body>
 
