@@ -146,17 +146,23 @@
             const statuses = getModuleStatus();
             statusList.innerHTML = "";
             let completeCount = 0;
-            statuses.forEach(({ key, icon, status }) => {
+            let allDataPresent = true;
+
+            statuses.forEach(({ key, icon, status, storeKey }) => {
                 const li = document.createElement("li");
                 li.innerHTML = `${icon} ${key}: <span class="${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
                 statusList.appendChild(li);
                 if (status === "complete") completeCount++;
+                if (status !== "complete") allDataPresent = false;
             });
+
             riskSummary.innerText = `⏳ ${completeCount} of ${OP_MODULES.length} modules complete.`;
-            if (completeCount === OP_MODULES.length || force) {
+
+            if (completeCount === OP_MODULES.length && allDataPresent) {
                 runRiskAnalysis();
             } else {
-                resultBox.style.display = "none";
+                resultBox.style.display = "block";
+                resultBox.innerText = "⚠️ Please complete all modules before running the operational risk score.\n\nMissing or incomplete data detected.";
                 ctaBox.style.display = "none";
             }
         }
