@@ -2,16 +2,14 @@ from fastapi import FastAPI
 from pydantic import BaseModel, Field
 from typing import Optional
 from calculator import (
-    run_payroll_waste_calc,
-    run_customer_churn_calc,
-    run_leadership_drag_calc,
-    run_productivity_dive_calc,
-    run_workforce_productivity_calc
+    run_payroll_waste,
+    run_customer_churn,
+    run_leadership_drag,
+    run_productivity_dive,
+    run_workforce_productivity
 )
 
 app = FastAPI()
-
-# === MODULE INPUT MODELS ===
 
 class PayrollWasteRequest(BaseModel):
     industry: str
@@ -50,24 +48,22 @@ class WorkforceProductivityRequest(BaseModel):
     absenteeism_days: float
     overtime_hours: Optional[float] = Field(default=None)
 
-# === MODULE ROUTES ===
-
 @app.post("/run-payroll-waste")
-def run_payroll_waste(request: PayrollWasteRequest):
-    return run_payroll_waste_calc(request)
+def run_payroll_waste_route(request: PayrollWasteRequest):
+    return run_payroll_waste(request)
 
 @app.post("/run-churn-calculator")
-def run_customer_churn(request: CustomerChurnRequest):
-    return run_customer_churn_calc(request)
+def run_customer_churn_route(request: CustomerChurnRequest):
+    return run_customer_churn(request)
 
 @app.post("/run-leadership-drag-calculator")
-def run_leadership_drag(request: LeadershipDragRequest):
-    return run_leadership_drag_calc(request)
+def run_leadership_drag_route(request: LeadershipDragRequest):
+    return run_leadership_drag(request)
 
 @app.post("/run-productivity-dive")
-def run_productivity_dive(request: ProductivityDiveRequest):
-    return run_productivity_dive_calc(request)
+def run_productivity_dive_route(request: ProductivityDiveRequest):
+    return run_productivity_dive(request)
 
 @app.post("/run-workforce-productivity")
-def run_workforce_productivity(request: WorkforceProductivityRequest):
-    return run_workforce_productivity_calc(request)
+def run_workforce_productivity_route(request: WorkforceProductivityRequest):
+    return run_workforce_productivity(request)
