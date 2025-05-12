@@ -5,255 +5,117 @@
   <meta charset="UTF-8" />
   <title>Payroll Waste</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background-color: #ffffff;
-      color: #333333;
-      padding: 40px 20px;
-      max-width: 600px;
-      margin: auto;
-      line-height: 1.6;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 28px;
-      font-weight: 700;
-    }
-
-    .info-banner {
-      background: #f1f1f1;
-      padding: 15px;
-      margin-bottom: 25px;
-      border-left: 4px solid #48f191;
-      font-size: 14px;
-      color: #333;
-    }
-
-    label {
-      font-weight: 600;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    input,
-    select,
-    button {
-      display: block;
-      width: 100%;
-      font-size: 16px;
-      padding: 12px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-family: inherit;
-      box-sizing: border-box;
-    }
-
-    small {
-      font-size: 12px;
-      color: #666;
-      margin-top: -10px;
-      display: block;
-    }
-
-    pre {
-      background-color: #fefefe;
-      border-left: 4px solid #48f191;
-      padding: 24px;
-      border-radius: 10px;
-      white-space: pre-wrap;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 16px;
-      line-height: 1.7;
-      color: #333;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      display: none;
-    }
-
-    button {
-      background-color: #48f191;
-      color: #333333;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.2s ease-in-out;
-      border-radius: 8px;
-    }
-
-    button:hover {
-      background-color: #3bddad;
-    }
-
-    .cta {
-      margin-top: 40px;
-      text-align: center;
-      display: none;
-    }
-
-    .cta-button {
-      display: block;
-      background-color: #48f191;
-      color: #333333;
-      font-weight: bold;
-      text-align: center;
-      padding: 12px 20px;
-      font-size: 16px;
-      border-radius: 8px;
-      text-decoration: none;
-      margin-bottom: 10px;
-      transition: background-color 0.2s ease-in-out;
-    }
-
-    .cta-button:hover {
-      background-color: #3bddad;
-    }
-  </style>
+  <link rel="stylesheet" href="clarity-style.css">
 </head>
 
 <body>
   <h1>Payroll Waste</h1>
 
   <div class="info-banner">
-    <strong>We’ve pre-filled your industry averages to save you time.</strong><br>
-    These reflect common performance in your sector.<br>
-    <em>Have your own data?</em> Just update the fields to sharpen your results.
+    <strong>This module estimates the cost of payroll inefficiency in your organisation.</strong><br>
+    Enter your details below to find out how much waste might be hiding in your wage bill.
   </div>
 
   <form id="efficiency-form">
-    <label>Industry:
-      <select name="industry" id="industry" required>
-        <option value="">Select your industry</option>
-        <option value="Agriculture / Farming">Agriculture / Farming</option>
-        <option value="Construction">Construction</option>
-        <option value="Education & Training">Education & Training</option>
-        <option value="Finance & Insurance">Finance & Insurance</option>
-        <option value="Government / Public Sector">Government / Public Sector</option>
-        <option value="Healthcare">Healthcare</option>
-        <option value="Hospitality">Hospitality</option>
-        <option value="Integrated Services">Integrated Services</option>
-        <option value="Logistics & Transport">Logistics & Transport</option>
-        <option value="Manufacturing">Manufacturing</option>
-        <option value="Media / Creative / Comms">Media / Creative / Comms</option>
-        <option value="Non-Profit">Non-Profit</option>
-        <option value="Professional Services">Professional Services</option>
-        <option value="Real Estate & Property">Real Estate & Property</option>
-        <option value="Retail">Retail</option>
-        <option value="Technology / SaaS">Technology / SaaS</option>
-        <option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
-      </select>
-    </label>
+    <label for="industry">Industry:</label>
+    <select id="industry" name="industry" required>
+      <option value="">Select industry...</option>
+    </select>
 
-    <label>Total Employees:
-      <input type="number" name="total_employees" required>
-    </label>
+    <label for="total_employees">Total Employees:</label>
+    <input type="number" id="total_employees" name="total_employees" required />
 
-    <label>Average Annual Salary (AUD):
-      <input type="number" name="avg_salary" required>
-    </label>
+    <label for="avg_salary">Average Salary ($AUD):</label>
+    <input type="number" id="avg_salary" name="avg_salary" required />
 
-    <label>Desired Improvement Rate (%):
-      <input type="number" name="improvement_rate" required>
-      <small>e.g., 10 = reduce inefficiency by 10%</small>
-    </label>
+    <label for="improvement_rate">Improvement Rate (%):</label>
+    <input type="number" id="improvement_rate" name="improvement_rate" required />
 
-    <button type="submit">Calculate</button>
+    <button type="submit" id="calculate">Calculate</button>
   </form>
 
-  <p style="font-size:14px; color:#666; margin-top:-10px; margin-bottom:20px;">
-    The following results reflect potential performance insights, based on typical industry benchmarks and Candoo’s
-    proprietary logic.
-  </p>
-
-  <pre id="efficiency-result"></pre>
-
-  <div id="cta-bottom" class="cta">
-    <h3>🎯 There’s payroll hiding in plain sight. Let’s uncover it.</h3>
-    <a href="tel:+61455460580" class="cta-button">📞 Book a Strategy Call</a>
-    <a href="mailto:aaron@candooculture.com?subject=Help Me Understand What to Do Next" class="cta-button">📧 Prefer
-      Email? Let’s Help You Understand What to Do Next</a>
-  </div>
+  <pre id="result"></pre>
 
   <script>
-    (() => {
-      const MODULE = "payroll-waste";
-      const API_BASE = "https://testing-gh0h.onrender.com";
+    const MODULE = 'payroll-waste';
+    const API_ENDPOINT = 'https://candoo-clarity.onrender.com/run-payroll-waste';
 
+    document.addEventListener("DOMContentLoaded", function () {
       const form = document.getElementById("efficiency-form");
+      const resultBox = document.getElementById("result");
       const industrySelect = document.getElementById("industry");
-      const resultBox = document.getElementById("efficiency-result");
-      const cta = document.getElementById("cta-bottom");
 
-      industrySelect.addEventListener("change", () => {
-        const selected = industrySelect.value;
-        localStorage.setItem("industry", selected);
-      });
-
-      const saved = localStorage.getItem("industry");
-      if (saved) industrySelect.value = saved;
-
-      let lastIndustry = saved || "";
-      setInterval(() => {
-        const current = localStorage.getItem("industry");
-        if (current && current !== lastIndustry) {
-          lastIndustry = current;
-          industrySelect.value = current;
-          console.log(`[${MODULE}] Industry synced: ${current}`);
-        }
-      }, 1000);
-
-      form.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        resultBox.style.display = "none";
-        cta.style.display = "none";
-
-        const data = Object.fromEntries(new FormData(form).entries());
-        Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]); });
-        data.last_updated = Date.now();
-        localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
-
-        try {
-          const res = await fetch(`${API_BASE}/run-payroll-waste`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+      fetch("https://candoo-clarity.onrender.com/benchmarks")
+        .then(res => res.json())
+        .then(data => {
+          data.industries.forEach(ind => {
+            const opt = document.createElement("option");
+            opt.value = ind;
+            opt.textContent = ind;
+            industrySelect.appendChild(opt);
           });
-          const result = await res.json();
+        });
 
-          if (result.formatted_labels) {
-            const r = result.formatted_labels;
-            let out = `🧾 Snapshot of Monthly Team Drag\n\n`;
-            out += `💸 Total Waste: ${r["Total Monthly Loss"]}\n`;
-            out += ` • Inefficiency: ${r["Payroll Inefficiency Cost"]}\n`;
-            out += ` • Employee Churn Cost: ${r["Employee Churn Cost"]}\n\n`;
-            out += `✅ Based on Your Inputs\n`;
-            out += `🎯 Projected Monthly Savings: ${r["Direct Savings from Initiative"]}\n`;
-            out += ` • New Inefficiency Cost: ${r["Improved Inefficiency Cost"]}\n\n`;
-            out += `📈 Strategic Investment ROI with Candoo\n`;
-            out += `💰 Projected Return on Every $1 Invested: ${r["Return Per Dollar"]}\n`;
-            out += `⏱ Time to Recover Your Investment: ${r["Payback Period"]}\n\n`;
-            out += `📊 Benchmark Check — ${data.industry} Industry\n`;
-            result.benchmark_messages.forEach(msg => { out += `- ${msg}\n`; });
-            out += `\n🧠 Straight Talk\n`;
-            out += `You're currently leaking ${r["Total Monthly Loss"]} each month in team inefficiency and churn.\n`;
-            out += `Even a ${data.improvement_rate}% improvement unlocks ${r["Direct Savings from Initiative"]} — straight off your payroll costs.`;
+      // Restore session/localStorage inputs
+      const stored = JSON.parse(localStorage.getItem(`${MODULE}-inputs`) || "null");
+      if (stored) {
+        form.industry.value = stored.industry || "";
+        form.total_employees.value = stored.total_employees || "";
+        form.avg_salary.value = stored.avg_salary || "";
+        form.improvement_rate.value = stored.improvement_rate || "";
+      }
 
-            resultBox.innerText = out;
-            resultBox.style.display = "block";
-            cta.style.display = "block";
-          } else {
-            resultBox.innerText = "Something went wrong.";
-            resultBox.style.display = "block";
-          }
-        } catch (err) {
-          console.error(`[${MODULE}] API error`, err);
-          resultBox.innerText = "API error. Try again.";
-          resultBox.style.display = "block";
-        }
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const inputs = {
+          industry: form.industry.value,
+          total_employees: parseInt(form.total_employees.value),
+          avg_salary: parseFloat(form.avg_salary.value),
+          improvement_rate: parseFloat(form.improvement_rate.value),
+        };
+
+        resultBox.textContent = "Calculating...";
+
+        fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(inputs)
+        })
+          .then(res => res.json())
+          .then(result => {
+            if (result.formatted_labels) {
+              let out = "";
+              Object.entries(result.formatted_labels).forEach(([label, val]) => {
+                out += `${label}: ${val}\n`;
+              });
+              resultBox.textContent = out;
+              localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(inputs));
+              console.log("✅ Payroll data saved to localStorage", inputs);
+            } else {
+              resultBox.textContent = "Something went wrong.";
+            }
+          })
+          .catch(err => {
+            console.error("Error:", err);
+            resultBox.textContent = "API error. Try again.";
+          });
       });
-    })();
+    });
+
+    // Safe rebind for dynamic loads via index.html
+    document.addEventListener("clarity:moduleLoaded", () => {
+      const form = document.getElementById("efficiency-form");
+      if (!form) return;
+      const btn = form.querySelector("button[type='submit']");
+      if (btn && !btn.dataset.bound) {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+        });
+        btn.dataset.bound = "true";
+        console.log("✅ Payroll calculate button rebound via clarity:moduleLoaded");
+      }
+    });
   </script>
 </body>
 

@@ -115,6 +115,10 @@
           document.body.appendChild(newScript);
         });
 
+        // ✅ Dispatch rebind event after script injection
+        const rebindEvent = new Event("clarity:moduleLoaded");
+        document.dispatchEvent(rebindEvent);
+
       } catch (err) {
         console.error("❌ Error loading module:", err);
         container.innerHTML = '<p style="color:red;">Error loading module.</p>';
