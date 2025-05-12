@@ -81,7 +81,7 @@
             cursor: pointer;
         }
 
-        .reset-btn {
+        .refresh-btn {
             background: #eee;
             color: #333;
             border: 1px solid #bbb;
@@ -106,7 +106,7 @@
     <div id="riskSummary" class="status-box">⏳ Waiting for modules to complete...</div>
     <pre id="op-risk-result" class="result-box"></pre>
 
-    <button class="reset-btn" onclick="resetAll()">🔄 Reset All Module Results</button>
+    <button class="refresh-btn" onclick="updateStatus()">🔄 Refresh Status</button>
 
     <div id="cta-bottom" class="cta">
         <h3>📉 See the full picture — and where you’re exposed.</h3>
@@ -168,14 +168,6 @@
             }
         }
 
-        function resetAll() {
-            modules.forEach(({ storeKey }) => localStorage.removeItem(storeKey));
-            resultBox.style.display = "none";
-            ctaBox.style.display = "none";
-            riskSummary.innerText = "All module data cleared. Waiting for fresh results...";
-            updateStatus();
-        }
-
         async function runRiskAnalysis() {
             let combined = {};
 
@@ -226,7 +218,6 @@
         }
 
         updateStatus();
-        setInterval(updateStatus, 2000);
     </script>
 </body>
 
