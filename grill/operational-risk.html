@@ -112,116 +112,113 @@
         <h3>📉 See the full picture — and where you’re exposed.</h3>
         <button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
         <button
-            onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand My Operational Risk Score'">
-            📧 Prefer Email? Let’s Help You Understand What to Do Next
-        </button>
+            onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand My Operational Risk Score'">📧
+            Prefer Email? Let’s Help You Understand What to Do Next</button>
     </div>
 
     <script>
-        (function () {
-            const modules = [
-                { key: "Payroll Waste", icon: "🪙", storeKey: "payroll-waste-inputs" },
-                { key: "Customer Churn", icon: "📉", storeKey: "customer-churn-inputs" },
-                { key: "Leadership Drag", icon: "🧠", storeKey: "leadership-drag-inputs" },
-                { key: "Workforce Productivity", icon: "⚙️", storeKey: "workforce-productivity-inputs" },
-                { key: "Productivity Deep Dive", icon: "🔍", storeKey: "productivity-dive-inputs" }
-            ];
+        const OP_MODULES = [
+            { key: "Payroll Waste", icon: "🪙", storeKey: "payroll-waste-inputs" },
+            { key: "Customer Churn", icon: "📉", storeKey: "customer-churn-inputs" },
+            { key: "Leadership Drag", icon: "🧠", storeKey: "leadership-drag-inputs" },
+            { key: "Workforce Productivity", icon: "⚙️", storeKey: "workforce-productivity-inputs" },
+            { key: "Productivity Deep Dive", icon: "🔍", storeKey: "productivity-dive-inputs" }
+        ];
 
-            const statusList = document.getElementById("moduleStatusList");
-            const riskSummary = document.getElementById("riskSummary");
-            const resultBox = document.getElementById("op-risk-result");
-            const ctaBox = document.getElementById("cta-bottom");
+        const statusList = document.getElementById("moduleStatusList");
+        const riskSummary = document.getElementById("riskSummary");
+        const resultBox = document.getElementById("op-risk-result");
+        const ctaBox = document.getElementById("cta-bottom");
 
-            function getModuleStatus() {
-                return modules.map(({ key, icon, storeKey }) => {
-                    const stored = localStorage.getItem(storeKey);
-                    let status = "pending";
-                    if (stored) {
-                        try {
-                            const parsed = JSON.parse(stored);
-                            if (Object.keys(parsed).length > 0) status = "complete";
-                        } catch {
-                            status = "error";
-                        }
-                    }
-                    return { key, icon, status, storeKey };
-                });
-            }
-
-            function updateStatus() {
-                const statuses = getModuleStatus();
-                statusList.innerHTML = "";
-
-                let completeCount = 0;
-                statuses.forEach(({ key, icon, status }) => {
-                    const li = document.createElement("li");
-                    li.innerHTML = `${icon} ${key}: <span class="${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
-                    statusList.appendChild(li);
-                    if (status === "complete") completeCount++;
-                });
-
-                riskSummary.innerText = `⏳ ${completeCount} of ${modules.length} modules complete.`;
-
-                if (completeCount === modules.length) {
-                    runRiskAnalysis();
-                } else {
-                    resultBox.style.display = "none";
-                    ctaBox.style.display = "none";
-                }
-            }
-
-            async function runRiskAnalysis() {
-                let combined = {};
-
-                modules.forEach(({ storeKey }) => {
+        function getModuleStatus() {
+            return OP_MODULES.map(({ key, icon, storeKey }) => {
+                const stored = localStorage.getItem(storeKey);
+                let status = "pending";
+                if (stored) {
                     try {
-                        const stored = localStorage.getItem(storeKey);
-                        if (stored) {
-                            const parsed = JSON.parse(stored);
-                            Object.entries(parsed).forEach(([k, v]) => {
-                                if (!(k in combined)) combined[k] = v;
-                            });
-                        }
-                    } catch (e) {
-                        console.warn("Error parsing input:", storeKey, e);
+                        const parsed = JSON.parse(stored);
+                        if (Object.keys(parsed).length > 0) status = "complete";
+                    } catch {
+                        status = "error";
                     }
+                }
+                return { key, icon, status, storeKey };
+            });
+        }
+
+        function updateStatus() {
+            const statuses = getModuleStatus();
+            statusList.innerHTML = "";
+
+            let completeCount = 0;
+            statuses.forEach(({ key, icon, status }) => {
+                const li = document.createElement("li");
+                li.innerHTML = `${icon} ${key}: <span class="${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+                statusList.appendChild(li);
+                if (status === "complete") completeCount++;
+            });
+
+            riskSummary.innerText = `⏳ ${completeCount} of ${OP_MODULES.length} modules complete.`;
+
+            if (completeCount === OP_MODULES.length) {
+                runRiskAnalysis();
+            } else {
+                resultBox.style.display = "none";
+                ctaBox.style.display = "none";
+            }
+        }
+
+        async function runRiskAnalysis() {
+            let combined = {};
+
+            OP_MODULES.forEach(({ storeKey }) => {
+                try {
+                    const stored = localStorage.getItem(storeKey);
+                    if (stored) {
+                        const parsed = JSON.parse(stored);
+                        Object.entries(parsed).forEach(([k, v]) => {
+                            if (!(k in combined)) combined[k] = v;
+                        });
+                    }
+                } catch (e) {
+                    console.warn("Error parsing input:", storeKey, e);
+                }
+            });
+
+            combined.last_updated = Date.now();
+
+            try {
+                const response = await fetch("https://candoo-clarity.onrender.com/run-operational-risk", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(combined)
                 });
 
-                combined.last_updated = Date.now();
+                const result = await response.json();
 
-                try {
-                    const response = await fetch("https://candoo-clarity.onrender.com/run-operational-risk", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(combined)
-                    });
+                if (result.formatted_labels) {
+                    const r = result.formatted_labels;
+                    let out = `⚠️ Operational Risk Profile\n\n`;
+                    out += `📊 Risk Score: ${r["Operational Risk Score"]}\n`;
+                    out += `🏷️ Risk Level: ${r["Risk Tier"]}\n\n`;
+                    out += `🧠 Straight Talk:\n${result.straight_talk}`;
 
-                    const result = await response.json();
-
-                    if (result.formatted_labels) {
-                        const r = result.formatted_labels;
-                        let out = `⚠️ Operational Risk Profile\n\n`;
-                        out += `📊 Risk Score: ${r["Operational Risk Score"]}\n`;
-                        out += `🏷️ Risk Level: ${r["Risk Tier"]}\n\n`;
-                        out += `🧠 Straight Talk:\n${result.straight_talk}`;
-
-                        resultBox.innerText = out;
-                        resultBox.style.display = "block";
-                        ctaBox.style.display = "block";
-                    } else {
-                        resultBox.innerText = "Something went wrong.";
-                        resultBox.style.display = "block";
-                    }
-                } catch (err) {
-                    console.error("API error:", err);
-                    resultBox.innerText = "API error. Try again.";
+                    resultBox.innerText = out;
+                    resultBox.style.display = "block";
+                    ctaBox.style.display = "block";
+                } else {
+                    resultBox.innerText = "Something went wrong.";
                     resultBox.style.display = "block";
                 }
+            } catch (err) {
+                console.error("API error:", err);
+                resultBox.innerText = "API error. Try again.";
+                resultBox.style.display = "block";
             }
+        }
 
-            updateStatus();
-            document.getElementById("refreshBtn").addEventListener("click", updateStatus);
-        })();
+        updateStatus();
+        document.getElementById("refreshBtn").addEventListener("click", updateStatus);
     </script>
 </body>
 
