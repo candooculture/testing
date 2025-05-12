@@ -81,7 +81,7 @@
             cursor: pointer;
         }
 
-        .refresh-btn {
+        .reset-btn {
             background: #eee;
             color: #333;
             border: 1px solid #bbb;
@@ -96,37 +96,42 @@
 
 <body>
     <h1>Operational Risk Score</h1>
+
     <div class="info-banner">
         <strong>This tool combines inputs from other modules to reveal your operational risk profile.</strong><br>
         Make sure you've run the other modules first — we'll analyse the data you've entered so far.
     </div>
+
     <ul id="moduleStatusList"></ul>
     <div id="riskSummary" class="status-box">⏳ Waiting for modules to complete...</div>
     <pre id="op-risk-result" class="result-box"></pre>
-    <button class="refresh-btn" id="refreshBtn">🔄 Refresh Status</button>
+
+    <button class="reset-btn" onclick="resetAll()">🔄 Reset All Module Results</button>
+
     <div id="cta-bottom" class="cta">
         <h3>📉 See the full picture — and where you’re exposed.</h3>
         <button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
         <button
-            onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand My Operational Risk Score'">
-            📧 Prefer Email? Let’s Help You Understand What to Do Next
-        </button>
+            onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand My Operational Risk Score'">📧
+            Prefer Email? Let’s Help You Understand What to Do Next</button>
     </div>
+
     <script>
-        const OP_MODULES = [
+        const modules = [
             { key: "Payroll Waste", icon: "🪙", storeKey: "payroll-waste-inputs" },
             { key: "Customer Churn", icon: "📉", storeKey: "customer-churn-inputs" },
             { key: "Leadership Drag", icon: "🧠", storeKey: "leadership-drag-inputs" },
             { key: "Workforce Productivity", icon: "⚙️", storeKey: "workforce-productivity-inputs" },
             { key: "Productivity Deep Dive", icon: "🔍", storeKey: "productivity-dive-inputs" }
         ];
+
         const statusList = document.getElementById("moduleStatusList");
         const riskSummary = document.getElementById("riskSummary");
         const resultBox = document.getElementById("op-risk-result");
         const ctaBox = document.getElementById("cta-bottom");
 
         function getModuleStatus() {
-            return OP_MODULES.map(({ key, icon, storeKey }) => {
+            return modules.map(({ key, icon, storeKey }) => {
                 const stored = localStorage.getItem(storeKey);
                 let status = "pending";
                 if (stored) {
@@ -141,36 +146,40 @@
             });
         }
 
-        function updateStatus(force = false) {
-            console.log("🔁 updateStatus() called");
+        function updateStatus() {
             const statuses = getModuleStatus();
             statusList.innerHTML = "";
-            let completeCount = 0;
-            let allDataPresent = true;
 
-            statuses.forEach(({ key, icon, status, storeKey }) => {
+            let completeCount = 0;
+            statuses.forEach(({ key, icon, status }) => {
                 const li = document.createElement("li");
                 li.innerHTML = `${icon} ${key}: <span class="${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
                 statusList.appendChild(li);
                 if (status === "complete") completeCount++;
-                if (status !== "complete") allDataPresent = false;
             });
 
-            riskSummary.innerText = `⏳ ${completeCount} of ${OP_MODULES.length} modules complete.`;
+            riskSummary.innerText = `⏳ ${completeCount} of ${modules.length} modules complete.`;
 
-            if (completeCount === OP_MODULES.length && allDataPresent) {
+            if (completeCount === modules.length) {
                 runRiskAnalysis();
             } else {
-                resultBox.style.display = "block";
-                resultBox.innerText = "⚠️ Please complete all modules before running the operational risk score.\n\nMissing or incomplete data detected.";
+                resultBox.style.display = "none";
                 ctaBox.style.display = "none";
             }
         }
 
+        function resetAll() {
+            modules.forEach(({ storeKey }) => localStorage.removeItem(storeKey));
+            resultBox.style.display = "none";
+            ctaBox.style.display = "none";
+            riskSummary.innerText = "All module data cleared. Waiting for fresh results...";
+            updateStatus();
+        }
+
         async function runRiskAnalysis() {
-            console.log("📊 Running risk analysis...");
             let combined = {};
-            OP_MODULES.forEach(({ storeKey }) => {
+
+            modules.forEach(({ storeKey }) => {
                 try {
                     const stored = localStorage.getItem(storeKey);
                     if (stored) {
@@ -183,20 +192,25 @@
                     console.warn("Error parsing input:", storeKey, e);
                 }
             });
+
             combined.last_updated = Date.now();
+
             try {
                 const response = await fetch("https://candoo-clarity.onrender.com/run-operational-risk", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(combined)
                 });
+
                 const result = await response.json();
+
                 if (result.formatted_labels) {
                     const r = result.formatted_labels;
                     let out = `⚠️ Operational Risk Profile\n\n`;
                     out += `📊 Risk Score: ${r["Operational Risk Score"]}\n`;
                     out += `🏷️ Risk Level: ${r["Risk Tier"]}\n\n`;
                     out += `🧠 Straight Talk:\n${result.straight_talk}`;
+
                     resultBox.innerText = out;
                     resultBox.style.display = "block";
                     ctaBox.style.display = "block";
@@ -212,7 +226,7 @@
         }
 
         updateStatus();
-        document.getElementById("refreshBtn").addEventListener("click", () => updateStatus(true));
+        setInterval(updateStatus, 2000);
     </script>
 </body>
 

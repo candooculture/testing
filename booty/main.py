@@ -1,69 +1,150 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
+from admin import admin_router
 from calculator import (
-    run_payroll_waste,
-    run_customer_churn,
-    run_leadership_drag,
-    run_productivity_dive,
-    run_workforce_productivity
+    industry_benchmarks,
+    calculate_customer_churn_loss,
+    calculate_efficiency_loss_and_roi,
+    calculate_leadership_drag_loss,
+    calculate_productivity_metrics,
+    calculate_productivity_metrics_dive,
 )
+from operational_risk import run_operational_risk
+import pandas as pd
 
 app = FastAPI()
 
-class PayrollWasteRequest(BaseModel):
-    industry: str
-    total_employees: int
-    avg_salary: float
-    improvement_rate: float
+# === CORS Middleware ===
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Use wildcard or specify your frontend domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
-class CustomerChurnRequest(BaseModel):
-    industry: str
-    num_customers: int
-    avg_revenue: float
-    cac: float
-    churn_rate: float
-    desired_improvement: float
+# === Admin Router ===
+app.include_router(admin_router)
 
-class LeadershipDragRequest(BaseModel):
-    industry: str
-    total_employees: int
-    avg_salary: float
-    leadership_drag: float
+# === Input Models ===
 
-class ProductivityDiveRequest(BaseModel):
-    industry: str
-    total_employees: int
-    avg_salary: float
-    absenteeism_days: float
-    avg_hours: float
 
-class WorkforceProductivityRequest(BaseModel):
+class EfficiencyAutoInput(BaseModel):
     industry: str
-    total_revenue: float
-    payroll_cost: float
-    num_employees: int
-    productive_hours: float
-    target_hours_per_employee: float
-    absenteeism_days: float
-    overtime_hours: Optional[float] = Field(default=None)
+    total_employees: int = Field(..., gt=0)
+    avg_salary: float = Field(..., gt=0)
+    improvement_rate: float = Field(..., gt=0, lt=100)
+
+
+class ChurnCalculatorRequest(BaseModel):
+    num_customers: int = Field(..., gt=0)
+    churn_rate: float = Field(..., gt=0, lt=100)
+    avg_revenue: float = Field(..., gt=0)
+    cac: float = Field(..., ge=0)
+    desired_improvement: float = Field(..., gt=0, lt=100)
+    industry: str
+
+
+class LeadershipDragCalculatorRequest(BaseModel):
+    industry: str
+    total_employees: int = Field(..., gt=0)
+    avg_salary: float = Field(..., gt=0)
+    leadership_drag: float = Field(..., gt=0, lt=100)
+
+
+class ProductivityInput(BaseModel):
+    industry: str
+    total_revenue: float = Field(..., gt=0)
+    payroll_cost: float = Field(..., gt=0)
+    total_employees: int = Field(..., gt=0)
+    productive_hours: float = Field(..., gt=0)
+    target_hours_per_employee: float = Field(..., gt=0)
+    overtime_hours: float = Field(0, ge=0)
+    absenteeism_days: float = Field(0, ge=0)
+
+
+class ProductivityDeepDiveInput(BaseModel):
+    industry: str
+    total_employees: int = Field(..., gt=0)
+    avg_salary: float = Field(..., gt=0)
+    absenteeism_days: Optional[float] = Field(None, ge=0)
+    avg_hours: Optional[float] = Field(None, ge=0)
+
+# === Calculator Endpoints ===
+
 
 @app.post("/run-payroll-waste")
-def run_payroll_waste_route(request: PayrollWasteRequest):
-    return run_payroll_waste(request)
+def run_payroll_waste_calculator(data: EfficiencyAutoInput):
+    try:
+        return calculate_efficiency_loss_and_roi(data)
+    except Exception as e:
+        return {"error": str(e)}
+
 
 @app.post("/run-churn-calculator")
-def run_customer_churn_route(request: CustomerChurnRequest):
-    return run_customer_churn(request)
+def run_churn_calculator(data: ChurnCalculatorRequest):
+    try:
+        return calculate_customer_churn_loss(data)
+    except Exception as e:
+        return {"error": str(e)}
+
 
 @app.post("/run-leadership-drag-calculator")
-def run_leadership_drag_route(request: LeadershipDragRequest):
-    return run_leadership_drag(request)
+def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
+    try:
+        return calculate_leadership_drag_loss(data)
+    except Exception as e:
+        return {"error": str(e)}
 
-@app.post("/run-productivity-dive")
-def run_productivity_dive_route(request: ProductivityDiveRequest):
-    return run_productivity_dive(request)
 
 @app.post("/run-workforce-productivity")
-def run_workforce_productivity_route(request: WorkforceProductivityRequest):
-    return run_workforce_productivity(request)
+def run_workforce_productivity_calculator(data: ProductivityInput):
+    try:
+        return calculate_productivity_metrics(data)
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.post("/run-productivity-dive")
+def run_productivity_deep_dive(data: ProductivityDeepDiveInput):
+    try:
+        return calculate_productivity_metrics_dive(data)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/run-operational-risk")
+def run_operational_risk_calculator():
+    try:
+        return run_operational_risk()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/get-industry-benchmarks")
+def get_industry_benchmarks(industry: str):
+    try:
+        b = industry_benchmarks(industry)
+        return {
+            "churn_rate": int(b.get("Customer Churn Rate (%) (Value)", 0)),
+            "inefficiency_rate": int(b.get("Process Inefficiency Rate (%) (Value)", 0)),
+            "leadership_drag": int(b.get("Leadership Drag Impact (%) (Value)", 10)),
+            "target_hours_per_employee": int(b.get("Target Hours per Employee (Value)", 160)),
+            "absenteeism_days": float(b.get("Absenteeism Days per Month (Value)", 1.0)),
+            "cac": int(b.get("Customer Acquisition Cost (CAC) (AUD) (Value)", 800))
+        }
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.get("/get-all-industries")
+def get_all_industries():
+    try:
+        df = pd.read_csv(
+            "benchmarks/final_cleaned_benchmarks_with_certainty.csv")
+        industries = sorted(df["Industry"].dropna().unique().tolist())
+        return {"industries": industries}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
