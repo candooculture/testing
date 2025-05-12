@@ -77,7 +77,8 @@
 
     <script>
         (function () {
-            document.querySelector('.intro')?.classList.add('hidden');
+            console.log("✅ Admin script loaded");
+
             let currentBenchmarks = [];
 
             const labelMap = {
@@ -97,7 +98,7 @@
                     togglesDiv.innerHTML = '';
 
                     if (!result.data || result.data.length === 0) {
-                        console.warn('No visibility settings found — loading defaults...');
+                        console.warn('⚠️ No visibility settings found — loading defaults...');
                         await initDefaultVisibility();
                         return;
                     }
@@ -120,7 +121,7 @@
                         togglesDiv.appendChild(div);
                     });
                 } catch (error) {
-                    console.error('Error fetching visibility:', error);
+                    console.error('❌ Error fetching visibility:', error);
                 }
             }
 
@@ -155,7 +156,7 @@
                         statusDiv.className = 'status-message error';
                     }
                 } catch (error) {
-                    console.error('Error saving visibility:', error);
+                    console.error('❌ Error saving visibility:', error);
                     statusDiv.textContent = '❌ API error. Try again.';
                     statusDiv.className = 'status-message error';
                 }
@@ -192,7 +193,7 @@
                         statusDiv.className = 'status-message error';
                     }
                 } catch (error) {
-                    console.error('Error loading defaults:', error);
+                    console.error('❌ Error loading defaults:', error);
                     statusDiv.textContent = '❌ API error. Try again.';
                     statusDiv.className = 'status-message error';
                 }
@@ -250,7 +251,7 @@
 
                     benchmarksDiv.appendChild(table);
                 } catch (error) {
-                    console.error('Error fetching benchmarks:', error);
+                    console.error('❌ Error fetching benchmarks:', error);
                 }
             }
 
@@ -276,21 +277,43 @@
                         statusDiv.className = 'status-message error';
                     }
                 } catch (error) {
-                    console.error('Error saving benchmarks:', error);
+                    console.error('❌ Error saving benchmarks:', error);
                     statusDiv.textContent = '❌ API error. Try again.';
                     statusDiv.className = 'status-message error';
                 }
             }
 
-            // Attach JS handlers to buttons
-            window.onload = function () {
-                document.getElementById('saveVisibilityBtn')?.addEventListener('click', saveVisibility);
-                document.getElementById('loadDefaultBtn')?.addEventListener('click', initDefaultVisibility);
-                document.getElementById('saveBenchmarksBtn')?.addEventListener('click', saveBenchmarks);
+            document.addEventListener("DOMContentLoaded", function () {
+                console.log("🚀 DOM ready, binding buttons...");
+
+                const saveVisibilityBtn = document.getElementById('saveVisibilityBtn');
+                const loadDefaultBtn = document.getElementById('loadDefaultBtn');
+                const saveBenchmarksBtn = document.getElementById('saveBenchmarksBtn');
+
+                if (saveVisibilityBtn) {
+                    saveVisibilityBtn.addEventListener('click', saveVisibility);
+                    console.log("✅ saveVisibility button bound");
+                } else {
+                    console.warn("❌ saveVisibility button NOT found");
+                }
+
+                if (loadDefaultBtn) {
+                    loadDefaultBtn.addEventListener('click', initDefaultVisibility);
+                    console.log("✅ loadDefault button bound");
+                } else {
+                    console.warn("❌ loadDefault button NOT found");
+                }
+
+                if (saveBenchmarksBtn) {
+                    saveBenchmarksBtn.addEventListener('click', saveBenchmarks);
+                    console.log("✅ saveBenchmarks button bound");
+                } else {
+                    console.warn("❌ saveBenchmarks button NOT found");
+                }
 
                 fetchVisibility();
                 fetchBenchmarks();
-            };
+            });
         })();
     </script>
 </body>
