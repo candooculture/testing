@@ -63,13 +63,13 @@
 
     <h3>Module Visibility</h3>
     <div id="toggles"></div>
-    <button onclick="saveVisibility()">Save Visibility Changes</button>
-    <button onclick="initDefaultVisibility()">🔧 Load Default Visibility</button>
+    <button id="saveVisibilityBtn">Save Visibility Changes</button>
+    <button id="loadDefaultBtn">🔧 Load Default Visibility</button>
     <div id="visibility-status" class="status-message"></div>
 
     <h3>Industry Benchmarks (Editable)</h3>
     <div id="benchmarks"></div>
-    <button onclick="saveBenchmarks()">Save Benchmark Changes</button>
+    <button id="saveBenchmarksBtn">Save Benchmark Changes</button>
     <a href="https://testing-gh0h.onrender.com/admin/download-csv" download>
         <button>⬇️ Download Latest CSV</button>
     </a>
@@ -282,7 +282,12 @@
                 }
             }
 
+            // Attach JS handlers to buttons
             window.onload = function () {
+                document.getElementById('saveVisibilityBtn')?.addEventListener('click', saveVisibility);
+                document.getElementById('loadDefaultBtn')?.addEventListener('click', initDefaultVisibility);
+                document.getElementById('saveBenchmarksBtn')?.addEventListener('click', saveBenchmarks);
+
                 fetchVisibility();
                 fetchBenchmarks();
             };
