@@ -25,15 +25,16 @@ def run_operational_risk(data: RiskInput):
     try:
         inputs = data.dict()
         num_modules = 0
-        if inputs.get("payroll_cost"):
+
+        if inputs.get("payroll_cost", 0) > 0:
             num_modules += 1
-        if inputs.get("churn_rate"):
+        if inputs.get("churn_rate", 0) > 0:
             num_modules += 1
-        if inputs.get("leadership_drag"):
+        if inputs.get("leadership_drag", 0) > 0:
             num_modules += 1
-        if inputs.get("productive_hours"):
+        if inputs.get("productive_hours", 0) > 0:
             num_modules += 1
-        if inputs.get("avg_salary") and inputs.get("productivity_loss"):
+        if inputs.get("avg_salary", 0) > 0 and inputs.get("productivity_loss", 0) > 0:
             num_modules += 1
 
         if num_modules == 0:
