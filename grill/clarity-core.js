@@ -1,6 +1,6 @@
 // clarity-core.js
 document.addEventListener("DOMContentLoaded", () => {
-    const storedIndustry = sessionStorage.getItem("industry");
+    const storedIndustry = localStorage.getItem("industry");
     if (storedIndustry) {
         const selects = document.querySelectorAll("select[name='industry']");
         selects.forEach(select => {
@@ -13,14 +13,14 @@ document.addEventListener("DOMContentLoaded", () => {
     inputs.forEach(input => {
         const key = input.name;
         if (!key) return;
-        const stored = sessionStorage.getItem(key);
+        const stored = localStorage.getItem(key);
         if (stored) {
             input.value = stored;
             input.classList.add("prefilled");
         }
 
         input.addEventListener("input", () => {
-            sessionStorage.setItem(key, input.value);
+            localStorage.setItem(key, input.value);
             input.classList.remove("prefilled");
         });
     });
