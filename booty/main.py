@@ -19,7 +19,7 @@ app = FastAPI()
 # === CORS Middleware ===
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Use wildcard or specify your frontend domain
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
@@ -107,11 +107,12 @@ def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
 
 
 @app.post("/run-workforce-productivity")
-def run_workforce_productivity_calculator(data: ProductivityInput):
+def run_workforce_productivity(data: WorkforceProductivityFullRequest):
     try:
-        return calculate_productivity_metrics(data)
+        result = calculate_productivity_metrics(data)
+        return result
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/run-productivity-dive")
@@ -153,14 +154,5 @@ def get_all_industries():
             "benchmarks/final_cleaned_benchmarks_with_certainty.csv")
         industries = sorted(df["Industry"].dropna().unique().tolist())
         return {"industries": industries}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/run-workforce-productivity")
-def run_workforce_productivity(data: WorkforceProductivityRequest):
-    try:
-        result = calculate_productivity_metrics(data)
-        return {"formatted_labels": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
