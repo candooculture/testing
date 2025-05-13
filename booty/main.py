@@ -47,6 +47,13 @@ class ChurnCalculatorRequest(BaseModel):
     industry: str
 
 
+class WorkforceProductivityRequest(BaseModel):
+    industry: str
+    total_employees: int = Field(..., gt=0)
+    avg_salary: float = Field(..., gt=0)
+    productivity_loss: float = Field(..., gt=0, lt=100)
+
+
 class LeadershipDragCalculatorRequest(BaseModel):
     industry: str
     total_employees: int = Field(..., gt=0)
@@ -146,5 +153,14 @@ def get_all_industries():
             "benchmarks/final_cleaned_benchmarks_with_certainty.csv")
         industries = sorted(df["Industry"].dropna().unique().tolist())
         return {"industries": industries}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/run-workforce-productivity")
+def run_workforce_productivity(data: WorkforceProductivityRequest):
+    try:
+        result = calculate_productivity_metrics(data)
+        return {"formatted_labels": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
