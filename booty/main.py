@@ -61,15 +61,15 @@ class LeadershipDragCalculatorRequest(BaseModel):
     leadership_drag: float = Field(..., gt=0, lt=100)
 
 
-class ProductivityInput(BaseModel):
+class WorkforceProductivityFullRequest(BaseModel):
     industry: str
     total_revenue: float = Field(..., gt=0)
     payroll_cost: float = Field(..., gt=0)
     total_employees: int = Field(..., gt=0)
     productive_hours: float = Field(..., gt=0)
     target_hours_per_employee: float = Field(..., gt=0)
-    overtime_hours: float = Field(0, ge=0)
-    absenteeism_days: float = Field(0, ge=0)
+    absenteeism_days: float = Field(..., ge=0)
+    overtime_hours: float = Field(..., ge=0)
 
 
 class ProductivityDeepDiveInput(BaseModel):
