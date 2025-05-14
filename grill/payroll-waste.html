@@ -221,6 +221,7 @@
             body: JSON.stringify(data)
           });
           const result = await res.json();
+          console.log("Payroll Waste API Response:", result);
 
           if (result.formatted_labels) {
             const r = result.formatted_labels;
@@ -255,7 +256,7 @@
       });
     })();
   </script>
-<script src="clarity-core.js"></script>
+  <script src="clarity-core.js"></script>
 </body>
 
 </html>
