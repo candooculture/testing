@@ -282,7 +282,7 @@
 
           if (result.revenue_loss != null) {
             const totalLoss = result.revenue_loss + result.replacement_cost;
-            const recoveryOpportunity = (result.potential_gain / totalLoss) * 100;
+            const recoveryPercent = result.recovery_percent;
 
             let output = `💸 Total Annual Loss from Customer Churn: AUD $${totalLoss.toLocaleString()}\n`;
             output += ` • Lost Revenue from Churned Customers: AUD $${result.revenue_loss.toLocaleString()}\n`;
@@ -312,7 +312,7 @@
       });
     })();
   </script>
-<script src="clarity-core.js"></script>
+  <script src="clarity-core.js"></script>
 </body>
 
 </html>

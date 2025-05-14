@@ -280,8 +280,7 @@
                     if (result.formatted_labels) {
                         const r = result.formatted_labels;
                         const dragRate = data.leadership_drag.toFixed(1);
-                        const benchmarkRate = parseFloat(result.benchmark_messages[0]?.match(/average of (\d+\.?\d*)%/)?.[1] || 0);
-                        const delta = (data.leadership_drag - benchmarkRate).toFixed(1);
+                        const excessDragPercent = r["Excess Drag Percent"];
                         const excessCost = r["Excess Drag Monthly Cost"] || "AUD $0";
 
                         let output = `💸 Leadership Drag\n`;
@@ -291,7 +290,8 @@
                         output += `📊 Benchmark Check — ${data.industry} Industry\n`;
                         output += `- Your leadership drag rate: ${dragRate}%\n`;
                         output += `- Industry average: ${benchmarkRate}%\n`;
-                        if (delta > 0) output += `- 🔺 You’re ${delta}% above the benchmark — that excess drag is costing you ${excessCost}/month\n`;
+                        if (excessDragPercent !== "0%") output += `- 🔺 You’re ${excessDragPercent} above the benchmark — that excess drag is costing you ${excessCost}/month
+`;
 
                         output += `\n🧠 Straight Talk\n`;
                         output += `You’re leaking ${r["Monthly Leadership Drag Loss"]} every month through leadership inefficiencies.\n`;
@@ -312,7 +312,7 @@
             });
         })();
     </script>
-<script src="clarity-core.js"></script>
+    <script src="clarity-core.js"></script>
 </body>
 
 </html>
