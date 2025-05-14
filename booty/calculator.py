@@ -78,12 +78,14 @@ def calculate_customer_churn_loss(data):
     potential_gain = data.num_customers * \
         (churn_rate - improved_rate) * data.avg_revenue
 
+    recovery_percent = (potential_gain / (revenue_loss + replacement_cost)
+                        ) * 100 if (revenue_loss + replacement_cost) else 0
+
     return {
-        recovery_percent = (potential_gain / (revenue_loss + replacement_cost)
-                            ) * 100 if (revenue_loss + replacement_cost) else 0
         "revenue_loss": round(revenue_loss),
         "replacement_cost": round(replacement_cost),
         "potential_gain": round(potential_gain),
+        "recovery_percent": round(recovery_percent, 1),
         "benchmark_message": f"Your churn rate compared to {data.industry} industry benchmark ({b.get('Customer Churn Rate (%) (Value)', 'N/A')}%)."
     }
 
