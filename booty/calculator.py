@@ -52,6 +52,7 @@ def calculate_efficiency_loss_and_roi(data):
 
     return {
         "formatted_labels": {
+            "Excess Drag Percent": f"{round(excess_drag * 100, 1)}%",
             "Employee Churn Cost": f"AUD ${round(churn_loss):,}",
             "Payroll Inefficiency Cost": f"AUD ${round(inefficiency_loss):,}",
             "Total Monthly Loss": f"AUD ${round(total_loss):,}",
@@ -78,6 +79,8 @@ def calculate_customer_churn_loss(data):
         (churn_rate - improved_rate) * data.avg_revenue
 
     return {
+        recovery_percent = (potential_gain / (revenue_loss + replacement_cost)
+                            ) * 100 if (revenue_loss + replacement_cost) else 0
         "revenue_loss": round(revenue_loss),
         "replacement_cost": round(replacement_cost),
         "potential_gain": round(potential_gain),
@@ -100,6 +103,7 @@ def calculate_leadership_drag_loss(data):
 
     return {
         "formatted_labels": {
+            "Excess Drag Percent": f"{round(excess_drag * 100, 1)}%",
             "Monthly Leadership Drag Loss": f"AUD ${round(monthly_loss):,}",
             "Annual Leadership Drag Loss": f"AUD ${round(annual_loss):,}",
             "Excess Drag Monthly Cost": f"AUD ${excess_monthly_cost:,}"
@@ -143,15 +147,19 @@ def calculate_productivity_metrics(data):
         if data.productive_hours else 0
     )
     opportunity_gain = extra_hours * revenue_per_hour
+    payroll_return_per_dollar = (
+        data.total_revenue / data.payroll_cost) if data.payroll_cost else 0
 
     return {
         "formatted_labels": {
+            "Excess Drag Percent": f"{round(excess_drag * 100, 1)}%",
             "revenue_per_employee": f"AUD ${revenue_per_employee:,.2f}",
             "payroll_efficiency": f"{payroll_efficiency:.1f}%",
             "utilisation_rate": f"{utilisation_rate:.1f}%",
             "absenteeism_rate": f"{absenteeism_rate:.1f}%",
             "overtime_rate": f"{overtime_rate:.1f}%",
-            "opportunity_gain": f"AUD ${opportunity_gain:,.2f}"
+            "opportunity_gain": f"AUD ${opportunity_gain:,.2f}",
+            "payroll_return_per_dollar": f"${payroll_return_per_dollar:.2f}"
         },
         "benchmark_messages": [
             f"Target utilisation boost of 5% across {data.total_employees} employees."
@@ -182,6 +190,7 @@ def calculate_productivity_metrics_dive(data):
 
     return {
         "formatted_labels": {
+            "Excess Drag Percent": f"{round(excess_drag * 100, 1)}%",
             "Absenteeism Cost": f"AUD ${round(absenteeism_cost):,}/month",
             "Utilisation Gap": f"{round(utilisation_gap * 100, 1)}%",
             "Output Loss from Under-utilisation": f"AUD ${round(underutilisation_cost):,}/month",
