@@ -244,6 +244,7 @@
             resultBox.innerText = out;
             resultBox.style.display = "block";
             cta.style.display = "block";
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
           } else {
             resultBox.innerText = "Something went wrong.";
             resultBox.style.display = "block";
