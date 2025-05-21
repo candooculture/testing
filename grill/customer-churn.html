@@ -122,7 +122,7 @@
   </div>
 
   <form id="churn-form">
-    <label>Industry:
+    <label for=" type=" number" name="num_customers" required">Industry:
       <select name="industry" id="industry" required>
         <option value="">Select your industry</option>
         <option value="Agriculture / Farming">Agriculture / Farming</option>
@@ -145,32 +145,32 @@
       </select>
     </label>
 
-    <label>Number of Active Customers:
-      <input type="number" name="num_customers" required>
+    <label>Number of Active Customers:</label>
+    <input type="number" name="num_customers" required id="num_customers">
     </label>
 
-    <label>Average Revenue per Customer (AUD $/year):
-      <input type="number" name="avg_revenue" step="0.01" required>
+    <label for=" type=" number" name="avg_revenue" step="0.01" required">Average Revenue per Customer (AUD
+      $/year):</label>
+    <input type="number" name="avg_revenue" step="0.01" required id="avg_revenue">
     </label>
 
-    <label for="cac">
-      Customer Acquisition Cost (CAC):
-      <input type="number" name="cac" id="cac" step="0.01" required>
-      <span class="benchmark-label" id="label-cac">(Using industry average)</span>
-      <small>Include average marketing, onboarding, and sales cost per new customer</small>
+    <label for=" type=" number" name="cac" id="cac" step="0.01" required">Customer Acquisition Cost (CAC):</label>
+    <input type="number" name="cac" id="cac" step="0.01" required>
+    <span class="benchmark-label" id="label-cac">(Using industry average)</span>
+    <small>Include average marketing, onboarding, and sales cost per new customer</small>
     </label>
 
-    <label for="churn_rate">
-      Current Customer Churn Rate (% per year):
-      <input type="number" name="churn_rate" id="churn_rate" step="0.1" required>
-      <span class="benchmark-label" id="label-churn">(Using industry average)</span>
-      <small>e.g., 7 = 7% of customers leave annually</small>
+    <label for=" type=" number" name="churn_rate" id="churn_rate" step="0.1" required">Current Customer Churn Rate (%
+      per year):</label>
+    <input type="number" name="churn_rate" id="churn_rate" step="0.1" required>
+    <span class="benchmark-label" id="label-churn">(Using industry average)</span>
+    <small>e.g., 7 = 7% of customers leave annually</small>
     </label>
 
-    <label for="desired_improvement">
-      Desired Churn Improvement (% reduction target):
-      <input type="number" name="desired_improvement" step="0.1" required>
-      <small>e.g., 5 = reduce churn from 10% to 5%</small>
+    <label for=" type=" number" name="desired_improvement" step="0.1" required">Desired Churn Improvement (% reduction
+      target):</label>
+    <input type="number" name="desired_improvement" step="0.1" required id="desired_improvement">
+    <small>e.g., 5 = reduce churn from 10% to 5%</small>
     </label>
 
     <button type="submit">Calculate</button>
@@ -245,9 +245,8 @@
       const saved = localStorage.getItem("industry");
       if (saved) {
         industrySelect.value = saved;
-        fetchBenchmarks(saved);  // ✅ Must include this
+        fetchBenchmarks(saved);
       }
-
 
       // Poll for cross-module updates
       let lastIndustry = saved || "";
@@ -283,25 +282,17 @@
 
           if (result.revenue_loss != null) {
             const totalLoss = result.revenue_loss + result.replacement_cost;
-            const recoveryOpportunity = result.recovery_percent || 0;
+            const recoveryOpportunity = (result.potential_gain / totalLoss) * 100;
 
             let output = `💸 Total Annual Loss from Customer Churn: AUD $${totalLoss.toLocaleString()}\n`;
             output += ` • Lost Revenue from Churned Customers: AUD $${result.revenue_loss.toLocaleString()}\n`;
             output += ` • Replacement Cost (CAC): AUD $${result.replacement_cost.toLocaleString()}\n\n`;
             output += `✅ Based on Your Inputs\n`;
-            output += `🎯 Projected Annual Recovery: AUD $${result.potential_gain.toLocaleString()}\n`;
-            output += `💰 Recoverable % of Churn Loss: ${recoveryOpportunity.toFixed(1)}% (via ${data.desired_improvement}% churn reduction)\n\n`;
+            output += `🎯 Projected Annual Recovery from ${data.desired_improvement}% Reduction in Churn Rate: AUD $${result.potential_gain.toLocaleString()}\n\n`;
+            output += `📈 Opportunity\n`;
+            output += `💰 Estimated Recovery = ${recoveryOpportunity.toFixed(1)}% of Total Churn Loss (via ${data.desired_improvement}% churn reduction)\n\n`;
             output += `📊 Benchmark Check — ${data.industry} Industry\n`;
-            output += `- Industry average churn: ${result.benchmark_churn_rate}%\n`;
-            output += `- Your current churn: ${data.churn_rate}%\n`;
-
-            if (data.churn_rate > result.benchmark_churn_rate) {
-              output += `- You're losing customers faster than the industry norm. Time to act.\n\n`;
-            } else if (data.churn_rate < result.benchmark_churn_rate) {
-              output += `- Your churn rate is better than industry average. Keep it up.\n\n`;
-            } else {
-              output += `- You're right on the industry average. Small improvements still pay off.\n\n`;
-            }
+            output += `- ${result.benchmark_message}\n\n`;
             output += `🧠 Straight Talk\n`;
             output += `You're leaking AUD $${totalLoss.toLocaleString()} every year through churned customers and acquisition costs.\n`;
             output += `Even a small improvement delivers AUD $${result.potential_gain.toLocaleString()} straight to your bottom line.`;

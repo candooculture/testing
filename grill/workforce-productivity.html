@@ -122,7 +122,7 @@
     </div>
 
     <form id="productivity-form">
-        <label>Industry:
+        <label for=" type=" number" name="total_revenue" required">Industry:
             <select name="industry" id="industry" required>
                 <option value="">Select your industry</option>
                 <option value="Agriculture / Farming">Agriculture / Farming</option>
@@ -145,36 +145,39 @@
             </select>
         </label>
 
-        <label>Total Annual Revenue (AUD):
-            <input type="number" name="total_revenue" required>
+        <label>Total Annual Revenue (AUD):</label>
+        <input type="number" name="total_revenue" required id="total_revenue">
         </label>
 
-        <label>Total Payroll Cost (AUD):
-            <input type="number" name="payroll_cost" required>
+        <label for=" type=" number" name="payroll_cost" required">Total Payroll Cost (AUD):</label>
+        <input type="number" name="payroll_cost" required id="payroll_cost">
         </label>
 
-        <label>Number of Employees:
-            <input type="number" name="total_employees" required>
+        <label for=" type=" number" name="total_employees" required">Number of Employees:</label>
+        <input type="number" name="total_employees" required id="total_employees">
         </label>
 
-        <label>Total Productive Hours Worked (All Staff, This Month):
-            <input type="number" name="productive_hours" required>
-            <small>e.g., 15 staff × 140 hrs = 2,100 hrs</small>
+        <label for=" type=" number" name="productive_hours" required">Total Productive Hours Worked (All Staff, This
+            Month):</label>
+        <input type="number" name="productive_hours" required id="productive_hours">
+        <small>e.g., 15 staff × 140 hrs = 2,100 hrs</small>
         </label>
 
-        <label>Target Hours per Employee:
-            <input type="number" name="target_hours_per_employee" id="target_hours" required>
-            <span class="benchmark-label" id="label-hours">(Using industry average)</span>
+        <label for=" type=" number" name="target_hours_per_employee" id="target_hours" required">Target Hours per
+            Employee:</label>
+        <input type="number" name="target_hours_per_employee" id="target_hours" required id="target_hours_per_employee">
+        <span class="benchmark-label" id="label-hours">(Using industry average)</span>
         </label>
 
-        <label>Total Days Lost to Absenteeism (All Staff, Per Month):
-            <input type="number" name="absenteeism_days" id="absenteeism_days" required>
-            <span class="benchmark-label" id="label-absent">(Using industry average)</span>
-            <small>e.g., if 5 employees took 1 sick day each, enter 5</small>
+        <label for=" type=" number" name="absenteeism_days" id="absenteeism_days" required">Total Days Lost to
+            Absenteeism (All Staff, Per Month):</label>
+        <input type="number" name="absenteeism_days" id="absenteeism_days" required>
+        <span class="benchmark-label" id="label-absent">(Using industry average)</span>
+        <small>e.g., if 5 employees took 1 sick day each, enter 5</small>
         </label>
 
-        <label>Total Overtime Hours Paid (This Month, All Staff):
-            <input type="number" name="overtime_hours">
+        <label for=" type=" number" name="overtime_hours"">Total Overtime Hours Paid (This Month, All Staff):</label>
+<input type=" number" name="overtime_hours" id="overtime_hours">
             <small>Include paid overtime only, not time in lieu</small>
         </label>
 
@@ -263,11 +266,10 @@
                 }
             });
 
-            // On load, restore saved value
             const saved = localStorage.getItem("industry");
             if (saved) {
                 industrySelect.value = saved;
-                fetchBenchmarks(saved);  // ✅ Must include this
+                fetchBenchmarks(saved);
             }
 
             let lastIndustry = saved || "";
@@ -302,7 +304,7 @@
                         const r = result.formatted_labels;
                         let out = `📊 Workforce Productivity Overview\n\n`;
                         out += `📜 Annual Revenue per Employee: ${r.revenue_per_employee}\n`;
-                        out += `💪 Payroll Efficiency: ${r.payroll_efficiency}\n\t(Each $1 spent on payroll generates ${r.payroll_return_per_dollar} in revenue)\n\n`;
+                        out += `💪 Payroll Efficiency: ${r.payroll_efficiency}\n\t(Each $1 spent on payroll generates ${(parseFloat(r.payroll_efficiency) / 100).toFixed(2)} in revenue)\n\n`;
                         out += `🎗️ Utilisation Rate: ${r.utilisation_rate} of target hours used\n`;
                         out += `🛌 Absenteeism Rate: ${r.absenteeism_rate} of total monthly workdays\n\t⚠️ Confirm: days lost is total across entire workforce\n`;
                         out += `🔥 Overtime Rate: ${r.overtime_rate} of productive hours\n\n`;

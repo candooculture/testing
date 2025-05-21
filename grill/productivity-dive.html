@@ -127,7 +127,7 @@
     </div>
 
     <form id="dive-form">
-        <label>Industry:
+        <label for=" type=" number" name="total_employees" required">Industry:
             <select name="industry" id="industry" required>
                 <option value="">Select your industry</option>
                 <option value="Agriculture / Farming">Agriculture / Farming</option>
@@ -150,24 +150,25 @@
             </select>
         </label>
 
-        <label>Total Employees:
-            <input type="number" name="total_employees" required>
+        <label>Total Employees:</label>
+        <input type="number" name="total_employees" required id="total_employees">
         </label>
 
-        <label>Average Salary (AUD):
-            <input type="number" name="avg_salary" required>
+        <label for=" type=" number" name="avg_salary" required">Average Salary (AUD):</label>
+        <input type="number" name="avg_salary" required id="avg_salary">
         </label>
 
-        <label for="absenteeism_days">Absenteeism Days / Month:
-            <input type="number" name="absenteeism_days" id="absenteeism_days" required>
-            <span class="benchmark-label" id="label-absent">(Using industry average)</span>
-            <small>e.g., if 5 employees took 1 day off, enter 5</small>
+        <label for=" type=" number" name="absenteeism_days" id="absenteeism_days" required">Absenteeism Days /
+            Month:</label>
+        <input type="number" name="absenteeism_days" id="absenteeism_days" required>
+        <span class="benchmark-label" id="label-absent">(Using industry average)</span>
+        <small>e.g., if 5 employees took 1 day off, enter 5</small>
         </label>
 
-        <label for="avg_hours">Average Hours Worked / Employee:
-            <input type="number" name="avg_hours" id="avg_hours" required>
-            <span class="benchmark-label" id="label-hours">(Using industry average)</span>
-            <small>Monthly total hours typically expected per employee</small>
+        <label for=" type=" number" name="avg_hours" id="avg_hours" required">Average Hours Worked / Employee:</label>
+        <input type="number" name="avg_hours" id="avg_hours" required>
+        <span class="benchmark-label" id="label-hours">(Using industry average)</span>
+        <small>Monthly total hours typically expected per employee</small>
         </label>
 
         <button type="submit">Calculate</button>
@@ -254,11 +255,10 @@
                 }
             });
 
-            // On load, restore saved value
             const saved = localStorage.getItem("industry");
             if (saved) {
                 industrySelect.value = saved;
-                fetchBenchmarks(saved);  // ✅ Must include this
+                fetchBenchmarks(saved);
             }
 
             let lastIndustry = saved || "";

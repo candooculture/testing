@@ -123,7 +123,7 @@
   </div>
 
   <form id="efficiency-form">
-    <label>Industry:
+    <label for=" type=" number" name="total_employees" required">Industry:
       <select name="industry" id="industry" required>
         <option value="">Select your industry</option>
         <option value="Agriculture / Farming">Agriculture / Farming</option>
@@ -146,17 +146,17 @@
       </select>
     </label>
 
-    <label>Total Employees:
-      <input type="number" name="total_employees" required>
+    <label>Total Employees:</label>
+    <input type="number" name="total_employees" required id="total_employees">
     </label>
 
-    <label>Average Annual Salary (AUD):
-      <input type="number" name="avg_salary" required>
+    <label for=" type=" number" name="avg_salary" required">Average Annual Salary (AUD):</label>
+    <input type="number" name="avg_salary" required id="avg_salary">
     </label>
 
-    <label>Desired Improvement Rate (%):
-      <input type="number" name="improvement_rate" required>
-      <small>e.g., 10 = reduce inefficiency by 10%</small>
+    <label for=" type=" number" name="improvement_rate" required">Desired Improvement Rate (%):</label>
+    <input type="number" name="improvement_rate" required id="improvement_rate">
+    <small>e.g., 10 = reduce inefficiency by 10%</small>
     </label>
 
     <button type="submit">Calculate</button>
@@ -221,7 +221,6 @@
             body: JSON.stringify(data)
           });
           const result = await res.json();
-          console.log("Payroll Waste API Response:", result);
 
           if (result.formatted_labels) {
             const r = result.formatted_labels;
@@ -244,7 +243,6 @@
             resultBox.innerText = out;
             resultBox.style.display = "block";
             cta.style.display = "block";
-            resultBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
           } else {
             resultBox.innerText = "Something went wrong.";
             resultBox.style.display = "block";
