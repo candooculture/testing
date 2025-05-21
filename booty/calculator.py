@@ -67,7 +67,12 @@ def calculate_efficiency_loss_and_roi(data):
 
 
 def calculate_customer_churn_loss(data):
-    b = industry_benchmarks(data.industry)
+    try:
+        b = industry_benchmarks(data.industry)
+    except Exception as e:
+        print("INDUSTRY LOOKUP FAILED:", data.industry)
+        raise e
+
     churn_rate = data.churn_rate / 100
     improved_rate = churn_rate * (1 - data.desired_improvement / 100)
 
