@@ -254,10 +254,11 @@
                 }
             });
 
+            // On load, restore saved value
             const saved = localStorage.getItem("industry");
             if (saved) {
                 industrySelect.value = saved;
-                fetchBenchmarks(saved);
+                fetchBenchmarks(saved);  // ✅ Must include this
             }
 
             let lastIndustry = saved || "";
@@ -311,7 +312,7 @@
             });
         })();
     </script>
-<script src="clarity-core.js"></script>
+    <script src="clarity-core.js"></script>
 </body>
 
 </html>

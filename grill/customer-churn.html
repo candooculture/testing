@@ -245,8 +245,9 @@
       const saved = localStorage.getItem("industry");
       if (saved) {
         industrySelect.value = saved;
-        fetchBenchmarks(saved);
+        fetchBenchmarks(saved);  // ✅ Must include this
       }
+
 
       // Poll for cross-module updates
       let lastIndustry = saved || "";
