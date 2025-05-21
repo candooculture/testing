@@ -84,7 +84,7 @@ def calculate_customer_churn_loss(data):
         "replacement_cost": round(replacement_cost),
         "potential_gain": round(potential_gain),
         "recovery_percent": round(recovery_percent, 1),
-        "benchmark_churn_rate": b.get("Customer Churn Rate (%) (Value)", "N/A"),
+        "benchmark_churn_rate": round(b.get("Customer Churn Rate (%) (Value)", 0), 1),
         "user_churn_rate": round(data.churn_rate, 1)
     }
 
