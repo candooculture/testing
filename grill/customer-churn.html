@@ -282,7 +282,7 @@
 
           if (result.revenue_loss != null) {
             const totalLoss = result.revenue_loss + result.replacement_cost;
-            const recoveryPercent = result.recovery_percent;
+            const recoveryOpportunity = result.recovery_percent || 0;
 
             let output = `💸 Total Annual Loss from Customer Churn: AUD $${totalLoss.toLocaleString()}\n`;
             output += ` • Lost Revenue from Churned Customers: AUD $${result.revenue_loss.toLocaleString()}\n`;
@@ -290,7 +290,7 @@
             output += `✅ Based on Your Inputs\n`;
             output += `🎯 Projected Annual Recovery from ${data.desired_improvement}% Reduction in Churn Rate: AUD $${result.potential_gain.toLocaleString()}\n\n`;
             output += `📈 Opportunity\n`;
-            output += `💰 Estimated Recovery = ${recoveryOpportunity.toFixed(1)}% of Total Churn Loss (via ${data.desired_improvement}% churn reduction)\n\n`;
+            output += `💰 Recoverable % of Churn Loss: ${recoveryOpportunity.toFixed(1)}% (via ${data.desired_improvement}% churn reduction)\n\n`;
             output += `📊 Benchmark Check — ${data.industry} Industry\n`;
             output += `- ${result.benchmark_message}\n\n`;
             output += `🧠 Straight Talk\n`;

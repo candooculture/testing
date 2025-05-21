@@ -83,6 +83,7 @@ def calculate_customer_churn_loss(data):
         "revenue_loss": round(revenue_loss),
         "replacement_cost": round(replacement_cost),
         "potential_gain": round(potential_gain),
+        "recovery_percent": round(recovery_percent, 1),
         "benchmark_message": f"Your churn rate compared to {data.industry} industry benchmark ({b.get('Customer Churn Rate (%) (Value)', 'N/A')}%)."
     }
 
