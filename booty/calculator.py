@@ -85,12 +85,12 @@ def calculate_customer_churn_loss(data):
                         ) * 100 if (revenue_loss + replacement_cost) else 0
 
     return {
-        "revenue_loss": round(revenue_loss),
-        "replacement_cost": round(replacement_cost),
-        "potential_gain": round(potential_gain),
-        "recovery_percent": round(recovery_percent, 1),
-        "benchmark_churn_rate": round(b.get("Customer Churn Rate (%) (Value)", 0), 1),
-        "user_churn_rate": round(data.churn_rate, 1)
+        "revenue_loss": round(float(revenue_loss)),
+        "replacement_cost": round(float(replacement_cost)),
+        "potential_gain": round(float(potential_gain)),
+        "recovery_percent": round(float(recovery_percent), 1),
+        "benchmark_churn_rate": round(float(b.get("Customer Churn Rate (%) (Value)", 0)), 1),
+        "user_churn_rate": round(float(data.churn_rate), 1)
     }
 
 # === 6. LEADERSHIP DRAG ===
