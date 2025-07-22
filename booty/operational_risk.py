@@ -33,25 +33,29 @@ class RiskInput(BaseModel):
     total_employees: int = 0
     industry: str = ""
 
+
 @router.post("/run-operational-risk")
 def run_operational_risk(data: RiskInput):
     try:
         inputs = data.dict()
-        num_modules = 0
+        print("🔍 ORS Received Payload:", inputs)
 
-        if inputs.get("payroll_cost", 0) > 0:
-            num_modules += 1
-        if inputs.get("churn_rate", 0) > 0:
-            num_modules += 1
-        if inputs.get("leadership_drag", 0) > 0:
-            num_modules += 1
-        if inputs.get("productive_hours", 0) > 0:
-            num_modules += 1
-        if inputs.get("avg_salary", 0) > 0 and inputs.get("absenteeism_days", 0) > 0:
-            num_modules += 1
+        module_checks = {
+            "Payroll": inputs.get("payroll_cost", 0) > 0,
+            "Churn": inputs.get("churn_rate", 0) > 0,
+            "Leadership": inputs.get("leadership_drag", 0) > 0,
+            "Productivity": inputs.get("productive_hours", 0) > 0,
+            "Deep Dive": inputs.get("avg_salary", 0) > 0 and inputs.get("absenteeism_days", 0) > 0
+        }
+
+        completed_modules = [name for name, passed in module_checks.items() if passed]
+        num_modules = len(completed_modules)
 
         if num_modules == 0:
-            raise HTTPException(status_code=400, detail="No valid inputs received.")
+            raise HTTPException(
+                status_code=400,
+                detail=f"No valid modules detected. Payload: {inputs}"
+            )
 
         score = num_modules * 20
         tier = "Low" if score <= 40 else "Moderate" if score <= 80 else "High"
@@ -61,8 +65,9 @@ def run_operational_risk(data: RiskInput):
                 "Operational Risk Score": f"{score}/100",
                 "Risk Tier": tier
             },
-            "straight_talk": f"Your organisation shows risk in {5 - num_modules} areas. This score helps highlight blind spots and build resilience."
+            "straight_talk": f"✅ Completed Modules: {', '.join(completed_modules)}\n❌ Blind Spots: {5 - num_modules} module(s) unaccounted for.\n\nThis score highlights where risk is hidden and resilience is weak."
         }
 
     except Exception as e:
+        print("🔥 ORS Exception:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
