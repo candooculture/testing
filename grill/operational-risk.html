@@ -245,19 +245,34 @@
       updateOverallStatusBox();
     });
 
-    window.addEventListener("storage", (event) => {
-      const watched = [
+    // 🔁 Live poll for module status changes inside this tab
+    let lastModuleStates = {};
+    function checkForModuleUpdates() {
+      const keys = [
         "payroll-waste-inputs",
         "customer-churn-inputs",
         "leadership-drag-inputs",
         "workforce-productivity-inputs",
         "productivity-deep-dive-inputs"
       ];
-      if (watched.includes(event.key)) {
+
+      let changed = false;
+
+      keys.forEach(key => {
+        const current = localStorage.getItem(key);
+        if (lastModuleStates[key] !== current) {
+          changed = true;
+          lastModuleStates[key] = current;
+        }
+      });
+
+      if (changed) {
         updateDetailedModuleStatus();
         updateOverallStatusBox();
       }
-    });
+    }
+
+    setInterval(checkForModuleUpdates, 800);
   </script>
 </body>
 </html>
