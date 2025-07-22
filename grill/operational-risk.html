@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <title>Operational Risk Score</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'DM Sans', sans-serif;
       background-color: #ffffff;
-      color: #333;
+      color: #333333;
       padding: 40px 20px;
       max-width: 600px;
       margin: auto;
@@ -30,164 +30,129 @@
       font-size: 14px;
     }
 
-    .status-box {
-      background: #f9f9f9;
-      border: 1px dashed #ccc;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 20px;
-    }
-
-    .result-box {
-      display: block;
-      white-space: pre-wrap;
-      background: #fefefe;
-      border-left: 4px solid #48f191;
-      padding: 24px;
-      border-radius: 10px;
-      font-size: 15px;
-      margin-top: 20px;
-    }
-
     button {
       display: block;
-      width: 100%;
-      margin-top: 20px;
-      padding: 12px;
-      font-size: 16px;
+      margin: 20px auto;
+      padding: 12px 20px;
       border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background-color 0.2s ease-in-out;
-    }
-
-    #ors-button {
+      border: none;
       background: #48f191;
       color: #000;
-      border: none;
+      font-weight: bold;
+      cursor: pointer;
     }
 
-    #ors-button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
-    #reset-all {
+    .reset-btn {
       background: #eee;
       color: #333;
       border: 1px solid #bbb;
+      font-size: 14px;
+      margin-top: 20px;
+      width: 100%;
+    }
+
+    pre {
+      background-color: #fefefe;
+      border-left: 4px solid #48f191;
+      padding: 20px;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      font-family: inherit;
+      font-size: 16px;
+      color: #333;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
   </style>
 </head>
+
 <body>
   <h1>Operational Risk Score</h1>
 
   <div class="info-banner">
-    <strong>This tool combines inputs from other modules to reveal your operational risk profile.</strong><br>
-    Make sure you've run the other modules first — we’ll analyse the data you've entered so far.
+    <strong>This tool combines inputs from all other modules.</strong><br>
+    Once you've completed Payroll, Churn, Leadership, Workforce, and Deep Dive, hit the button below to generate your score.
   </div>
 
-  <div id="ors-status" class="status-box">Checking modules...</div>
-  <button id="ors-button" disabled>🚀 Generate Operational Risk Score</button>
-  <pre id="ors-result" class="result-box">⏳ Waiting to run analysis...</pre>
-  <button id="reset-all">🔄 Reset All Module Results</button>
+  <button id="generate-risk-btn">🚀 Generate Operational Risk Score</button>
+  <pre id="ors-result">⏳ Waiting to run analysis...</pre>
+  <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
-    (() => {
-      const MODULE_KEYS = [
+    document.getElementById("generate-risk-btn").addEventListener("click", async () => {
+      const resultBox = document.getElementById("ors-result");
+      resultBox.innerText = "⏳ Generating Operational Risk Score...";
+
+      try {
+        const payroll = JSON.parse(localStorage.getItem("payroll-waste-inputs") || "{}");
+        const churn = JSON.parse(localStorage.getItem("customer-churn-inputs") || "{}");
+        const leadership = JSON.parse(localStorage.getItem("leadership-drag-inputs") || "{}");
+        const workforce = JSON.parse(localStorage.getItem("workforce-productivity-inputs") || "{}");
+        const deepdive = JSON.parse(localStorage.getItem("productivity-deep-dive-inputs") || "{}");
+
+        const payload = {
+          industry: payroll.industry || "",
+          total_employees: payroll.total_employees || workforce.total_employees || 0,
+          avg_salary: payroll.avg_salary || deepdive.avg_salary || 0,
+          improvement_rate: payroll.improvement_rate || 0,
+
+          churn_rate: churn.churn_rate || 0,
+          desired_improvement: churn.desired_improvement || 0,
+          cac: churn.cac || 0,
+          avg_revenue: churn.avg_revenue || 0,
+          num_customers: churn.num_customers || 0,
+
+          leadership_drag: leadership.leadership_drag || 0,
+
+          total_revenue: workforce.total_revenue || 0,
+          payroll_cost: workforce.payroll_cost || 0,
+          productive_hours: workforce.productive_hours || 0,
+          target_hours_per_employee: workforce.target_hours_per_employee || 0,
+          absenteeism_days: workforce.absenteeism_days || deepdive.absenteeism_days || 0,
+          overtime_hours: workforce.overtime_hours || 0,
+
+          avg_hours: deepdive.avg_hours || 0
+        };
+
+        console.log("[ORS FINAL PAYLOAD]", payload);
+
+        const res = await fetch("https://testing-gh0h.onrender.com/run-operational-risk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        console.log("[ORS RESULT]", result);
+
+        if (result.formatted_labels) {
+          let output = `📉 Operational Risk Summary:\n\n`;
+          for (const [key, value] of Object.entries(result.formatted_labels)) {
+            output += `• ${key}: ${value}\n`;
+          }
+          output += `\n🧠 Straight Talk\n${result.straight_talk || "No commentary provided."}`;
+          resultBox.innerText = output;
+        } else {
+          resultBox.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
+        }
+
+      } catch (err) {
+        console.error("[ORS ERROR]", err);
+        resultBox.innerText = "❌ Failed to run analysis. Try again.";
+      }
+    });
+
+    document.getElementById("reset-btn").addEventListener("click", () => {
+      const keys = [
         "payroll-waste-inputs",
         "customer-churn-inputs",
         "leadership-drag-inputs",
         "workforce-productivity-inputs",
-        "productivity-deep-dive-inputs"
+        "productivity-deep-dive-inputs",
+        "industry"
       ];
-
-      const API_URL = "https://testing-gh0h.onrender.com/run-operational-risk";
-      const resultBox = document.getElementById("ors-result");
-      const statusBox = document.getElementById("ors-status");
-      const button = document.getElementById("ors-button");
-      const resetBtn = document.getElementById("reset-all");
-
-      function getModuleStatus() {
-        return MODULE_KEYS.map(key => {
-          const data = localStorage.getItem(key);
-          return {
-            key,
-            complete: !!data && data !== "undefined",
-            data: data ? JSON.parse(data) : null
-          };
-        });
-      }
-
-      function renderStatus(modules) {
-        const allComplete = modules.every(m => m.complete);
-        let html = "<strong>Module Status:</strong><br><ul style='padding-left: 1em'>";
-        modules.forEach(m => {
-          const label = m.key.replace("-inputs", "").replace(/-/g, " ");
-          html += `<li style="color:${m.complete ? 'green' : 'red'}">• ${label} — ${m.complete ? '✅ Complete' : '❌ Pending'}</li>`;
-        });
-        html += "</ul>";
-        html += `<p><strong>${allComplete ? "✅ All modules complete." : "⚠️ Please complete all 5 modules before running."}</strong></p>`;
-
-        statusBox.innerHTML = html;
-        button.disabled = !allComplete;
-        button.style.opacity = allComplete ? "1" : "0.6";
-        return allComplete;
-      }
-
-      function flattenPayload(modules) {
-        return modules.reduce((acc, mod) => {
-          if (mod.complete && mod.data) {
-            Object.assign(acc, mod.data);
-          }
-          return acc;
-        }, {});
-      }
-
-      async function generateORS() {
-        const modules = getModuleStatus();
-        const payload = flattenPayload(modules);
-        resultBox.innerText = "⏳ Generating Operational Risk Score...";
-
-        try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-
-          const result = await res.json();
-
-          if (result.formatted_labels) {
-            let output = "📊 Operational Risk Profile:\n\n";
-            Object.entries(result.formatted_labels).forEach(([label, value]) => {
-              output += `- ${label}: ${value}\n`;
-            });
-            output += `\n🧠 Straight Talk\n${result.straight_talk || "No commentary provided."}`;
-            resultBox.innerText = output;
-          } else {
-            resultBox.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
-          }
-        } catch (err) {
-          console.error("[ORS Error]", err);
-          resultBox.innerText = "❌ Error generating score. Check console for details.";
-        }
-      }
-
-      // Hook up generate button
-      button.addEventListener("click", generateORS);
-
-      // Hook up reset button
-      resetBtn.addEventListener("click", () => {
-        MODULE_KEYS.forEach(k => localStorage.removeItem(k));
-        location.reload();
-      });
-
-      // Init
-      const currentModules = getModuleStatus();
-      renderStatus(currentModules);
-    })();
+      keys.forEach(k => localStorage.removeItem(k));
+      location.reload();
+    });
   </script>
 </body>
 </html>
