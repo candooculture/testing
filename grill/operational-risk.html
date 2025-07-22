@@ -117,117 +117,86 @@
   </div>
 
   <script>
-    const modules = [
-      { key: "Payroll Waste", icon: "🪙", storeKey: "payroll-waste-inputs" },
-      { key: "Customer Churn", icon: "📉", storeKey: "customer-churn-inputs" },
-      { key: "Leadership Drag", icon: "🧠", storeKey: "leadership-drag-inputs" },
-      { key: "Workforce Productivity", icon: "⚙️", storeKey: "workforce-productivity-inputs" },
-      { key: "Productivity Deep Dive", icon: "🔍", storeKey: "productivity-dive-inputs" }
+(() => {
+  const MODULE = "operational-risk";
+  const API_BASE = "https://testing-gh0h.onrender.com";
+  const RESULT_BOX = document.getElementById("ors-result");
+  const STATUS_BOX = document.getElementById("ors-status");
+
+  function read(key) {
+    try {
+      return JSON.parse(localStorage.getItem(key)) || null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function show(msg) {
+    RESULT_BOX.innerText = msg;
+    RESULT_BOX.style.display = "block";
+  }
+
+  async function runORS() {
+    const keys = [
+      "payroll-waste-inputs",
+      "customer-churn-inputs",
+      "leadership-drag-inputs",
+      "workforce-productivity-inputs",
+      "productivity-deep-dive-inputs"
     ];
 
-    const statusList = document.getElementById("moduleStatusList");
-    const riskSummary = document.getElementById("riskSummary");
-    const resultBox = document.getElementById("op-risk-result");
-    const ctaBox = document.getElementById("cta-bottom");
+    const data = {};
+    let allDone = true;
 
-    function getModuleStatus() {
-      return modules.map(({ key, icon, storeKey }) => {
-        const stored = localStorage.getItem(storeKey);
-        let status = "pending";
-        if (stored) {
-          try {
-            const parsed = JSON.parse(stored);
-            if (Object.keys(parsed).length > 0) status = "complete";
-          } catch {
-            status = "error";
-          }
-        }
-        return { key, icon, status, storeKey };
-      });
-    }
-
-    function updateStatus() {
-      const statuses = getModuleStatus();
-      statusList.innerHTML = "";
-
-      let completeCount = 0;
-      statuses.forEach(({ key, icon, status }) => {
-        const li = document.createElement("li");
-        li.innerHTML = `${icon} ${key}: <span class="${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
-        statusList.appendChild(li);
-        if (status === "complete") completeCount++;
-      });
-
-      riskSummary.innerText = `⏳ ${completeCount} of ${modules.length} modules complete.`;
-
-      if (completeCount === modules.length) {
-        runRiskAnalysis();
+    for (const key of keys) {
+      const moduleData = read(key);
+      if (!moduleData) {
+        allDone = false;
+        console.warn(`[ORS] Missing data: ${key}`);
       } else {
-        resultBox.style.display = "none";
-        ctaBox.style.display = "none";
+        data[key] = moduleData;
       }
     }
 
-    function resetAll() {
-      modules.forEach(({ storeKey }) => localStorage.removeItem(storeKey));
-      resultBox.style.display = "none";
-      ctaBox.style.display = "none";
-      riskSummary.innerText = "All module data cleared. Waiting for fresh results...";
-      updateStatus();
+    if (!allDone) {
+      STATUS_BOX.innerText = "Not all modules complete.";
+      show("You need to finish all 5 modules first.");
+      return;
     }
 
-    async function runRiskAnalysis() {
-      let combined = {};
+    STATUS_BOX.innerText = "⏳ 5 of 5 modules complete.";
 
-      modules.forEach(({ storeKey }) => {
-        try {
-          const stored = localStorage.getItem(storeKey);
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            Object.entries(parsed).forEach(([k, v]) => {
-              if (!(k in combined)) combined[k] = v;
-            });
-          }
-        } catch (e) {
-          console.warn("Error parsing input:", storeKey, e);
-        }
+    console.log("[ORS] Sending data to API:", data); // <-- 🟢 THIS IS THE DEBUG LOG
+
+    try {
+      const res = await fetch(`${API_BASE}/run-operational-risk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
       });
 
-      combined.last_updated = Date.now();
+      const result = await res.json();
+      console.log("[ORS] Received result:", result); // <-- 🟢 DEBUG RESPONSE
 
-      try {
-        const response = await fetch("https://testing-gh0h.onrender.com/run-operational-risk", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(combined)
+      if (result.formatted_labels) {
+        let output = "📊 Operational Risk Profile:\n\n";
+        Object.entries(result.formatted_labels).forEach(([label, value]) => {
+          output += `- ${label}: ${value}\n`;
         });
-
-        const result = await response.json();
-
-        if (result.formatted_labels) {
-          const r = result.formatted_labels;
-          let out = `⚠️ Operational Risk Profile\n\n`;
-          out += `📊 Risk Score: ${r["Operational Risk Score"]}\n`;
-          out += `🏷️ Risk Level: ${r["Risk Tier"]}\n\n`;
-          out += `🧠 Straight Talk:\n${result.straight_talk}`;
-
-          resultBox.innerText = out;
-          resultBox.style.display = "block";
-          ctaBox.style.display = "block";
-        } else {
-          resultBox.innerText = "Something went wrong.";
-          resultBox.style.display = "block";
-        }
-      } catch (err) {
-        console.error("API error:", err);
-        resultBox.innerText = "API error. Try again.";
-        resultBox.style.display = "block";
+        output += `\n🧠 Straight Talk\n${result.straight_talk}`;
+        show(output);
+      } else {
+        show("Something went wrong. (No formatted_labels)");
       }
+    } catch (err) {
+      console.error(`[ORS] API error:`, err);
+      show("Something went wrong. (API error)");
     }
+  }
 
-    updateStatus();
-    setInterval(updateStatus, 2000);
-  </script>
+  document.getElementById("ors-button").addEventListener("click", runORS);
+})();
+</script>
 </body>
 
 </html>
