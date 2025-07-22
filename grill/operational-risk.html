@@ -3,25 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <title>Operational Risk Score</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     body {
       font-family: 'DM Sans', sans-serif;
       background-color: #ffffff;
       color: #333333;
       padding: 40px 20px;
-      max-width: 600px;
+      max-width: 640px;
       margin: auto;
       line-height: 1.6;
     }
-
     h1 {
       text-align: center;
       margin-bottom: 30px;
       font-size: 28px;
       font-weight: 700;
     }
-
     .info-banner {
       background-color: #f1f1f1;
       padding: 15px;
@@ -29,7 +27,11 @@
       border-left: 4px solid #48f191;
       font-size: 14px;
     }
-
+    .status-box {
+      font-size: 16px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
     button {
       display: block;
       margin: 20px auto;
@@ -41,16 +43,13 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     .reset-btn {
       background: #eee;
       color: #333;
       border: 1px solid #bbb;
       font-size: 14px;
-      margin-top: 20px;
       width: 100%;
     }
-
     pre {
       background-color: #fefefe;
       border-left: 4px solid #48f191;
@@ -63,26 +62,20 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       display: none;
     }
-
-    .status-box {
-      text-align: center;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
   </style>
 </head>
 <body>
   <h1>Operational Risk Score</h1>
 
   <div class="info-banner">
-    <strong>This tool combines inputs from all other modules.</strong><br>
-    Once you've completed Payroll, Churn, Leadership, Workforce, and Deep Dive, hit the button below to generate your score.
+    <strong>This tool combines inputs from all other modules.</strong><br />
+    Complete Payroll, Churn, Leadership, Workforce, and Deep Dive — then hit the button below to calculate your risk score.
   </div>
 
-  <div id="riskSummary" class="status-box">⏳ Waiting for modules to complete...</div>
+  <div id="riskSummary" class="status-box">⏳ Checking module completion...</div>
 
   <button id="generate-risk-btn">🚀 Generate Operational Risk Score</button>
-  <pre id="op-risk-result">⏳ Waiting to run analysis...</pre>
+  <pre id="op-risk-result"></pre>
   <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
@@ -105,23 +98,40 @@
       const productivity = JSON.parse(localStorage.getItem(keys.productivity) || "null");
       const dive = JSON.parse(localStorage.getItem(keys.dive) || "null");
 
-      if (!payroll || !churn || !leadership || !productivity || !dive) {
-        STATUS_BOX.innerText = "❌ Not all modules complete.";
-        RESULT_BOX.innerText = "You need to finish all 5 modules first.";
+      const modules = { payroll, churn, leadership, productivity, dive };
+      const completed = Object.entries(modules).filter(([_, val]) => val !== null);
+
+      if (completed.length < 5) {
+        STATUS_BOX.innerText = `❌ ${completed.length}/5 modules complete.`;
+        RESULT_BOX.innerText = "Please complete all 5 modules before calculating.";
         RESULT_BOX.style.display = "block";
         return;
       }
 
       STATUS_BOX.innerText = "✅ 5 of 5 modules complete. Calculating...";
-      RESULT_BOX.style.display = "block";
-      RESULT_BOX.innerText = "⏳ Generating Operational Risk Score...";
 
       const payload = {
-        ...payroll,
-        ...churn,
-        ...leadership,
-        ...productivity,
-        ...dive
+        industry: payroll.industry || "",
+        total_employees: payroll.total_employees || productivity.total_employees || 0,
+        avg_salary: payroll.avg_salary || dive.avg_salary || 0,
+        improvement_rate: payroll.improvement_rate || 0,
+
+        churn_rate: churn.churn_rate || 0,
+        desired_improvement: churn.desired_improvement || 0,
+        cac: churn.cac || 0,
+        avg_revenue: churn.avg_revenue || 0,
+        num_customers: churn.num_customers || 0,
+
+        leadership_drag: leadership.leadership_drag || 0,
+
+        total_revenue: productivity.total_revenue || 0,
+        payroll_cost: productivity.payroll_cost || 0,
+        productive_hours: productivity.productive_hours || 0,
+        target_hours_per_employee: productivity.target_hours_per_employee || 0,
+        absenteeism_days: productivity.absenteeism_days || dive.absenteeism_days || 0,
+        overtime_hours: productivity.overtime_hours || 0,
+
+        avg_hours: dive.avg_hours || 0
       };
 
       try {
@@ -134,19 +144,21 @@
         const result = await res.json();
 
         if (result.formatted_labels) {
-          let output = "📊 Operational Risk Profile:\n\n";
-          Object.entries(result.formatted_labels).forEach(([label, value]) => {
-            output += `- ${label}: ${value}\n`;
-          });
-          output += `\n🧠 Straight Talk\n${result.straight_talk}`;
+          let output = `📉 Operational Risk Summary:\n\n`;
+          for (const [key, value] of Object.entries(result.formatted_labels)) {
+            output += `• ${key}: ${value}\n`;
+          }
+          output += `\n🧠 Straight Talk\n${result.straight_talk || "No commentary provided."}`;
           RESULT_BOX.innerText = output;
         } else {
-          RESULT_BOX.innerText = "Something went wrong. (No formatted_labels)";
+          RESULT_BOX.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
         }
       } catch (err) {
-        console.error(`[ORS] API error:`, err);
-        RESULT_BOX.innerText = "Something went wrong. (API error)";
+        console.error("[ORS ERROR]", err);
+        RESULT_BOX.innerText = "❌ Failed to run analysis. Try again.";
       }
+
+      RESULT_BOX.style.display = "block";
     }
 
     document.getElementById("generate-risk-btn").addEventListener("click", runORS);
@@ -162,6 +174,22 @@
       ];
       keys.forEach(k => localStorage.removeItem(k));
       location.reload();
+    });
+
+    // On load: show module completion state
+    window.addEventListener("load", () => {
+      const statusBox = document.getElementById("riskSummary");
+      const count = [
+        "payroll-waste-inputs",
+        "customer-churn-inputs",
+        "leadership-drag-inputs",
+        "workforce-productivity-inputs",
+        "productivity-deep-dive-inputs"
+      ].filter(key => localStorage.getItem(key)).length;
+
+      statusBox.innerText = count === 5
+        ? "✅ All modules complete. Ready to calculate."
+        : `❌ ${count}/5 modules complete.`;
     });
   </script>
 </body>
