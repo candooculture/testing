@@ -45,8 +45,8 @@
       color: green;
     }
 
-    .pending {
-      color: #888;
+    .missing {
+      color: #c00;
     }
 
     .result-box,
@@ -81,6 +81,19 @@
       cursor: pointer;
     }
 
+    .run-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 6px;
+      background: #48f191;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
     .reset-btn {
       background: #eee;
       color: #333;
@@ -99,14 +112,15 @@
 
   <div class="info-banner">
     <strong>This tool combines inputs from other modules to reveal your operational risk profile.</strong><br>
-    Make sure you've run the other modules first — we'll analyse the data you've entered so far.
+    Make sure you've run the other modules first — we’ll analyse the data you’ve entered so far.
   </div>
 
   <ul id="moduleStatusList"></ul>
-  <div id="riskSummary" class="status-box">⏳ Waiting for modules to complete...</div>
-  <pre id="op-risk-result" class="result-box"></pre>
+  <div id="statusBox" class="status-box">Checking modules...</div>
 
-  <button class="reset-btn" onclick="resetAll()">🔄 Reset All Module Results</button>
+  <button id="runORSBtn" class="run-btn" style="display:none;">🚦 Generate Operational Risk Score</button>
+
+  <pre id="orsResult" class="result-box"></pre>
 
   <div id="cta-bottom" class="cta">
     <h3>📉 See the full picture — and where you’re exposed.</h3>
@@ -116,87 +130,104 @@
       Prefer Email? Let’s Help You Understand What to Do Next</button>
   </div>
 
+  <button class="reset-btn" onclick="resetAll()">🔄 Reset All Module Results</button>
+
   <script>
-(() => {
-  const MODULE = "operational-risk";
-  const API_BASE = "https://testing-gh0h.onrender.com";
-  const RESULT_BOX = document.getElementById("ors-result");
-  const STATUS_BOX = document.getElementById("ors-status");
+    (() => {
+      const MODULE_KEYS = [
+        "payroll-waste-inputs",
+        "customer-churn-inputs",
+        "leadership-drag-inputs",
+        "workforce-productivity-inputs",
+        "productivity-deep-dive-inputs"
+      ];
 
-  function read(key) {
-    try {
-      return JSON.parse(localStorage.getItem(key)) || null;
-    } catch (err) {
-      return null;
-    }
-  }
+      const API_BASE = "https://testing-gh0h.onrender.com";
 
-  function show(msg) {
-    RESULT_BOX.innerText = msg;
-    RESULT_BOX.style.display = "block";
-  }
+      const statusBox = document.getElementById("statusBox");
+      const resultBox = document.getElementById("orsResult");
+      const cta = document.getElementById("cta-bottom");
+      const runBtn = document.getElementById("runORSBtn");
+      const statusList = document.getElementById("moduleStatusList");
 
-  async function runORS() {
-    const keys = [
-      "payroll-waste-inputs",
-      "customer-churn-inputs",
-      "leadership-drag-inputs",
-      "workforce-productivity-inputs",
-      "productivity-deep-dive-inputs"
-    ];
-
-    const data = {};
-    let allDone = true;
-
-    for (const key of keys) {
-      const moduleData = read(key);
-      if (!moduleData) {
-        allDone = false;
-        console.warn(`[ORS] Missing data: ${key}`);
-      } else {
-        data[key] = moduleData;
+      function read(key) {
+        try {
+          return JSON.parse(localStorage.getItem(key)) || null;
+        } catch {
+          return null;
+        }
       }
-    }
 
-    if (!allDone) {
-      STATUS_BOX.innerText = "Not all modules complete.";
-      show("You need to finish all 5 modules first.");
-      return;
-    }
+      function updateModuleStatus() {
+        let allComplete = true;
+        statusList.innerHTML = "";
 
-    STATUS_BOX.innerText = "⏳ 5 of 5 modules complete.";
+        MODULE_KEYS.forEach(key => {
+          const data = read(key);
+          const li = document.createElement("li");
+          if (data) {
+            li.innerHTML = `✅ ${key.replace(/-inputs$/, '').replace(/-/g, ' ')}`;
+            li.className = "complete";
+          } else {
+            li.innerHTML = `❌ ${key.replace(/-inputs$/, '').replace(/-/g, ' ')}`;
+            li.className = "missing";
+            allComplete = false;
+          }
+          statusList.appendChild(li);
+        });
 
-    console.log("[ORS] Sending data to API:", data); // <-- 🟢 THIS IS THE DEBUG LOG
+        if (allComplete) {
+          statusBox.innerText = "✅ All 5 modules complete. Ready to generate risk score.";
+          runBtn.style.display = "block";
+        } else {
+          statusBox.innerText = "⚠️ Some modules are incomplete. Complete all before generating risk score.";
+          runBtn.style.display = "none";
+        }
+      }
 
-    try {
-      const res = await fetch(`${API_BASE}/run-operational-risk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+      runBtn.addEventListener("click", async () => {
+        const data = {};
+        MODULE_KEYS.forEach(key => data[key] = read(key));
+        resultBox.style.display = "none";
+        cta.style.display = "none";
+
+        try {
+          const res = await fetch(`${API_BASE}/run-operational-risk`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+          });
+
+          const result = await res.json();
+
+          if (result.formatted_labels) {
+            let output = "📊 Operational Risk Profile:\n\n";
+            Object.entries(result.formatted_labels).forEach(([label, value]) => {
+              output += `- ${label}: ${value}\n`;
+            });
+            output += `\n🧠 Straight Talk\n${result.straight_talk}`;
+            resultBox.innerText = output;
+            resultBox.style.display = "block";
+            cta.style.display = "block";
+          } else {
+            resultBox.innerText = "Something went wrong. (No formatted_labels)";
+            resultBox.style.display = "block";
+          }
+        } catch (err) {
+          console.error("[ORS] API error", err);
+          resultBox.innerText = "Something went wrong. (API error)";
+          resultBox.style.display = "block";
+        }
       });
 
-      const result = await res.json();
-      console.log("[ORS] Received result:", result); // <-- 🟢 DEBUG RESPONSE
+      window.resetAll = () => {
+        MODULE_KEYS.forEach(key => localStorage.removeItem(key));
+        window.location.reload();
+      };
 
-      if (result.formatted_labels) {
-        let output = "📊 Operational Risk Profile:\n\n";
-        Object.entries(result.formatted_labels).forEach(([label, value]) => {
-          output += `- ${label}: ${value}\n`;
-        });
-        output += `\n🧠 Straight Talk\n${result.straight_talk}`;
-        show(output);
-      } else {
-        show("Something went wrong. (No formatted_labels)");
-      }
-    } catch (err) {
-      console.error(`[ORS] API error:`, err);
-      show("Something went wrong. (API error)");
-    }
-  }
-
-  document.getElementById("ors-button").addEventListener("click", runORS);
-})();
-</script>
+      updateModuleStatus();
+    })();
+  </script>
 </body>
 
 </html>
