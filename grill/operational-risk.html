@@ -114,8 +114,35 @@
       });
     }
 
+    function updateOverallStatusBox() {
+      const statusBox = document.getElementById("riskSummary");
+
+      const requiredKeys = [
+        "payroll-waste-inputs",
+        "customer-churn-inputs",
+        "leadership-drag-inputs",
+        "workforce-productivity-inputs",
+        "productivity-deep-dive-inputs"
+      ];
+
+      const count = requiredKeys.filter(key => {
+        const raw = localStorage.getItem(key);
+        try {
+          const data = JSON.parse(raw);
+          return data && typeof data === "object" && Object.keys(data).length > 0;
+        } catch {
+          return false;
+        }
+      }).length;
+
+      statusBox.innerText = count === 5
+        ? "✅ All modules complete. Ready to calculate."
+        : `❌ ${count}/5 modules complete.`;
+    }
+
     async function runORS() {
-      updateDetailedModuleStatus();  // ✅ Update icons before calculation
+      updateDetailedModuleStatus();
+      updateOverallStatusBox();
 
       const STATUS_BOX = document.getElementById("riskSummary");
       const RESULT_BOX = document.getElementById("op-risk-result");
@@ -178,14 +205,6 @@
           body: JSON.stringify(payload)
         });
 
-        if (!res.ok) {
-          const errText = await res.text();
-          console.error("[ORS ERROR]", errText);
-          RESULT_BOX.innerText = `❌ Backend error: ${res.status}\n${errText}`;
-          RESULT_BOX.style.display = "block";
-          return;
-        }
-
         const result = await res.json();
 
         if (result.formatted_labels) {
@@ -222,31 +241,22 @@
     });
 
     window.addEventListener("load", () => {
-      const statusBox = document.getElementById("riskSummary");
+      updateDetailedModuleStatus();
+      updateOverallStatusBox();
+    });
 
-      const requiredKeys = [
+    window.addEventListener("storage", (event) => {
+      const watched = [
         "payroll-waste-inputs",
         "customer-churn-inputs",
         "leadership-drag-inputs",
         "workforce-productivity-inputs",
         "productivity-deep-dive-inputs"
       ];
-
-      const count = requiredKeys.filter(key => {
-        const raw = localStorage.getItem(key);
-        try {
-          const data = JSON.parse(raw);
-          return data && typeof data === "object" && Object.keys(data).length > 0;
-        } catch {
-          return false;
-        }
-      }).length;
-
-      statusBox.innerText = count === 5
-        ? "✅ All modules complete. Ready to calculate."
-        : `❌ ${count}/5 modules complete.`;
-
-      updateDetailedModuleStatus();  // ✅ update the ✅/❌ icons per module
+      if (watched.includes(event.key)) {
+        updateDetailedModuleStatus();
+        updateOverallStatusBox();
+      }
     });
   </script>
 </body>
