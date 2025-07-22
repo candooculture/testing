@@ -32,6 +32,13 @@
       margin-bottom: 20px;
       font-weight: 600;
     }
+    .status-box p {
+      margin: 4px 0;
+      font-weight: normal;
+    }
+    .status-box span {
+      font-weight: bold;
+    }
     button {
       display: block;
       margin: 20px auto;
@@ -73,6 +80,14 @@
   </div>
 
   <div id="riskSummary" class="status-box">⏳ Checking module completion...</div>
+
+  <div class="status-box">
+    <p>Payroll Waste: <span id="status-payroll">❌</span></p>
+    <p>Customer Churn: <span id="status-churn">❌</span></p>
+    <p>Leadership Drag: <span id="status-leadership">❌</span></p>
+    <p>Workforce Productivity: <span id="status-workforce">❌</span></p>
+    <p>Deep Dive: <span id="status-deepdive">❌</span></p>
+  </div>
 
   <button id="generate-risk-btn">🚀 Generate Operational Risk Score</button>
   <pre id="op-risk-result"></pre>
@@ -161,6 +176,21 @@
       RESULT_BOX.style.display = "block";
     }
 
+    function updateDetailedModuleStatus() {
+      const map = {
+        "payroll-waste-inputs": "status-payroll",
+        "customer-churn-inputs": "status-churn",
+        "leadership-drag-inputs": "status-leadership",
+        "workforce-productivity-inputs": "status-workforce",
+        "productivity-deep-dive-inputs": "status-deepdive"
+      };
+
+      Object.entries(map).forEach(([key, spanId]) => {
+        const data = localStorage.getItem(key);
+        document.getElementById(spanId).textContent = data ? "✅" : "❌";
+      });
+    }
+
     document.getElementById("generate-risk-btn").addEventListener("click", runORS);
 
     document.getElementById("reset-btn").addEventListener("click", () => {
@@ -176,20 +206,22 @@
       location.reload();
     });
 
-    // On load: show module completion state
     window.addEventListener("load", () => {
       const statusBox = document.getElementById("riskSummary");
-      const count = [
+      const requiredKeys = [
         "payroll-waste-inputs",
         "customer-churn-inputs",
         "leadership-drag-inputs",
         "workforce-productivity-inputs",
         "productivity-deep-dive-inputs"
-      ].filter(key => localStorage.getItem(key)).length;
+      ];
+      const count = requiredKeys.filter(key => localStorage.getItem(key)).length;
 
       statusBox.innerText = count === 5
         ? "✅ All modules complete. Ready to calculate."
         : `❌ ${count}/5 modules complete.`;
+
+      updateDetailedModuleStatus();
     });
   </script>
 </body>
