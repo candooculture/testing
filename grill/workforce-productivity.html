@@ -122,67 +122,56 @@
     </div>
 
     <form id="productivity-form">
-        <label for=" type=" number" name="total_revenue" required">Industry:
-            <select name="industry" id="industry" required>
-                <option value="">Select your industry</option>
-                <option value="Agriculture / Farming">Agriculture / Farming</option>
-                <option value="Construction">Construction</option>
-                <option value="Education & Training">Education & Training</option>
-                <option value="Finance & Insurance">Finance & Insurance</option>
-                <option value="Government / Public Sector">Government / Public Sector</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="Hospitality">Hospitality</option>
-                <option value="Integrated Services">Integrated Services</option>
-                <option value="Logistics & Transport">Logistics & Transport</option>
-                <option value="Manufacturing">Manufacturing</option>
-                <option value="Media / Creative / Comms">Media / Creative / Comms</option>
-                <option value="Non-Profit">Non-Profit</option>
-                <option value="Professional Services">Professional Services</option>
-                <option value="Real Estate & Property">Real Estate & Property</option>
-                <option value="Retail">Retail</option>
-                <option value="Technology / SaaS">Technology / SaaS</option>
-                <option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
-            </select>
-        </label>
+  <label for="industry">Industry:</label>
+  <select name="industry" id="industry" required>
+    <option value="">Select your industry</option>
+    <option value="Agriculture / Farming">Agriculture / Farming</option>
+    <option value="Construction">Construction</option>
+    <option value="Education & Training">Education & Training</option>
+    <option value="Finance & Insurance">Finance & Insurance</option>
+    <option value="Government / Public Sector">Government / Public Sector</option>
+    <option value="Healthcare">Healthcare</option>
+    <option value="Hospitality">Hospitality</option>
+    <option value="Integrated Services">Integrated Services</option>
+    <option value="Logistics & Transport">Logistics & Transport</option>
+    <option value="Manufacturing">Manufacturing</option>
+    <option value="Media / Creative / Comms">Media / Creative / Comms</option>
+    <option value="Non-Profit">Non-Profit</option>
+    <option value="Professional Services">Professional Services</option>
+    <option value="Real Estate & Property">Real Estate & Property</option>
+    <option value="Retail">Retail</option>
+    <option value="Technology / SaaS">Technology / SaaS</option>
+    <option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
+  </select>
 
-        <label>Total Annual Revenue (AUD):</label>
-        <input type="number" name="total_revenue" required id="total_revenue">
-        </label>
+  <label for="total_revenue">Total Annual Revenue (AUD):</label>
+  <input type="number" name="total_revenue" id="total_revenue" required>
 
-        <label for=" type=" number" name="payroll_cost" required">Total Payroll Cost (AUD):</label>
-        <input type="number" name="payroll_cost" required id="payroll_cost">
-        </label>
+  <label for="payroll_cost">Total Payroll Cost (AUD):</label>
+  <input type="number" name="payroll_cost" id="payroll_cost" required>
 
-        <label for=" type=" number" name="total_employees" required">Number of Employees:</label>
-        <input type="number" name="total_employees" required id="total_employees">
-        </label>
+  <label for="total_employees">Number of Employees:</label>
+  <input type="number" name="total_employees" id="total_employees" required>
 
-        <label for=" type=" number" name="productive_hours" required">Total Productive Hours Worked (All Staff, This
-            Month):</label>
-        <input type="number" name="productive_hours" required id="productive_hours">
-        <small>e.g., 15 staff × 140 hrs = 2,100 hrs</small>
-        </label>
+  <label for="productive_hours">Total Productive Hours Worked (All Staff, This Month):</label>
+  <input type="number" name="productive_hours" id="productive_hours" required>
+  <small>e.g., 15 staff × 140 hrs = 2,100 hrs</small>
 
-        <label for=" type=" number" name="target_hours_per_employee" id="target_hours" required">Target Hours per
-            Employee:</label>
-        <input type="number" name="target_hours_per_employee" id="target_hours" required id="target_hours_per_employee">
-        <span class="benchmark-label" id="label-hours">(Using industry average)</span>
-        </label>
+  <label for="target_hours">Target Hours per Employee:</label>
+  <input type="number" name="target_hours_per_employee" id="target_hours" required>
+  <span class="benchmark-label" id="label-hours">(Using industry average)</span>
 
-        <label for=" type=" number" name="absenteeism_days" id="absenteeism_days" required">Total Days Lost to
-            Absenteeism (All Staff, Per Month):</label>
-        <input type="number" name="absenteeism_days" id="absenteeism_days" required>
-        <span class="benchmark-label" id="label-absent">(Using industry average)</span>
-        <small>e.g., if 5 employees took 1 sick day each, enter 5</small>
-        </label>
+  <label for="absenteeism_days">Total Days Lost to Absenteeism (All Staff, Per Month):</label>
+  <input type="number" name="absenteeism_days" id="absenteeism_days" required>
+  <span class="benchmark-label" id="label-absent">(Using industry average)</span>
+  <small>e.g., if 5 employees took 1 sick day each, enter 5</small>
 
-        <label for=" type=" number" name="overtime_hours"">Total Overtime Hours Paid (This Month, All Staff):</label>
-<input type=" number" name="overtime_hours" id="overtime_hours">
-            <small>Include paid overtime only, not time in lieu</small>
-        </label>
+  <label for="overtime_hours">Total Overtime Hours Paid (This Month, All Staff):</label>
+  <input type="number" name="overtime_hours" id="overtime_hours">
+  <small>Include paid overtime only, not time in lieu</small>
 
-        <button type="submit">Calculate</button>
-    </form>
+  <button type="submit">Calculate</button>
+</form>
 
     <p style="font-size:14px; color:#666; margin-top:-10px; margin-bottom:20px;">
         The following results reflect potential performance insights, based on typical industry benchmarks and Candoo’s
