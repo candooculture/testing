@@ -11,7 +11,7 @@ from calculator import (
     calculate_productivity_metrics,
     calculate_productivity_metrics_dive,
 )
-from operational_risk import run_operational_risk
+from operational_risk import run_operational_risk, RiskInput
 import pandas as pd
 
 app = FastAPI()
@@ -30,13 +30,11 @@ app.include_router(admin_router)
 
 # === Input Models ===
 
-
 class EfficiencyAutoInput(BaseModel):
     industry: str
     total_employees: int = Field(..., gt=0)
     avg_salary: float = Field(..., gt=0)
     improvement_rate: float = Field(..., gt=0, lt=100)
-
 
 class ChurnCalculatorRequest(BaseModel):
     num_customers: int = Field(..., gt=0)
@@ -46,20 +44,17 @@ class ChurnCalculatorRequest(BaseModel):
     desired_improvement: float = Field(..., gt=0, lt=100)
     industry: str
 
-
 class WorkforceProductivityRequest(BaseModel):
     industry: str
     total_employees: int = Field(..., gt=0)
     avg_salary: float = Field(..., gt=0)
     productivity_loss: float = Field(..., gt=0, lt=100)
 
-
 class LeadershipDragCalculatorRequest(BaseModel):
     industry: str
     total_employees: int = Field(..., gt=0)
     avg_salary: float = Field(..., gt=0)
     leadership_drag: float = Field(..., gt=0, lt=100)
-
 
 class WorkforceProductivityFullRequest(BaseModel):
     industry: str
@@ -71,7 +66,6 @@ class WorkforceProductivityFullRequest(BaseModel):
     absenteeism_days: float = Field(..., ge=0)
     overtime_hours: float = Field(..., ge=0)
 
-
 class ProductivityDeepDiveInput(BaseModel):
     industry: str
     total_employees: int = Field(..., gt=0)
@@ -81,14 +75,12 @@ class ProductivityDeepDiveInput(BaseModel):
 
 # === Calculator Endpoints ===
 
-
 @app.post("/run-payroll-waste")
 def run_payroll_waste_calculator(data: EfficiencyAutoInput):
     try:
         return calculate_efficiency_loss_and_roi(data)
     except Exception as e:
         return {"error": str(e)}
-
 
 @app.post("/run-churn-calculator")
 def run_churn_calculator(data: ChurnCalculatorRequest):
@@ -97,14 +89,12 @@ def run_churn_calculator(data: ChurnCalculatorRequest):
     except Exception as e:
         return {"error": str(e)}
 
-
 @app.post("/run-leadership-drag-calculator")
 def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
     try:
         return calculate_leadership_drag_loss(data)
     except Exception as e:
         return {"error": str(e)}
-
 
 @app.post("/run-workforce-productivity")
 def run_workforce_productivity(data: WorkforceProductivityFullRequest):
@@ -114,7 +104,6 @@ def run_workforce_productivity(data: WorkforceProductivityFullRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
 @app.post("/run-productivity-dive")
 def run_productivity_deep_dive(data: ProductivityDeepDiveInput):
     try:
@@ -122,14 +111,12 @@ def run_productivity_deep_dive(data: ProductivityDeepDiveInput):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 @app.post("/run-operational-risk")
-def run_operational_risk_calculator():
+def run_operational_risk_calculator(data: RiskInput):
     try:
-        return run_operational_risk()
+        return run_operational_risk(data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/get-industry-benchmarks")
 def get_industry_benchmarks(industry: str):
@@ -146,12 +133,10 @@ def get_industry_benchmarks(industry: str):
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
-
 @app.get("/get-all-industries")
 def get_all_industries():
     try:
-        df = pd.read_csv(
-            "benchmarks/final_cleaned_benchmarks_with_certainty.csv")
+        df = pd.read_csv("benchmarks/final_cleaned_benchmarks_with_certainty.csv")
         industries = sorted(df["Industry"].dropna().unique().tolist())
         return {"industries": industries}
     except Exception as e:
