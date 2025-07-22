@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-  <title>Operational Risk</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <title>Operational Risk Score</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     body {
       font-family: 'DM Sans', sans-serif;
       background-color: #ffffff;
-      color: #333333;
+      color: #333;
       padding: 40px 20px;
       max-width: 600px;
       margin: auto;
@@ -31,106 +30,68 @@
       font-size: 14px;
     }
 
-    ul {
-      list-style: none;
-      padding-left: 0;
-    }
-
-    li {
-      margin: 8px 0;
-      font-size: 16px;
-    }
-
-    .complete {
-      color: green;
-    }
-
-    .missing {
-      color: #c00;
-    }
-
-    .result-box,
     .status-box {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px dashed #ccc;
-      border-radius: 8px;
       background: #f9f9f9;
+      border: 1px dashed #ccc;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
     }
 
     .result-box {
-      display: none;
-      white-space: pre-wrap;
-    }
-
-    .cta {
-      margin-top: 30px;
-      display: none;
-      text-align: center;
-    }
-
-    .cta button {
       display: block;
-      margin: 10px auto;
-      padding: 10px 18px;
-      border-radius: 6px;
-      border: none;
-      background: #48f191;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
+      white-space: pre-wrap;
+      background: #fefefe;
+      border-left: 4px solid #48f191;
+      padding: 24px;
+      border-radius: 10px;
+      font-size: 15px;
+      margin-top: 20px;
     }
 
-    .run-btn {
+    button {
+      display: block;
       width: 100%;
+      margin-top: 20px;
       padding: 12px;
-      margin-top: 10px;
-      border: none;
+      font-size: 16px;
       border-radius: 6px;
-      background: #48f191;
-      color: #000;
       font-weight: bold;
       cursor: pointer;
-      font-size: 16px;
+      font-family: inherit;
+      transition: background-color 0.2s ease-in-out;
     }
 
-    .reset-btn {
+    #ors-button {
+      background: #48f191;
+      color: #000;
+      border: none;
+    }
+
+    #ors-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    #reset-all {
       background: #eee;
       color: #333;
       border: 1px solid #bbb;
-      font-size: 14px;
-      margin-top: 20px;
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
     }
   </style>
 </head>
-
 <body>
   <h1>Operational Risk Score</h1>
 
   <div class="info-banner">
     <strong>This tool combines inputs from other modules to reveal your operational risk profile.</strong><br>
-    Make sure you've run the other modules first — we’ll analyse the data you’ve entered so far.
+    Make sure you've run the other modules first — we’ll analyse the data you've entered so far.
   </div>
 
-  <ul id="moduleStatusList"></ul>
-  <div id="statusBox" class="status-box">Checking modules...</div>
-
-  <button id="runORSBtn" class="run-btn" style="display:none;">🚦 Generate Operational Risk Score</button>
-
-  <pre id="orsResult" class="result-box"></pre>
-
-  <div id="cta-bottom" class="cta">
-    <h3>📉 See the full picture — and where you’re exposed.</h3>
-    <button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
-    <button
-      onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand My Operational Risk Score'">📧
-      Prefer Email? Let’s Help You Understand What to Do Next</button>
-  </div>
-
-  <button class="reset-btn" onclick="resetAll()">🔄 Reset All Module Results</button>
+  <div id="ors-status" class="status-box">Checking modules...</div>
+  <button id="ors-button" disabled>🚀 Generate Operational Risk Score</button>
+  <pre id="ors-result" class="result-box">⏳ Waiting to run analysis...</pre>
+  <button id="reset-all">🔄 Reset All Module Results</button>
 
   <script>
     (() => {
@@ -142,60 +103,58 @@
         "productivity-deep-dive-inputs"
       ];
 
-      const API_BASE = "https://testing-gh0h.onrender.com";
+      const API_URL = "https://testing-gh0h.onrender.com/run-operational-risk";
+      const resultBox = document.getElementById("ors-result");
+      const statusBox = document.getElementById("ors-status");
+      const button = document.getElementById("ors-button");
+      const resetBtn = document.getElementById("reset-all");
 
-      const statusBox = document.getElementById("statusBox");
-      const resultBox = document.getElementById("orsResult");
-      const cta = document.getElementById("cta-bottom");
-      const runBtn = document.getElementById("runORSBtn");
-      const statusList = document.getElementById("moduleStatusList");
-
-      function read(key) {
-        try {
-          return JSON.parse(localStorage.getItem(key)) || null;
-        } catch {
-          return null;
-        }
-      }
-
-      function updateModuleStatus() {
-        let allComplete = true;
-        statusList.innerHTML = "";
-
-        MODULE_KEYS.forEach(key => {
-          const data = read(key);
-          const li = document.createElement("li");
-          if (data) {
-            li.innerHTML = `✅ ${key.replace(/-inputs$/, '').replace(/-/g, ' ')}`;
-            li.className = "complete";
-          } else {
-            li.innerHTML = `❌ ${key.replace(/-inputs$/, '').replace(/-/g, ' ')}`;
-            li.className = "missing";
-            allComplete = false;
-          }
-          statusList.appendChild(li);
+      function getModuleStatus() {
+        return MODULE_KEYS.map(key => {
+          const data = localStorage.getItem(key);
+          return {
+            key,
+            complete: !!data && data !== "undefined",
+            data: data ? JSON.parse(data) : null
+          };
         });
-
-        if (allComplete) {
-          statusBox.innerText = "✅ All 5 modules complete. Ready to generate risk score.";
-          runBtn.style.display = "block";
-        } else {
-          statusBox.innerText = "⚠️ Some modules are incomplete. Complete all before generating risk score.";
-          runBtn.style.display = "none";
-        }
       }
 
-      runBtn.addEventListener("click", async () => {
-        const data = {};
-        MODULE_KEYS.forEach(key => data[key] = read(key));
-        resultBox.style.display = "none";
-        cta.style.display = "none";
+      function renderStatus(modules) {
+        const allComplete = modules.every(m => m.complete);
+        let html = "<strong>Module Status:</strong><br><ul style='padding-left: 1em'>";
+        modules.forEach(m => {
+          const label = m.key.replace("-inputs", "").replace(/-/g, " ");
+          html += `<li style="color:${m.complete ? 'green' : 'red'}">• ${label} — ${m.complete ? '✅ Complete' : '❌ Pending'}</li>`;
+        });
+        html += "</ul>";
+        html += `<p><strong>${allComplete ? "✅ All modules complete." : "⚠️ Please complete all 5 modules before running."}</strong></p>`;
+
+        statusBox.innerHTML = html;
+        button.disabled = !allComplete;
+        button.style.opacity = allComplete ? "1" : "0.6";
+        return allComplete;
+      }
+
+      function flattenPayload(modules) {
+        return modules.reduce((acc, mod) => {
+          if (mod.complete && mod.data) {
+            Object.assign(acc, mod.data);
+          }
+          return acc;
+        }, {});
+      }
+
+      async function generateORS() {
+        const modules = getModuleStatus();
+        const payload = flattenPayload(modules);
+        resultBox.innerText = "⏳ Generating Operational Risk Score...";
 
         try {
-          const res = await fetch(`${API_BASE}/run-operational-risk`, {
+          const res = await fetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
           });
 
           const result = await res.json();
@@ -205,29 +164,30 @@
             Object.entries(result.formatted_labels).forEach(([label, value]) => {
               output += `- ${label}: ${value}\n`;
             });
-            output += `\n🧠 Straight Talk\n${result.straight_talk}`;
+            output += `\n🧠 Straight Talk\n${result.straight_talk || "No commentary provided."}`;
             resultBox.innerText = output;
-            resultBox.style.display = "block";
-            cta.style.display = "block";
           } else {
-            resultBox.innerText = "Something went wrong. (No formatted_labels)";
-            resultBox.style.display = "block";
+            resultBox.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
           }
         } catch (err) {
-          console.error("[ORS] API error", err);
-          resultBox.innerText = "Something went wrong. (API error)";
-          resultBox.style.display = "block";
+          console.error("[ORS Error]", err);
+          resultBox.innerText = "❌ Error generating score. Check console for details.";
         }
+      }
+
+      // Hook up generate button
+      button.addEventListener("click", generateORS);
+
+      // Hook up reset button
+      resetBtn.addEventListener("click", () => {
+        MODULE_KEYS.forEach(k => localStorage.removeItem(k));
+        location.reload();
       });
 
-      window.resetAll = () => {
-        MODULE_KEYS.forEach(key => localStorage.removeItem(key));
-        window.location.reload();
-      };
-
-      updateModuleStatus();
+      // Init
+      const currentModules = getModuleStatus();
+      renderStatus(currentModules);
     })();
   </script>
 </body>
-
 </html>
