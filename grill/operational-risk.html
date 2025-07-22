@@ -61,10 +61,16 @@
       font-size: 16px;
       color: #333;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      display: none;
+    }
+
+    .status-box {
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 10px;
     }
   </style>
 </head>
-
 <body>
   <h1>Operational Risk Score</h1>
 
@@ -73,73 +79,77 @@
     Once you've completed Payroll, Churn, Leadership, Workforce, and Deep Dive, hit the button below to generate your score.
   </div>
 
+  <div id="riskSummary" class="status-box">⏳ Waiting for modules to complete...</div>
+
   <button id="generate-risk-btn">🚀 Generate Operational Risk Score</button>
-  <pre id="ors-result">⏳ Waiting to run analysis...</pre>
+  <pre id="op-risk-result">⏳ Waiting to run analysis...</pre>
   <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
-    document.getElementById("generate-risk-btn").addEventListener("click", async () => {
-      const resultBox = document.getElementById("ors-result");
-      resultBox.innerText = "⏳ Generating Operational Risk Score...";
+    async function runORS() {
+      const STATUS_BOX = document.getElementById("riskSummary");
+      const RESULT_BOX = document.getElementById("op-risk-result");
+      const API_BASE = "https://testing-gh0h.onrender.com";
+
+      const keys = {
+        payroll: "payroll-waste-inputs",
+        churn: "customer-churn-inputs",
+        leadership: "leadership-drag-inputs",
+        productivity: "workforce-productivity-inputs",
+        dive: "productivity-deep-dive-inputs"
+      };
+
+      const payroll = JSON.parse(localStorage.getItem(keys.payroll) || "null");
+      const churn = JSON.parse(localStorage.getItem(keys.churn) || "null");
+      const leadership = JSON.parse(localStorage.getItem(keys.leadership) || "null");
+      const productivity = JSON.parse(localStorage.getItem(keys.productivity) || "null");
+      const dive = JSON.parse(localStorage.getItem(keys.dive) || "null");
+
+      if (!payroll || !churn || !leadership || !productivity || !dive) {
+        STATUS_BOX.innerText = "❌ Not all modules complete.";
+        RESULT_BOX.innerText = "You need to finish all 5 modules first.";
+        RESULT_BOX.style.display = "block";
+        return;
+      }
+
+      STATUS_BOX.innerText = "✅ 5 of 5 modules complete. Calculating...";
+      RESULT_BOX.style.display = "block";
+      RESULT_BOX.innerText = "⏳ Generating Operational Risk Score...";
+
+      const payload = {
+        ...payroll,
+        ...churn,
+        ...leadership,
+        ...productivity,
+        ...dive
+      };
 
       try {
-        const payroll = JSON.parse(localStorage.getItem("payroll-waste-inputs") || "{}");
-        const churn = JSON.parse(localStorage.getItem("customer-churn-inputs") || "{}");
-        const leadership = JSON.parse(localStorage.getItem("leadership-drag-inputs") || "{}");
-        const workforce = JSON.parse(localStorage.getItem("workforce-productivity-inputs") || "{}");
-        const deepdive = JSON.parse(localStorage.getItem("productivity-deep-dive-inputs") || "{}");
-
-        const payload = {
-          industry: payroll.industry || "",
-          total_employees: payroll.total_employees || workforce.total_employees || 0,
-          avg_salary: payroll.avg_salary || deepdive.avg_salary || 0,
-          improvement_rate: payroll.improvement_rate || 0,
-
-          churn_rate: churn.churn_rate || 0,
-          desired_improvement: churn.desired_improvement || 0,
-          cac: churn.cac || 0,
-          avg_revenue: churn.avg_revenue || 0,
-          num_customers: churn.num_customers || 0,
-
-          leadership_drag: leadership.leadership_drag || 0,
-
-          total_revenue: workforce.total_revenue || 0,
-          payroll_cost: workforce.payroll_cost || 0,
-          productive_hours: workforce.productive_hours || 0,
-          target_hours_per_employee: workforce.target_hours_per_employee || 0,
-          absenteeism_days: workforce.absenteeism_days || deepdive.absenteeism_days || 0,
-          overtime_hours: workforce.overtime_hours || 0,
-
-          avg_hours: deepdive.avg_hours || 0
-        };
-
-        console.log("[ORS FINAL PAYLOAD]", payload);
-
-        const res = await fetch("https://testing-gh0h.onrender.com/run-operational-risk", {
+        const res = await fetch(`${API_BASE}/run-operational-risk`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
 
         const result = await res.json();
-        console.log("[ORS RESULT]", result);
 
         if (result.formatted_labels) {
-          let output = `📉 Operational Risk Summary:\n\n`;
-          for (const [key, value] of Object.entries(result.formatted_labels)) {
-            output += `• ${key}: ${value}\n`;
-          }
-          output += `\n🧠 Straight Talk\n${result.straight_talk || "No commentary provided."}`;
-          resultBox.innerText = output;
+          let output = "📊 Operational Risk Profile:\n\n";
+          Object.entries(result.formatted_labels).forEach(([label, value]) => {
+            output += `- ${label}: ${value}\n`;
+          });
+          output += `\n🧠 Straight Talk\n${result.straight_talk}`;
+          RESULT_BOX.innerText = output;
         } else {
-          resultBox.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
+          RESULT_BOX.innerText = "Something went wrong. (No formatted_labels)";
         }
-
       } catch (err) {
-        console.error("[ORS ERROR]", err);
-        resultBox.innerText = "❌ Failed to run analysis. Try again.";
+        console.error(`[ORS] API error:`, err);
+        RESULT_BOX.innerText = "Something went wrong. (API error)";
       }
-    });
+    }
+
+    document.getElementById("generate-risk-btn").addEventListener("click", runORS);
 
     document.getElementById("reset-btn").addEventListener("click", () => {
       const keys = [
