@@ -207,22 +207,32 @@
     });
 
     window.addEventListener("load", () => {
-      const statusBox = document.getElementById("riskSummary");
-      const requiredKeys = [
-        "payroll-waste-inputs",
-        "customer-churn-inputs",
-        "leadership-drag-inputs",
-        "workforce-productivity-inputs",
-        "productivity-deep-dive-inputs"
-      ];
-      const count = requiredKeys.filter(key => localStorage.getItem(key)).length;
+  const statusBox = document.getElementById("riskSummary");
 
-      statusBox.innerText = count === 5
-        ? "✅ All modules complete. Ready to calculate."
-        : `❌ ${count}/5 modules complete.`;
+  const requiredKeys = [
+    "payroll-waste-inputs",
+    "customer-churn-inputs",
+    "leadership-drag-inputs",
+    "workforce-productivity-inputs",
+    "productivity-deep-dive-inputs"
+  ];
 
-      updateDetailedModuleStatus();
-    });
+  const count = requiredKeys.filter(key => {
+    const raw = localStorage.getItem(key);
+    try {
+      const data = JSON.parse(raw);
+      return data && typeof data === "object" && Object.keys(data).length > 0;
+    } catch {
+      return false;
+    }
+  }).length;
+
+  statusBox.innerText = count === 5
+    ? "✅ All modules complete. Ready to calculate."
+    : `❌ ${count}/5 modules complete.`;
+
+  updateDetailedModuleStatus();  // ✅ update the ✅/❌ icons per module
+});
   </script>
 </body>
 </html>
