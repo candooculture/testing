@@ -236,6 +236,11 @@
     updateDetailedModuleStatus();
     updateOverallStatusBox();
   });
+  
+  window.addEventListener("focus", () => {
+  updateDetailedModuleStatus();
+  updateOverallStatusBox();
+});
 })();
 </script>
 </body>
