@@ -140,7 +140,7 @@
           : `❌ ${count}/5 modules complete.`;
       }
 
-      function runORS() {
+      async function runORS() {
         updateDetailedModuleStatus();
         updateOverallStatusBox();
 
@@ -225,7 +225,6 @@
         location.reload();
       });
 
-      // Listen for live updates from all modules
       window.addEventListener("storage", (event) => {
         if (Object.values(MODULE_KEYS).includes(event.key)) {
           updateDetailedModuleStatus();
@@ -233,7 +232,6 @@
         }
       });
 
-      // Check status when page loads or focus is triggered
       window.addEventListener("load", () => {
         updateDetailedModuleStatus();
         updateOverallStatusBox();
@@ -243,12 +241,11 @@
         updateDetailedModuleStatus();
         updateOverallStatusBox();
       });
-
+      
       window.addEventListener("module-status-updated", () => {
         updateDetailedModuleStatus();
         updateOverallStatusBox();
       });
-
     })();
   </script>
 </body>
