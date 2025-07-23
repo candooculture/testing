@@ -243,6 +243,7 @@
         Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]); });
         data.last_updated = Date.now();
         localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
+        window.dispatchEvent(new Event("storage"));
 
         try {
           const response = await fetch(`${API_BASE}/run-churn-calculator`, {
