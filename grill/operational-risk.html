@@ -240,7 +240,12 @@
   window.addEventListener("focus", () => {
   updateDetailedModuleStatus();
   updateOverallStatusBox();
-});
+  });
+  
+  window.addEventListener("module-status-updated", () => {
+  updateDetailedModuleStatus();
+  updateOverallStatusBox();
+  });
 })();
 </script>
 </body>
