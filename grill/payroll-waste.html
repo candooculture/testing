@@ -201,6 +201,7 @@
         data.last_updated = Date.now();
         localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
         window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new CustomEvent("module-status-updated"));
 
         try {
           const res = await fetch(`${API_BASE}/run-payroll-waste`, {
