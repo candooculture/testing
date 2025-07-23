@@ -166,7 +166,6 @@
     </button>
   </div>
 
-  <script src="clarity-core.js"></script>
   <script>
     (() => {
       const MODULE = "customer-churn";
@@ -223,17 +222,6 @@
         fetchBenchmarks(saved);
       }
 
-      let lastIndustry = saved || "";
-      setInterval(() => {
-        const current = localStorage.getItem("industry");
-        if (current && current !== lastIndustry) {
-          lastIndustry = current;
-          industrySelect.value = current;
-          fetchBenchmarks(current);
-          console.log(`[${MODULE}] Industry synced: ${current}`);
-        }
-      }, 1000);
-
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         resultBox.style.display = "none";
@@ -244,6 +232,7 @@
         data.last_updated = Date.now();
         localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
         window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new CustomEvent("module-status-updated"));
 
         try {
           const response = await fetch(`${API_BASE}/run-churn-calculator`, {
@@ -258,17 +247,28 @@
             const totalLoss = result.revenue_loss + result.replacement_cost;
             const recoveryOpportunity = (result.potential_gain / totalLoss) * 100;
 
-            let output = `💸 Total Annual Loss from Customer Churn: AUD $${totalLoss.toLocaleString()}\n`;
-            output += ` • Lost Revenue from Churned Customers: AUD $${result.revenue_loss.toLocaleString()}\n`;
-            output += ` • Replacement Cost (CAC): AUD $${result.replacement_cost.toLocaleString()}\n\n`;
-            output += `✅ Based on Your Inputs\n`;
-            output += `🎯 Projected Annual Recovery from ${data.desired_improvement}% Reduction in Churn Rate: AUD $${result.potential_gain.toLocaleString()}\n\n`;
-            output += `📈 Opportunity\n`;
-            output += `💰 Estimated Recovery = ${recoveryOpportunity.toFixed(1)}% of Total Churn Loss (via ${data.desired_improvement}% churn reduction)\n\n`;
-            output += `📊 Benchmark Check — ${data.industry} Industry\n`;
-            output += `- ${result.benchmark_message}\n\n`;
-            output += `🧠 Straight Talk\n`;
-            output += `You're leaking AUD $${totalLoss.toLocaleString()} every year through churned customers and acquisition costs.\n`;
+            let output = `💸 Total Annual Loss from Customer Churn: AUD $${totalLoss.toLocaleString()}
+`;
+            output += ` • Lost Revenue from Churned Customers: AUD $${result.revenue_loss.toLocaleString()}
+`;
+            output += ` • Replacement Cost (CAC): AUD $${result.replacement_cost.toLocaleString()}
+\n`;
+            output += `✅ Based on Your Inputs
+`;
+            output += `🎯 Projected Annual Recovery from ${data.desired_improvement}% Reduction in Churn Rate: AUD $${result.potential_gain.toLocaleString()}
+\n`;
+            output += `📈 Opportunity
+`;
+            output += `💰 Estimated Recovery = ${recoveryOpportunity.toFixed(1)}% of Total Churn Loss (via ${data.desired_improvement}% churn reduction)
+\n`;
+            output += `📊 Benchmark Check — ${data.industry} Industry
+`;
+            output += `- ${result.benchmark_message}
+\n`;
+            output += `🧠 Straight Talk
+`;
+            output += `You're leaking AUD $${totalLoss.toLocaleString()} every year through churned customers and acquisition costs.
+`;
             output += `Even a small improvement delivers AUD $${result.potential_gain.toLocaleString()} straight to your bottom line.`;
 
             resultBox.innerText = output;
