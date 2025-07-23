@@ -15,14 +15,12 @@
       margin: auto;
       line-height: 1.6;
     }
-
     h1 {
       text-align: center;
       margin-bottom: 30px;
       font-size: 28px;
       font-weight: 700;
     }
-
     .info-banner {
       background-color: #f1f1f1;
       padding: 15px;
@@ -31,13 +29,11 @@
       font-size: 14px;
       color: #333;
     }
-
     label {
       font-weight: 600;
       margin-bottom: 8px;
       display: block;
     }
-
     input,
     select,
     button {
@@ -51,12 +47,10 @@
       font-family: inherit;
       box-sizing: border-box;
     }
-
     input.prefilled {
       background-color: #f9f9f9;
       color: #555;
     }
-
     .benchmark-label {
       font-size: 12px;
       color: #888;
@@ -64,14 +58,12 @@
       margin-bottom: 10px;
       display: none;
     }
-
     small {
       font-size: 12px;
       color: #666;
       margin-top: -10px;
       display: block;
     }
-
     button {
       background-color: #48f191;
       color: #333333;
@@ -81,11 +73,9 @@
       border-radius: 8px;
       transition: background-color 0.2s ease-in-out;
     }
-
     button:hover {
       background-color: #3bddad;
     }
-
     pre {
       background-color: #fefefe;
       border-left: 4px solid #48f191;
@@ -99,18 +89,15 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       display: none;
     }
-
     .cta {
       margin-top: 40px;
       text-align: center;
       display: none;
     }
-
     .cta h3 {
       margin-bottom: 20px;
       font-size: 20px;
     }
-
     .cta button {
       margin-top: 10px;
     }
@@ -169,23 +156,22 @@
   </form>
 
   <p style="font-size:14px; color:#666; margin-top:-10px; margin-bottom:20px;">
-    The following results reflect potential performance insights, based on typical industry benchmarks and Candoo’s
-    proprietary logic.
+    The following results reflect potential performance insights, based on typical industry benchmarks and Candoo’s proprietary logic.
   </p>
 
   <pre id="dive-result"></pre>
 
   <div class="cta" id="cta-bottom">
-    <h3>🎯 Discover where your team’s time is slipping — and what it’s costing you.</h3>
+    <h3>🌟 Discover where your team’s time is slipping — and what it’s costing you.</h3>
     <button onclick="window.location.href='https://calendly.com/candoo-culture/strategy'">📞 Book a Strategy Call</button>
     <button onclick="window.location.href='mailto:team@candooculture.com'">📧 Prefer Email? Let’s Help You Understand What to Do Next</button>
   </div>
 
+  <script src="clarity-core.js"></script>
   <script>
     (() => {
-      const MODULE = "productivity-deep-dive"; // ✅ FIXED KEY
+      const MODULE = "productivity-deep-dive";
       const API_BASE = "https://testing-gh0h.onrender.com";
-
       const form = document.getElementById("dive-form");
       const industrySelect = document.getElementById("industry");
       const hoursInput = document.getElementById("avg_hours");
@@ -227,11 +213,9 @@
       industrySelect.addEventListener("change", () => {
         const selected = industrySelect.value;
         localStorage.setItem("industry", selected);
-
         document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
           if (dropdown !== industrySelect) dropdown.value = selected;
         });
-
         fetchBenchmarks(selected);
         window.dispatchEvent(new CustomEvent("benchmark-autofill", {
           detail: { source: MODULE, industry: selected }
@@ -268,8 +252,9 @@
         const data = Object.fromEntries(new FormData(form).entries());
         Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]); });
         data.last_updated = Date.now();
-        localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data)); // ✅ saves to 'productivity-deep-dive-inputs'
+        localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
         window.dispatchEvent(new Event("storage"));
+        window.dispatchEvent(new CustomEvent("module-status-updated"));
 
         try {
           const res = await fetch(`${API_BASE}/run-productivity-dive`, {
