@@ -94,160 +94,162 @@
   <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
-(() => {
-  const MODULE_KEYS = {
-    payroll: "payroll-waste-inputs",
-    churn: "customer-churn-inputs",
-    leadership: "leadership-drag-inputs",
-    productivity: "workforce-productivity-inputs",
-    dive: "productivity-deep-dive-inputs"
-  };
+    (() => {
+      const MODULE_KEYS = {
+        payroll: "payroll-waste-inputs",
+        churn: "customer-churn-inputs",
+        leadership: "leadership-drag-inputs",
+        productivity: "workforce-productivity-inputs",
+        dive: "productivity-deep-dive-inputs"
+      };
 
-  function updateDetailedModuleStatus() {
-    const map = {
-      "payroll-waste-inputs": "status-payroll",
-      "customer-churn-inputs": "status-churn",
-      "leadership-drag-inputs": "status-leadership",
-      "workforce-productivity-inputs": "status-workforce",
-      "productivity-deep-dive-inputs": "status-deepdive"
-    };
+      function updateDetailedModuleStatus() {
+        const map = {
+          "payroll-waste-inputs": "status-payroll",
+          "customer-churn-inputs": "status-churn",
+          "leadership-drag-inputs": "status-leadership",
+          "workforce-productivity-inputs": "status-workforce",
+          "productivity-deep-dive-inputs": "status-deepdive"
+        };
 
-    Object.entries(map).forEach(([key, spanId]) => {
-      try {
-        const item = JSON.parse(localStorage.getItem(key));
-        const isValid = item && typeof item === "object" && Object.keys(item).length > 0;
-        document.getElementById(spanId).textContent = isValid ? "✅" : "❌";
-      } catch {
-        document.getElementById(spanId).textContent = "❌";
+        Object.entries(map).forEach(([key, spanId]) => {
+          try {
+            const item = JSON.parse(localStorage.getItem(key));
+            const isValid = item && typeof item === "object" && Object.keys(item).length > 0;
+            document.getElementById(spanId).textContent = isValid ? "✅" : "❌";
+          } catch {
+            document.getElementById(spanId).textContent = "❌";
+          }
+        });
       }
-    });
-  }
 
-  function updateOverallStatusBox() {
-    const statusBox = document.getElementById("riskSummary");
-    const keys = Object.values(MODULE_KEYS);
-    const count = keys.filter(key => {
-      try {
-        const data = JSON.parse(localStorage.getItem(key));
-        return data && typeof data === "object" && Object.keys(data).length > 0;
-      } catch {
-        return false;
+      function updateOverallStatusBox() {
+        const statusBox = document.getElementById("riskSummary");
+        const keys = Object.values(MODULE_KEYS);
+        const count = keys.filter(key => {
+          try {
+            const data = JSON.parse(localStorage.getItem(key));
+            return data && typeof data === "object" && Object.keys(data).length > 0;
+          } catch {
+            return false;
+          }
+        }).length;
+
+        statusBox.innerText = count === 5
+          ? "✅ All modules complete. Ready to calculate."
+          : `❌ ${count}/5 modules complete.`;
       }
-    }).length;
 
-    statusBox.innerText = count === 5
-      ? "✅ All modules complete. Ready to calculate."
-      : `❌ ${count}/5 modules complete.`;
-  }
+      function runORS() {
+        updateDetailedModuleStatus();
+        updateOverallStatusBox();
 
-  async function runORS() {
-    updateDetailedModuleStatus();
-    updateOverallStatusBox();
+        const STATUS_BOX = document.getElementById("riskSummary");
+        const RESULT_BOX = document.getElementById("op-risk-result");
+        const API_BASE = "https://testing-gh0h.onrender.com";
 
-    const STATUS_BOX = document.getElementById("riskSummary");
-    const RESULT_BOX = document.getElementById("op-risk-result");
-    const API_BASE = "https://testing-gh0h.onrender.com";
+        const payroll = JSON.parse(localStorage.getItem(MODULE_KEYS.payroll) || "null");
+        const churn = JSON.parse(localStorage.getItem(MODULE_KEYS.churn) || "null");
+        const leadership = JSON.parse(localStorage.getItem(MODULE_KEYS.leadership) || "null");
+        const productivity = JSON.parse(localStorage.getItem(MODULE_KEYS.productivity) || "null");
+        const dive = JSON.parse(localStorage.getItem(MODULE_KEYS.dive) || "null");
 
-    const payroll = JSON.parse(localStorage.getItem(MODULE_KEYS.payroll) || "null");
-    const churn = JSON.parse(localStorage.getItem(MODULE_KEYS.churn) || "null");
-    const leadership = JSON.parse(localStorage.getItem(MODULE_KEYS.leadership) || "null");
-    const productivity = JSON.parse(localStorage.getItem(MODULE_KEYS.productivity) || "null");
-    const dive = JSON.parse(localStorage.getItem(MODULE_KEYS.dive) || "null");
+        const modules = { payroll, churn, leadership, productivity, dive };
+        const completed = Object.entries(modules).filter(([_, val]) => val !== null);
 
-    const modules = { payroll, churn, leadership, productivity, dive };
-    const completed = Object.entries(modules).filter(([_, val]) => val !== null);
+        if (completed.length < 5) {
+          STATUS_BOX.innerText = `❌ ${completed.length}/5 modules complete.`;
+          RESULT_BOX.innerText = "Please complete all 5 modules before calculating.";
+          RESULT_BOX.style.display = "block";
+          return;
+        }
 
-    if (completed.length < 5) {
-      STATUS_BOX.innerText = `❌ ${completed.length}/5 modules complete.`;
-      RESULT_BOX.innerText = "Please complete all 5 modules before calculating.";
-      RESULT_BOX.style.display = "block";
-      return;
-    }
+        STATUS_BOX.innerText = "✅ 5 of 5 modules complete. Calculating...";
 
-    STATUS_BOX.innerText = "✅ 5 of 5 modules complete. Calculating...";
+        const payload = {
+          industry: payroll.industry || "",
+          total_employees: payroll.total_employees || productivity.total_employees || 0,
+          avg_salary: payroll.avg_salary || dive.avg_salary || 0,
+          improvement_rate: payroll.improvement_rate || 0,
 
-    const payload = {
-      industry: payroll.industry || "",
-      total_employees: payroll.total_employees || productivity.total_employees || 0,
-      avg_salary: payroll.avg_salary || dive.avg_salary || 0,
-      improvement_rate: payroll.improvement_rate || 0,
+          churn_rate: churn.churn_rate || 0,
+          desired_improvement: churn.desired_improvement || 0,
+          cac: churn.cac || 0,
+          avg_revenue: churn.avg_revenue || 0,
+          num_customers: churn.num_customers || 0,
 
-      churn_rate: churn.churn_rate || 0,
-      desired_improvement: churn.desired_improvement || 0,
-      cac: churn.cac || 0,
-      avg_revenue: churn.avg_revenue || 0,
-      num_customers: churn.num_customers || 0,
+          leadership_drag: leadership.leadership_drag || 0,
 
-      leadership_drag: leadership.leadership_drag || 0,
+          total_revenue: productivity.total_revenue || 0,
+          payroll_cost: productivity.payroll_cost || 0,
+          productive_hours: productivity.productive_hours || 0,
+          target_hours_per_employee: productivity.target_hours_per_employee || 0,
+          absenteeism_days: productivity.absenteeism_days || dive.absenteeism_days || 0,
+          overtime_hours: productivity.overtime_hours || 0,
 
-      total_revenue: productivity.total_revenue || 0,
-      payroll_cost: productivity.payroll_cost || 0,
-      productive_hours: productivity.productive_hours || 0,
-      target_hours_per_employee: productivity.target_hours_per_employee || 0,
-      absenteeism_days: productivity.absenteeism_days || dive.absenteeism_days || 0,
-      overtime_hours: productivity.overtime_hours || 0,
+          avg_hours: dive.avg_hours || 0
+        };
 
-      avg_hours: dive.avg_hours || 0
-    };
+        try {
+          const res = await fetch(`${API_BASE}/run-operational-risk`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
 
-    try {
-      const res = await fetch(`${API_BASE}/run-operational-risk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+          const result = await res.json();
+
+          if (result.formatted_labels) {
+            let output = `📉 Operational Risk Summary:\n\n`;
+            for (const [key, value] of Object.entries(result.formatted_labels)) {
+              output += `• ${key}: ${value}\n`;
+            }
+            output += `\n🧠 Straight Talk\n${result.straight_talk || "No commentary provided."}`;
+            RESULT_BOX.innerText = output;
+          } else {
+            RESULT_BOX.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
+          }
+        } catch (err) {
+          console.error("[ORS ERROR]", err);
+          RESULT_BOX.innerText = "❌ Failed to run analysis. Try again.";
+        }
+
+        RESULT_BOX.style.display = "block";
+      }
+
+      document.getElementById("generate-risk-btn").addEventListener("click", runORS);
+
+      document.getElementById("reset-btn").addEventListener("click", () => {
+        const keys = Object.values(MODULE_KEYS).concat("industry");
+        keys.forEach(k => localStorage.removeItem(k));
+        location.reload();
       });
 
-      const result = await res.json();
-
-      if (result.formatted_labels) {
-        let output = `📉 Operational Risk Summary:\n\n`;
-        for (const [key, value] of Object.entries(result.formatted_labels)) {
-          output += `• ${key}: ${value}\n`;
+      // Listen for live updates from all modules
+      window.addEventListener("storage", (event) => {
+        if (Object.values(MODULE_KEYS).includes(event.key)) {
+          updateDetailedModuleStatus();
+          updateOverallStatusBox();
         }
-        output += `\n🧠 Straight Talk\n${result.straight_talk || "No commentary provided."}`;
-        RESULT_BOX.innerText = output;
-      } else {
-        RESULT_BOX.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
-      }
-    } catch (err) {
-      console.error("[ORS ERROR]", err);
-      RESULT_BOX.innerText = "❌ Failed to run analysis. Try again.";
-    }
+      });
 
-    RESULT_BOX.style.display = "block";
-  }
+      // Check status when page loads or focus is triggered
+      window.addEventListener("load", () => {
+        updateDetailedModuleStatus();
+        updateOverallStatusBox();
+      });
+      
+      window.addEventListener("focus", () => {
+        updateDetailedModuleStatus();
+        updateOverallStatusBox();
+      });
 
-  document.getElementById("generate-risk-btn").addEventListener("click", runORS);
+      window.addEventListener("module-status-updated", () => {
+        updateDetailedModuleStatus();
+        updateOverallStatusBox();
+      });
 
-  document.getElementById("reset-btn").addEventListener("click", () => {
-    const keys = Object.values(MODULE_KEYS).concat("industry");
-    keys.forEach(k => localStorage.removeItem(k));
-    location.reload();
-  });
-
-  window.addEventListener("storage", (event) => {
-    if (Object.values(MODULE_KEYS).includes(event.key)) {
-      updateDetailedModuleStatus();
-      updateOverallStatusBox();
-    }
-  });
-
-  window.addEventListener("load", () => {
-    updateDetailedModuleStatus();
-    updateOverallStatusBox();
-  });
-
-  window.addEventListener("focus", () => {
-    updateDetailedModuleStatus();
-    updateOverallStatusBox();
-  });
-
-  window.addEventListener("module-status-updated", () => {
-    updateDetailedModuleStatus();
-    updateOverallStatusBox();
-  });
-})();
-</script>
+    })();
+  </script>
 </body>
 </html>
-
