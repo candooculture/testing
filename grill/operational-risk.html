@@ -94,6 +94,14 @@
   <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
+    const MODULE_KEYS = {
+      payroll: "payroll-waste-inputs",
+      churn: "customer-churn-inputs",
+      leadership: "leadership-drag-inputs",
+      productivity: "workforce-productivity-inputs",
+      dive: "productivity-deep-dive-inputs"
+    };
+
     function updateDetailedModuleStatus() {
       const map = {
         "payroll-waste-inputs": "status-payroll",
@@ -117,18 +125,10 @@
     function updateOverallStatusBox() {
       const statusBox = document.getElementById("riskSummary");
 
-      const requiredKeys = [
-        "payroll-waste-inputs",
-        "customer-churn-inputs",
-        "leadership-drag-inputs",
-        "workforce-productivity-inputs",
-        "productivity-deep-dive-inputs"
-      ];
-
-      const count = requiredKeys.filter(key => {
-        const raw = localStorage.getItem(key);
+      const keys = Object.values(MODULE_KEYS);
+      const count = keys.filter(key => {
         try {
-          const data = JSON.parse(raw);
+          const data = JSON.parse(localStorage.getItem(key));
           return data && typeof data === "object" && Object.keys(data).length > 0;
         } catch {
           return false;
@@ -148,19 +148,11 @@
       const RESULT_BOX = document.getElementById("op-risk-result");
       const API_BASE = "https://testing-gh0h.onrender.com";
 
-      const keys = {
-        payroll: "payroll-waste-inputs",
-        churn: "customer-churn-inputs",
-        leadership: "leadership-drag-inputs",
-        productivity: "workforce-productivity-inputs",
-        dive: "productivity-deep-dive-inputs"
-      };
-
-      const payroll = JSON.parse(localStorage.getItem(keys.payroll) || "null");
-      const churn = JSON.parse(localStorage.getItem(keys.churn) || "null");
-      const leadership = JSON.parse(localStorage.getItem(keys.leadership) || "null");
-      const productivity = JSON.parse(localStorage.getItem(keys.productivity) || "null");
-      const dive = JSON.parse(localStorage.getItem(keys.dive) || "null");
+      const payroll = JSON.parse(localStorage.getItem(MODULE_KEYS.payroll) || "null");
+      const churn = JSON.parse(localStorage.getItem(MODULE_KEYS.churn) || "null");
+      const leadership = JSON.parse(localStorage.getItem(MODULE_KEYS.leadership) || "null");
+      const productivity = JSON.parse(localStorage.getItem(MODULE_KEYS.productivity) || "null");
+      const dive = JSON.parse(localStorage.getItem(MODULE_KEYS.dive) || "null");
 
       const modules = { payroll, churn, leadership, productivity, dive };
       const completed = Object.entries(modules).filter(([_, val]) => val !== null);
@@ -228,51 +220,22 @@
     document.getElementById("generate-risk-btn").addEventListener("click", runORS);
 
     document.getElementById("reset-btn").addEventListener("click", () => {
-      const keys = [
-        "payroll-waste-inputs",
-        "customer-churn-inputs",
-        "leadership-drag-inputs",
-        "workforce-productivity-inputs",
-        "productivity-deep-dive-inputs",
-        "industry"
-      ];
+      const keys = Object.values(MODULE_KEYS).concat("industry");
       keys.forEach(k => localStorage.removeItem(k));
       location.reload();
+    });
+
+    window.addEventListener("storage", (event) => {
+      if (Object.values(MODULE_KEYS).includes(event.key)) {
+        updateDetailedModuleStatus();
+        updateOverallStatusBox();
+      }
     });
 
     window.addEventListener("load", () => {
       updateDetailedModuleStatus();
       updateOverallStatusBox();
     });
-
-    // 🔁 Live poll for module status changes inside this tab
-    let lastModuleStates = {};
-    function checkForModuleUpdates() {
-      const keys = [
-        "payroll-waste-inputs",
-        "customer-churn-inputs",
-        "leadership-drag-inputs",
-        "workforce-productivity-inputs",
-        "productivity-deep-dive-inputs"
-      ];
-
-      let changed = false;
-
-      keys.forEach(key => {
-        const current = localStorage.getItem(key);
-        if (lastModuleStates[key] !== current) {
-          changed = true;
-          lastModuleStates[key] = current;
-        }
-      });
-
-      if (changed) {
-        updateDetailedModuleStatus();
-        updateOverallStatusBox();
-      }
-    }
-
-    setInterval(checkForModuleUpdates, 800);
   </script>
 </body>
 </html>
