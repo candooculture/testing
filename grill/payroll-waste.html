@@ -157,39 +157,13 @@
       const resultBox = document.getElementById("efficiency-result");
       const cta = document.getElementById("cta-bottom");
 
-      // Industry sync + broadcast
-      industrySelect.addEventListener("change", () => {
-        const selected = industrySelect.value;
-        localStorage.setItem("industry", selected);
-
-        document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
-          if (dropdown !== industrySelect) dropdown.value = selected;
-        });
-
-        window.dispatchEvent(new CustomEvent("benchmark-autofill", {
-          detail: { source: MODULE, industry: selected }
-        }));
-      });
-
-      window.addEventListener("benchmark-autofill", e => {
-        const { source, industry } = e.detail || {};
-        if (source === MODULE) return;
-        if (industrySelect.value !== industry) {
-          industrySelect.value = industry;
-        }
-      });
-
+      // Industry sync (single-direction from saved localStorage value)
       const saved = localStorage.getItem("industry");
       if (saved) industrySelect.value = saved;
 
-      let lastIndustry = saved || "";
-      setInterval(() => {
-        const current = localStorage.getItem("industry");
-        if (current && current !== lastIndustry) {
-          lastIndustry = current;
-          industrySelect.value = current;
-        }
-      }, 1000);
+      industrySelect.addEventListener("change", () => {
+        localStorage.setItem("industry", industrySelect.value);
+      });
 
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -200,7 +174,6 @@
         Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]); });
         data.last_updated = Date.now();
         localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
-        window.dispatchEvent(new Event("storage"));
         window.dispatchEvent(new CustomEvent("module-status-updated"));
 
         try {
