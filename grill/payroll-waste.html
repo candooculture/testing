@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <title>Payroll Waste</title>
@@ -15,14 +14,12 @@
       margin: auto;
       line-height: 1.6;
     }
-
     h1 {
       text-align: center;
       margin-bottom: 30px;
       font-size: 28px;
       font-weight: 700;
     }
-
     .info-banner {
       background: #f1f1f1;
       padding: 15px;
@@ -31,16 +28,12 @@
       font-size: 14px;
       color: #333;
     }
-
     label {
       font-weight: 600;
       margin-bottom: 8px;
       display: block;
     }
-
-    input,
-    select,
-    button {
+    input, select, button {
       display: block;
       width: 100%;
       font-size: 16px;
@@ -51,14 +44,12 @@
       font-family: inherit;
       box-sizing: border-box;
     }
-
     small {
       font-size: 12px;
       color: #666;
       margin-top: -10px;
       display: block;
     }
-
     pre {
       background-color: #fefefe;
       border-left: 4px solid #48f191;
@@ -72,7 +63,6 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       display: none;
     }
-
     button {
       background-color: #48f191;
       color: #333333;
@@ -82,33 +72,18 @@
       transition: background-color 0.2s ease-in-out;
       border-radius: 8px;
     }
-
     button:hover {
       background-color: #3bddad;
     }
-
     .cta {
       margin-top: 40px;
       text-align: center;
       display: none;
     }
-
-    .cta-button {
-      display: block;
-      background-color: #48f191;
-      color: #333333;
-      font-weight: bold;
-      text-align: center;
+    .cta button {
+      margin-top: 10px;
       padding: 12px 20px;
       font-size: 16px;
-      border-radius: 8px;
-      text-decoration: none;
-      margin-bottom: 10px;
-      transition: background-color 0.2s ease-in-out;
-    }
-
-    .cta-button:hover {
-      background-color: #3bddad;
     }
   </style>
 </head>
@@ -159,17 +134,17 @@
   </form>
 
   <p style="font-size:14px; color:#666; margin-top:-10px; margin-bottom:20px;">
-    The following results reflect potential performance insights, based on typical industry benchmarks and Candoo’s
-    proprietary logic.
+    The following results reflect potential performance insights, based on typical industry benchmarks and Candoo’s proprietary logic.
   </p>
 
   <pre id="efficiency-result"></pre>
 
   <div id="cta-bottom" class="cta">
     <h3>🎯 There’s payroll hiding in plain sight. Let’s uncover it.</h3>
-    <a href="tel:+61455460580" class="cta-button">📞 Book a Strategy Call</a>
-    <a href="mailto:aaron@candooculture.com?subject=Help Me Understand What to Do Next" class="cta-button">📧 Prefer
-      Email? Let’s Help You Understand What to Do Next</a>
+    <button onclick="window.location.href='tel:+61455460580'">📞 Book a Strategy Call</button>
+    <button onclick="window.location.href='mailto:aaron@candooculture.com?subject=Help Me Understand What to Do Next'">
+      📧 Prefer Email? Let’s Help You Understand What to Do Next
+    </button>
   </div>
 
   <script>
@@ -182,9 +157,26 @@
       const resultBox = document.getElementById("efficiency-result");
       const cta = document.getElementById("cta-bottom");
 
+      // Industry sync + broadcast
       industrySelect.addEventListener("change", () => {
         const selected = industrySelect.value;
         localStorage.setItem("industry", selected);
+
+        document.querySelectorAll('select[name="industry"]').forEach(dropdown => {
+          if (dropdown !== industrySelect) dropdown.value = selected;
+        });
+
+        window.dispatchEvent(new CustomEvent("benchmark-autofill", {
+          detail: { source: MODULE, industry: selected }
+        }));
+      });
+
+      window.addEventListener("benchmark-autofill", e => {
+        const { source, industry } = e.detail || {};
+        if (source === MODULE) return;
+        if (industrySelect.value !== industry) {
+          industrySelect.value = industry;
+        }
       });
 
       const saved = localStorage.getItem("industry");
@@ -196,7 +188,6 @@
         if (current && current !== lastIndustry) {
           lastIndustry = current;
           industrySelect.value = current;
-          console.log(`[${MODULE}] Industry synced: ${current}`);
         }
       }, 1000);
 
@@ -216,8 +207,8 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
           });
-          const result = await res.json();
 
+          const result = await res.json();
           if (result.formatted_labels) {
             const r = result.formatted_labels;
             let out = `🧾 Snapshot of Monthly Team Drag\n\n`;
@@ -251,7 +242,5 @@
       });
     })();
   </script>
-  <script src="clarity-core.js"></script>
 </body>
-
 </html>
