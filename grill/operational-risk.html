@@ -3,23 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <title>Operational Risk Score</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
       font-family: 'DM Sans', sans-serif;
       background-color: #ffffff;
       color: #333333;
       padding: 40px 20px;
-      max-width: 640px;
+      max-width: 600px;
       margin: auto;
       line-height: 1.6;
     }
+
     h1 {
       text-align: center;
       margin-bottom: 30px;
       font-size: 28px;
       font-weight: 700;
     }
+
     .info-banner {
       background-color: #f1f1f1;
       padding: 15px;
@@ -27,22 +29,49 @@
       border-left: 4px solid #48f191;
       font-size: 14px;
     }
-    .status-box {
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    li {
+      margin: 8px 0;
       font-size: 16px;
-      margin-bottom: 20px;
-      font-weight: 600;
     }
-    .status-box p {
-      margin: 4px 0;
-      font-weight: normal;
+
+    .complete {
+      color: green;
     }
-    .status-box span {
-      font-weight: bold;
+
+    .pending {
+      color: #888;
     }
-    button {
+
+    .result-box,
+    .status-box {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px dashed #ccc;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+
+    .result-box {
+      display: none;
+      white-space: pre-wrap;
+    }
+
+    .cta {
+      margin-top: 30px;
+      display: none;
+      text-align: center;
+    }
+
+    .cta button {
       display: block;
-      margin: 20px auto;
-      padding: 12px 20px;
+      margin: 10px auto;
+      padding: 10px 18px;
       border-radius: 6px;
       border: none;
       background: #48f191;
@@ -50,205 +79,171 @@
       font-weight: bold;
       cursor: pointer;
     }
+
     .reset-btn {
       background: #eee;
       color: #333;
       border: 1px solid #bbb;
       font-size: 14px;
+      margin-top: 20px;
       width: 100%;
+      padding: 10px;
+      border-radius: 6px;
     }
-    pre {
-      background-color: #fefefe;
-      border-left: 4px solid #48f191;
-      padding: 20px;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      font-family: inherit;
+
+    .generate-btn {
+      background: #48f191;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      padding: 12px 16px;
       font-size: 16px;
-      color: #333;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      display: none;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 30px;
     }
   </style>
 </head>
+
 <body>
   <h1>Operational Risk Score</h1>
 
   <div class="info-banner">
-    <strong>This tool combines inputs from all other modules.</strong><br />
-    Complete Payroll, Churn, Leadership, Workforce, and Deep Dive — then hit the button below to calculate your risk score.
+    <strong>This tool combines inputs from other modules to reveal your operational risk profile.</strong><br>
+    Make sure you've run the other modules first — we'll analyse the data you've entered so far.
   </div>
 
-  <div id="riskSummary" class="status-box">⏳ Checking module completion...</div>
+  <ul id="moduleStatusList"></ul>
+  <div id="riskSummary" class="status-box">⏳ Waiting for modules to complete...</div>
+  <pre id="op-risk-result" class="result-box"></pre>
 
-  <div class="status-box">
-    <p>Payroll Waste: <span id="status-payroll">❌</span></p>
-    <p>Customer Churn: <span id="status-churn">❌</span></p>
-    <p>Leadership Drag: <span id="status-leadership">❌</span></p>
-    <p>Workforce Productivity: <span id="status-workforce">❌</span></p>
-    <p>Deep Dive: <span id="status-deepdive">❌</span></p>
+  <button id="generate-risk-btn" class="generate-btn">🚀 Generate Operational Risk Score</button>
+  <button class="reset-btn" onclick="resetAll()">🔄 Reset All Module Results</button>
+
+  <div id="cta-bottom" class="cta">
+    <h3>📉 See the full picture — and where you’re exposed.</h3>
+    <button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
+    <button onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand My Operational Risk Score'">
+      📧 Prefer Email? Let’s Help You Understand What to Do Next
+    </button>
   </div>
-
-  <button id="generate-risk-btn">🚀 Generate Operational Risk Score</button>
-  <pre id="op-risk-result"></pre>
-  <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
-    function runORS() {
-      updateDetailedModuleStatus();
-      updateOverallStatusBox();
+    const moduleConfig = [
+      { key: "Payroll Waste", icon: "🪙", storeKey: "payroll-waste-inputs" },
+      { key: "Customer Churn", icon: "📉", storeKey: "customer-churn-inputs" },
+      { key: "Leadership Drag", icon: "🧠", storeKey: "leadership-drag-inputs" },
+      { key: "Workforce Productivity", icon: "⚙️", storeKey: "workforce-productivity-inputs" },
+      { key: "Productivity Deep Dive", icon: "🔍", storeKey: "productivity-dive-inputs" }
+    ];
 
-      const STATUS_BOX = document.getElementById("riskSummary");
-      const RESULT_BOX = document.getElementById("op-risk-result");
-      const API_BASE = "https://testing-gh0h.onrender.com";
+    const statusList = document.getElementById("moduleStatusList");
+    const riskSummary = document.getElementById("riskSummary");
+    const resultBox = document.getElementById("op-risk-result");
+    const ctaBox = document.getElementById("cta-bottom");
+    const generateBtn = document.getElementById("generate-risk-btn");
 
-      const payroll = JSON.parse(localStorage.getItem("payroll-waste-inputs") || "null");
-      const churn = JSON.parse(localStorage.getItem("customer-churn-inputs") || "null");
-      const leadership = JSON.parse(localStorage.getItem("leadership-drag-inputs") || "null");
-      const productivity = JSON.parse(localStorage.getItem("workforce-productivity-inputs") || "null");
-      const dive = JSON.parse(localStorage.getItem("productivity-deep-dive-inputs") || "null");
-
-      const modules = { payroll, churn, leadership, productivity, dive };
-      const completed = Object.entries(modules).filter(([_, val]) => val !== null && typeof val === 'object' && Object.keys(val).length > 0);
-
-      if (completed.length < 5) {
-        STATUS_BOX.innerText = `❌ ${completed.length}/5 modules complete.`;
-        RESULT_BOX.innerText = "Please complete all 5 modules before calculating.";
-        RESULT_BOX.style.display = "block";
-        return;
-      }
-
-      STATUS_BOX.innerText = "✅ 5 of 5 modules complete. Calculating...";
-
-      const payload = {
-        industry: payroll.industry || "",
-        total_employees: payroll.total_employees || productivity.total_employees || 0,
-        avg_salary: payroll.avg_salary || dive.avg_salary || 0,
-        improvement_rate: payroll.improvement_rate || 0,
-
-        churn_rate: churn.churn_rate || 0,
-        desired_improvement: churn.desired_improvement || 0,
-        cac: churn.cac || 0,
-        avg_revenue: churn.avg_revenue || 0,
-        num_customers: churn.num_customers || 0,
-
-        leadership_drag: leadership.leadership_drag || 0,
-
-        total_revenue: productivity.total_revenue || 0,
-        payroll_cost: productivity.payroll_cost || 0,
-        productive_hours: productivity.productive_hours || 0,
-        target_hours_per_employee: productivity.target_hours_per_employee || 0,
-        absenteeism_days: productivity.absenteeism_days || dive.absenteeism_days || 0,
-        overtime_hours: productivity.overtime_hours || 0,
-
-        avg_hours: dive.avg_hours || 0
-      };
-
-      fetch(`${API_BASE}/run-operational-risk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(result => {
-        if (result.formatted_labels) {
-          let output = `📉 Operational Risk Summary:\n\n`;
-          for (const [key, value] of Object.entries(result.formatted_labels)) {
-            output += `• ${key}: ${value}\n`;
+    function getModuleStatus() {
+      return moduleConfig.map(({ key, icon, storeKey }) => {
+        const stored = localStorage.getItem(storeKey);
+        let status = "pending";
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (Object.keys(parsed).length > 0) status = "complete";
+          } catch {
+            status = "error";
           }
-          output += `\n🧠 Straight Talk\n${result.straight_talk || 'No commentary provided.'}`;
-          RESULT_BOX.innerText = output;
+        }
+        return { key, icon, status, storeKey };
+      });
+    }
+
+    function updateStatus() {
+      const statuses = getModuleStatus();
+      statusList.innerHTML = "";
+
+      let completeCount = 0;
+      statuses.forEach(({ key, icon, status }) => {
+        const li = document.createElement("li");
+        li.innerHTML = `${icon} ${key}: <span class="${status}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+        statusList.appendChild(li);
+        if (status === "complete") completeCount++;
+      });
+
+      riskSummary.innerText = `⏳ ${completeCount} of ${moduleConfig.length} modules complete.`;
+
+      if (completeCount === moduleConfig.length) {
+        generateBtn.style.display = "block";
+      } else {
+        generateBtn.style.display = "none";
+        resultBox.style.display = "none";
+        ctaBox.style.display = "none";
+      }
+    }
+
+    async function runORS() {
+      let moduleData = {};
+
+      moduleConfig.forEach(({ storeKey }) => {
+        try {
+          const stored = localStorage.getItem(storeKey);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            Object.entries(parsed).forEach(([k, v]) => {
+              if (!(k in moduleData)) moduleData[k] = v;
+            });
+          }
+        } catch (e) {
+          console.warn("Error parsing input:", storeKey, e);
+        }
+      });
+
+      moduleData.last_updated = Date.now();
+
+      try {
+        const response = await fetch("https://testing-gh0h.onrender.com/run-operational-risk", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(moduleData)
+        });
+
+        const result = await response.json();
+
+        if (result.formatted_labels) {
+          const r = result.formatted_labels;
+          let out = `⚠️ Operational Risk Profile\n\n`;
+          out += `📊 Risk Score: ${r["Operational Risk Score"]}\n`;
+          out += `🏷️ Risk Level: ${r["Risk Tier"]}\n\n`;
+          out += `🧠 Straight Talk:\n${result.straight_talk}`;
+
+          resultBox.innerText = out;
+          resultBox.style.display = "block";
+          ctaBox.style.display = "block";
         } else {
-          RESULT_BOX.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
+          resultBox.innerText = "Something went wrong.";
+          resultBox.style.display = "block";
         }
-        RESULT_BOX.style.display = "block";
-      })
-      .catch(err => {
-        console.error("[ORS ERROR]", err);
-        RESULT_BOX.innerText = "❌ Failed to run analysis. Try again.";
-        RESULT_BOX.style.display = "block";
-      });
+      } catch (err) {
+        console.error("API error:", err);
+        resultBox.innerText = "API error. Try again.";
+        resultBox.style.display = "block";
+      }
     }
 
-    window.runORS = runORS;
-
-    function updateDetailedModuleStatus() {
-      const map = {
-        "payroll-waste-inputs": "status-payroll",
-        "customer-churn-inputs": "status-churn",
-        "leadership-drag-inputs": "status-leadership",
-        "workforce-productivity-inputs": "status-workforce",
-        "productivity-deep-dive-inputs": "status-deepdive"
-      };
-
-      Object.entries(map).forEach(([key, spanId]) => {
-        try {
-          const item = JSON.parse(localStorage.getItem(key));
-          const isValid = item && typeof item === "object" && Object.keys(item).length > 0;
-          document.getElementById(spanId).textContent = isValid ? "✅" : "❌";
-        } catch {
-          document.getElementById(spanId).textContent = "❌";
-        }
-      });
+    function resetAll() {
+      moduleConfig.forEach(({ storeKey }) => localStorage.removeItem(storeKey));
+      resultBox.style.display = "none";
+      ctaBox.style.display = "none";
+      riskSummary.innerText = "All module data cleared. Waiting for fresh results...";
+      updateStatus();
     }
 
-    function updateOverallStatusBox() {
-      const statusBox = document.getElementById("riskSummary");
-      const keys = [
-        "payroll-waste-inputs",
-        "customer-churn-inputs",
-        "leadership-drag-inputs",
-        "workforce-productivity-inputs",
-        "productivity-deep-dive-inputs"
-      ];
-      const count = keys.filter(key => {
-        try {
-          const data = JSON.parse(localStorage.getItem(key));
-          return data && typeof data === "object" && Object.keys(data).length > 0;
-        } catch {
-          return false;
-        }
-      }).length;
-
-      statusBox.innerText = count === 5
-        ? "✅ All modules complete. Ready to calculate."
-        : `❌ ${count}/5 modules complete.`;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("generate-risk-btn").addEventListener("click", runORS);
-
-      document.getElementById("reset-btn").addEventListener("click", () => {
-        const keys = [
-          "payroll-waste-inputs",
-          "customer-churn-inputs",
-          "leadership-drag-inputs",
-          "workforce-productivity-inputs",
-          "productivity-deep-dive-inputs",
-          "industry"
-        ];
-        keys.forEach(k => localStorage.removeItem(k));
-        location.reload();
-      });
-
-      updateDetailedModuleStatus();
-      updateOverallStatusBox();
-
-      window.addEventListener("storage", () => {
-        updateDetailedModuleStatus();
-        updateOverallStatusBox();
-      });
-
-      window.addEventListener("focus", () => {
-        updateDetailedModuleStatus();
-        updateOverallStatusBox();
-      });
-
-      window.addEventListener("module-status-updated", () => {
-        updateDetailedModuleStatus();
-        updateOverallStatusBox();
-      });
-    });
+    generateBtn.addEventListener("click", runORS);
+    window.addEventListener("storage", updateStatus);
+    window.addEventListener("focus", updateStatus);
+    document.addEventListener("DOMContentLoaded", updateStatus);
   </script>
 </body>
 </html>
