@@ -94,49 +94,6 @@
   <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
-    function updateDetailedModuleStatus() {
-      const map = {
-        "payroll-waste-inputs": "status-payroll",
-        "customer-churn-inputs": "status-churn",
-        "leadership-drag-inputs": "status-leadership",
-        "workforce-productivity-inputs": "status-workforce",
-        "productivity-deep-dive-inputs": "status-deepdive"
-      };
-
-      Object.entries(map).forEach(([key, spanId]) => {
-        try {
-          const item = JSON.parse(localStorage.getItem(key));
-          const isValid = item && typeof item === "object" && Object.keys(item).length > 0;
-          document.getElementById(spanId).textContent = isValid ? "✅" : "❌";
-        } catch {
-          document.getElementById(spanId).textContent = "❌";
-        }
-      });
-    }
-
-    function updateOverallStatusBox() {
-      const statusBox = document.getElementById("riskSummary");
-      const keys = [
-        "payroll-waste-inputs",
-        "customer-churn-inputs",
-        "leadership-drag-inputs",
-        "workforce-productivity-inputs",
-        "productivity-deep-dive-inputs"
-      ];
-      const count = keys.filter(key => {
-        try {
-          const data = JSON.parse(localStorage.getItem(key));
-          return data && typeof data === "object" && Object.keys(data).length > 0;
-        } catch {
-          return false;
-        }
-      }).length;
-
-      statusBox.innerText = count === 5
-        ? "✅ All modules complete. Ready to calculate."
-        : `❌ ${count}/5 modules complete.`;
-    }
-
     function runORS() {
       updateDetailedModuleStatus();
       updateOverallStatusBox();
@@ -213,8 +170,52 @@
       });
     }
 
-    // Attach listeners after DOM is ready
-    window.addEventListener("DOMContentLoaded", () => {
+    window.runORS = runORS;
+
+    function updateDetailedModuleStatus() {
+      const map = {
+        "payroll-waste-inputs": "status-payroll",
+        "customer-churn-inputs": "status-churn",
+        "leadership-drag-inputs": "status-leadership",
+        "workforce-productivity-inputs": "status-workforce",
+        "productivity-deep-dive-inputs": "status-deepdive"
+      };
+
+      Object.entries(map).forEach(([key, spanId]) => {
+        try {
+          const item = JSON.parse(localStorage.getItem(key));
+          const isValid = item && typeof item === "object" && Object.keys(item).length > 0;
+          document.getElementById(spanId).textContent = isValid ? "✅" : "❌";
+        } catch {
+          document.getElementById(spanId).textContent = "❌";
+        }
+      });
+    }
+
+    function updateOverallStatusBox() {
+      const statusBox = document.getElementById("riskSummary");
+      const keys = [
+        "payroll-waste-inputs",
+        "customer-churn-inputs",
+        "leadership-drag-inputs",
+        "workforce-productivity-inputs",
+        "productivity-deep-dive-inputs"
+      ];
+      const count = keys.filter(key => {
+        try {
+          const data = JSON.parse(localStorage.getItem(key));
+          return data && typeof data === "object" && Object.keys(data).length > 0;
+        } catch {
+          return false;
+        }
+      }).length;
+
+      statusBox.innerText = count === 5
+        ? "✅ All modules complete. Ready to calculate."
+        : `❌ ${count}/5 modules complete.`;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("generate-risk-btn").addEventListener("click", runORS);
 
       document.getElementById("reset-btn").addEventListener("click", () => {
@@ -232,10 +233,22 @@
 
       updateDetailedModuleStatus();
       updateOverallStatusBox();
-    });
 
-    // Expose globally for testing/debug
-    window.runORS = runORS;
+      window.addEventListener("storage", () => {
+        updateDetailedModuleStatus();
+        updateOverallStatusBox();
+      });
+
+      window.addEventListener("focus", () => {
+        updateDetailedModuleStatus();
+        updateOverallStatusBox();
+      });
+
+      window.addEventListener("module-status-updated", () => {
+        updateDetailedModuleStatus();
+        updateOverallStatusBox();
+      });
+    });
   </script>
 </body>
 </html>
