@@ -94,6 +94,7 @@
   <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
+  document.addEventListener("DOMContentLoaded", () => {
     function updateDetailedModuleStatus() {
       const map = {
         "payroll-waste-inputs": "status-payroll",
@@ -104,18 +105,21 @@
       };
 
       Object.entries(map).forEach(([key, spanId]) => {
+        const el = document.getElementById(spanId);
+        if (!el) return;
         try {
           const item = JSON.parse(localStorage.getItem(key));
           const isValid = item && typeof item === "object" && Object.keys(item).length > 0;
-          document.getElementById(spanId).textContent = isValid ? "✅" : "❌";
+          el.textContent = isValid ? "✅" : "❌";
         } catch {
-          document.getElementById(spanId).textContent = "❌";
+          el.textContent = "❌";
         }
       });
     }
 
     function updateOverallStatusBox() {
       const statusBox = document.getElementById("riskSummary");
+      if (!statusBox) return;
 
       const requiredKeys = [
         "payroll-waste-inputs",
@@ -179,22 +183,18 @@
         total_employees: payroll.total_employees || productivity.total_employees || 0,
         avg_salary: payroll.avg_salary || dive.avg_salary || 0,
         improvement_rate: payroll.improvement_rate || 0,
-
         churn_rate: churn.churn_rate || 0,
         desired_improvement: churn.desired_improvement || 0,
         cac: churn.cac || 0,
         avg_revenue: churn.avg_revenue || 0,
         num_customers: churn.num_customers || 0,
-
         leadership_drag: leadership.leadership_drag || 0,
-
         total_revenue: productivity.total_revenue || 0,
         payroll_cost: productivity.payroll_cost || 0,
         productive_hours: productivity.productive_hours || 0,
         target_hours_per_employee: productivity.target_hours_per_employee || 0,
         absenteeism_days: productivity.absenteeism_days || dive.absenteeism_days || 0,
         overtime_hours: productivity.overtime_hours || 0,
-
         avg_hours: dive.avg_hours || 0
       };
 
@@ -240,13 +240,9 @@
       location.reload();
     });
 
-    window.addEventListener("load", () => {
-      updateDetailedModuleStatus();
-      updateOverallStatusBox();
-    });
+    // 🔁 Module Sync
+    window.lastModuleStates = window.lastModuleStates || {};
 
-    // 🔁 Live poll for module status changes inside this tab
-    let lastModuleStates = {};
     function checkForModuleUpdates() {
       const keys = [
         "payroll-waste-inputs",
@@ -260,9 +256,9 @@
 
       keys.forEach(key => {
         const current = localStorage.getItem(key);
-        if (lastModuleStates[key] !== current) {
+        if (window.lastModuleStates[key] !== current) {
           changed = true;
-          lastModuleStates[key] = current;
+          window.lastModuleStates[key] = current;
         }
       });
 
@@ -272,7 +268,10 @@
       }
     }
 
+    updateDetailedModuleStatus();
+    updateOverallStatusBox();
     setInterval(checkForModuleUpdates, 800);
-  </script>
+  });
+</script>
 </body>
 </html>
