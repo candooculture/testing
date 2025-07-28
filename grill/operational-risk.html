@@ -94,7 +94,7 @@
   <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
-(() => {
+window.addEventListener('DOMContentLoaded', () => {
   const MODULE_KEYS = {
     payroll: "payroll-waste-inputs",
     churn: "customer-churn-inputs",
@@ -137,7 +137,7 @@
 
     statusBox.innerText = count === 5
       ? "✅ All modules complete. Ready to calculate."
-      : ❌ ${count}/5 modules complete.;
+      : `❌ ${count}/5 modules complete.`
   }
 
   async function runORS() {
@@ -158,7 +158,7 @@
     const completed = Object.entries(modules).filter(([_, val]) => val !== null);
 
     if (completed.length < 5) {
-      STATUS_BOX.innerText = ❌ ${completed.length}/5 modules complete.;
+      STATUS_BOX.innerText = `❌ ${completed.length}/5 modules complete.`
       RESULT_BOX.innerText = "Please complete all 5 modules before calculating.";
       RESULT_BOX.style.display = "block";
       return;
@@ -191,7 +191,7 @@
     };
 
     try {
-      const res = await fetch(${API_BASE}/run-operational-risk, {
+      const res = await fetch(`${API_BASE}/run-operational-risk`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -200,11 +200,11 @@
       const result = await res.json();
 
       if (result.formatted_labels) {
-        let output = 📉 Operational Risk Summary:\n\n;
+        let output = `📉 Operational Risk Summary:\n\n`
         for (const [key, value] of Object.entries(result.formatted_labels)) {
-          output += • ${key}: ${value}\n;
+          output += `• ${key}: ${value}\n`
         }
-        output += \n🧠 Straight Talk\n${result.straight_talk || "No commentary provided."};
+        output += `\n🧠 Straight Talk\n${result.straight_talk || 'No commentary provided.'}`
         RESULT_BOX.innerText = output;
       } else {
         RESULT_BOX.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
@@ -246,7 +246,7 @@
   updateDetailedModuleStatus();
   updateOverallStatusBox();
   });
-})();
+});
 </script>
 </body>
 </html>
