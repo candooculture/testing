@@ -94,53 +94,7 @@
   <button id="reset-btn" class="reset-btn">🔄 Reset All Module Results</button>
 
   <script>
-window.addEventListener('DOMContentLoaded', () => {
-  const MODULE_KEYS = {
-    payroll: "payroll-waste-inputs",
-    churn: "customer-churn-inputs",
-    leadership: "leadership-drag-inputs",
-    productivity: "workforce-productivity-inputs",
-    dive: "productivity-deep-dive-inputs"
-  };
-
-  function updateDetailedModuleStatus() {
-    const map = {
-      "payroll-waste-inputs": "status-payroll",
-      "customer-churn-inputs": "status-churn",
-      "leadership-drag-inputs": "status-leadership",
-      "workforce-productivity-inputs": "status-workforce",
-      "productivity-deep-dive-inputs": "status-deepdive"
-    };
-
-    Object.entries(map).forEach(([key, spanId]) => {
-      try {
-        const item = JSON.parse(localStorage.getItem(key));
-        const isValid = item && typeof item === "object" && Object.keys(item).length > 0;
-        document.getElementById(spanId).textContent = isValid ? "✅" : "❌";
-      } catch {
-        document.getElementById(spanId).textContent = "❌";
-      }
-    });
-  }
-
-  function updateOverallStatusBox() {
-    const statusBox = document.getElementById("riskSummary");
-    const keys = Object.values(MODULE_KEYS);
-    const count = keys.filter(key => {
-      try {
-        const data = JSON.parse(localStorage.getItem(key));
-        return data && typeof data === "object" && Object.keys(data).length > 0;
-      } catch {
-        return false;
-      }
-    }).length;
-
-    statusBox.innerText = count === 5
-      ? "✅ All modules complete. Ready to calculate."
-      : `❌ ${count}/5 modules complete.`;
-  }
-
-  async function runORS() {
+  function runORS() {
     updateDetailedModuleStatus();
     updateOverallStatusBox();
 
@@ -148,11 +102,11 @@ window.addEventListener('DOMContentLoaded', () => {
     const RESULT_BOX = document.getElementById("op-risk-result");
     const API_BASE = "https://testing-gh0h.onrender.com";
 
-    const payroll = JSON.parse(localStorage.getItem(MODULE_KEYS.payroll) || "null");
-    const churn = JSON.parse(localStorage.getItem(MODULE_KEYS.churn) || "null");
-    const leadership = JSON.parse(localStorage.getItem(MODULE_KEYS.leadership) || "null");
-    const productivity = JSON.parse(localStorage.getItem(MODULE_KEYS.productivity) || "null");
-    const dive = JSON.parse(localStorage.getItem(MODULE_KEYS.dive) || "null");
+    const payroll = JSON.parse(localStorage.getItem("payroll-waste-inputs") || "null");
+    const churn = JSON.parse(localStorage.getItem("customer-churn-inputs") || "null");
+    const leadership = JSON.parse(localStorage.getItem("leadership-drag-inputs") || "null");
+    const productivity = JSON.parse(localStorage.getItem("workforce-productivity-inputs") || "null");
+    const dive = JSON.parse(localStorage.getItem("productivity-deep-dive-inputs") || "null");
 
     const modules = { payroll, churn, leadership, productivity, dive };
     const completed = Object.entries(modules).filter(([_, val]) => val !== null);
@@ -190,53 +144,112 @@ window.addEventListener('DOMContentLoaded', () => {
       avg_hours: dive.avg_hours || 0
     };
 
-    try {
-      const res = await fetch(`${API_BASE}/run-operational-risk`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await res.json();
-
+    fetch(`${API_BASE}/run-operational-risk`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(result => {
       if (result.formatted_labels) {
         let output = `📉 Operational Risk Summary:\n\n`;
         for (const [key, value] of Object.entries(result.formatted_labels)) {
           output += `• ${key}: ${value}\n`;
         }
-        output += `\n🧠 Straight Talk\n${result.straight_talk || "No commentary provided."}`;
+        output += `\n🧠 Straight Talk\n${result.straight_talk || 'No commentary provided.'}`;
         RESULT_BOX.innerText = output;
       } else {
         RESULT_BOX.innerText = "⚠️ Something went wrong. No formatted_labels returned.";
       }
-    } catch (err) {
+      RESULT_BOX.style.display = "block";
+    })
+    .catch(err => {
       console.error("[ORS ERROR]", err);
       RESULT_BOX.innerText = "❌ Failed to run analysis. Try again.";
-    }
-
-    RESULT_BOX.style.display = "block";
+      RESULT_BOX.style.display = "block";
+    });
   }
 
-  // 👇 Reliable binding and public exposure
-  document.getElementById("generate-risk-btn").addEventListener("click", runORS);
+  // Make runORS globally available
   window.runORS = runORS;
 
-  document.getElementById("reset-btn").addEventListener("click", () => {
-    const keys = Object.values(MODULE_KEYS).concat("industry");
-    keys.forEach(k => localStorage.removeItem(k));
-    location.reload();
-  });
+  function updateDetailedModuleStatus() {
+    const map = {
+      "payroll-waste-inputs": "status-payroll",
+      "customer-churn-inputs": "status-churn",
+      "leadership-drag-inputs": "status-leadership",
+      "workforce-productivity-inputs": "status-workforce",
+      "productivity-deep-dive-inputs": "status-deepdive"
+    };
 
-  const syncStatus = () => {
+    Object.entries(map).forEach(([key, spanId]) => {
+      try {
+        const item = JSON.parse(localStorage.getItem(key));
+        const isValid = item && typeof item === "object" && Object.keys(item).length > 0;
+        document.getElementById(spanId).textContent = isValid ? "✅" : "❌";
+      } catch {
+        document.getElementById(spanId).textContent = "❌";
+      }
+    });
+  }
+
+  function updateOverallStatusBox() {
+    const statusBox = document.getElementById("riskSummary");
+    const keys = [
+      "payroll-waste-inputs",
+      "customer-churn-inputs",
+      "leadership-drag-inputs",
+      "workforce-productivity-inputs",
+      "productivity-deep-dive-inputs"
+    ];
+    const count = keys.filter(key => {
+      try {
+        const data = JSON.parse(localStorage.getItem(key));
+        return data && typeof data === "object" && Object.keys(data).length > 0;
+      } catch {
+        return false;
+      }
+    }).length;
+
+    statusBox.innerText = count === 5
+      ? "✅ All modules complete. Ready to calculate."
+      : `❌ ${count}/5 modules complete.`;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("generate-risk-btn").addEventListener("click", runORS);
+
+    document.getElementById("reset-btn").addEventListener("click", () => {
+      const keys = [
+        "payroll-waste-inputs",
+        "customer-churn-inputs",
+        "leadership-drag-inputs",
+        "workforce-productivity-inputs",
+        "productivity-deep-dive-inputs",
+        "industry"
+      ];
+      keys.forEach(k => localStorage.removeItem(k));
+      location.reload();
+    });
+
     updateDetailedModuleStatus();
     updateOverallStatusBox();
-  };
 
-  window.addEventListener("storage", e => Object.values(MODULE_KEYS).includes(e.key) && syncStatus());
-  window.addEventListener("load", syncStatus);
-  window.addEventListener("focus", syncStatus);
-  window.addEventListener("module-status-updated", syncStatus);
-});
+    window.addEventListener("storage", () => {
+      updateDetailedModuleStatus();
+      updateOverallStatusBox();
+    });
+
+    window.addEventListener("focus", () => {
+      updateDetailedModuleStatus();
+      updateOverallStatusBox();
+    });
+
+    window.addEventListener("module-status-updated", () => {
+      updateDetailedModuleStatus();
+      updateOverallStatusBox();
+    });
+  });
 </script>
 </body>
 </html>
