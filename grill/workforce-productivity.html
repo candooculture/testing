@@ -1,171 +1,74 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Workforce Productivity</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: #fff;
-      color: #333;
-      padding: 40px 20px;
-      max-width: 600px;
-      margin: auto;
-      line-height: 1.6;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 28px;
-      font-weight: 700;
-    }
-    .info-banner {
-      background: #f1f1f1;
-      padding: 15px;
-      margin-bottom: 25px;
-      border-left: 4px solid #48f191;
-      font-size: 14px;
-      color: #333;
-    }
-    label {
-      font-weight: 600;
-      margin-bottom: 8px;
-      display: block;
-    }
-    input, select, button {
-      display: block;
-      width: 100%;
-      font-size: 16px;
-      padding: 12px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-family: inherit;
-      box-sizing: border-box;
-    }
-    input.prefilled {
-      background-color: #f9f9f9;
-      color: #555;
-    }
-    .benchmark-label {
-      font-size: 12px;
-      color: #888;
-      margin-top: -14px;
-      margin-bottom: 10px;
-      display: none;
-    }
-    small {
-      font-size: 12px;
-      color: #666;
-      margin-top: -10px;
-      display: block;
-    }
-    button {
-      background-color: #48f191;
-      color: #333;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-      border-radius: 8px;
-      transition: background 0.2s ease-in-out;
-    }
-    button:hover {
-      background-color: #3bddad;
-    }
-    pre {
-      background: #fefefe;
-      border-left: 4px solid #48f191;
-      padding: 24px;
-      border-radius: 10px;
-      white-space: pre-wrap;
-      font-size: 16px;
-      line-height: 1.7;
-      font-family: 'DM Sans', sans-serif;
-      color: #333;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      display: none;
-    }
-    .cta {
-      margin-top: 40px;
-      text-align: center;
-      display: none;
-    }
-    .cta button {
-      margin-top: 10px;
-    }
-  </style>
-</head>
+<meta charset="utf-8"/>
+<title>Workforce Productivity</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600&amp;display=swap" rel="stylesheet"/>
+
+<link href="clarity-style.css" rel="stylesheet"/></head>
 <body>
-  <h1>Workforce Productivity</h1>
-  <div class="info-banner">
-    <strong>We’ve pre-filled your industry averages to save you time.</strong><br>
-    These reflect common performance in your sector.<br>
-    <em>Have your own data?</em> Just update the fields to sharpen your results.
+<h1>Workforce Productivity</h1>
+<div class="info-banner">
+<strong>We’ve pre-filled your industry averages to save you time.</strong><br/>
+    These reflect common performance in your sector.<br/>
+<em>Have your own data?</em> Just update the fields to sharpen your results.
   </div>
-  <form id="productivity-form">
-    <label for="industry">Industry:</label>
-    <select name="industry" id="industry" required>
-      <option value="">Select your industry</option>
-      <option value="Agriculture / Farming">Agriculture / Farming</option>
-      <option value="Construction">Construction</option>
-      <option value="Education & Training">Education & Training</option>
-      <option value="Finance & Insurance">Finance & Insurance</option>
-      <option value="Government / Public Sector">Government / Public Sector</option>
-      <option value="Healthcare">Healthcare</option>
-      <option value="Hospitality">Hospitality</option>
-      <option value="Integrated Services">Integrated Services</option>
-      <option value="Logistics & Transport">Logistics & Transport</option>
-      <option value="Manufacturing">Manufacturing</option>
-      <option value="Media / Creative / Comms">Media / Creative / Comms</option>
-      <option value="Non-Profit">Non-Profit</option>
-      <option value="Professional Services">Professional Services</option>
-      <option value="Real Estate & Property">Real Estate & Property</option>
-      <option value="Retail">Retail</option>
-      <option value="Technology / SaaS">Technology / SaaS</option>
-      <option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
-    </select>
-
-    <label for="total_revenue">Total Annual Revenue (AUD):</label>
-    <input type="number" name="total_revenue" id="total_revenue" required>
-
-    <label for="payroll_cost">Total Payroll Cost (AUD):</label>
-    <input type="number" name="payroll_cost" id="payroll_cost" required>
-
-    <label for="total_employees">Number of Employees:</label>
-    <input type="number" name="total_employees" id="total_employees" required>
-
-    <label for="productive_hours">Total Productive Hours Worked (All Staff, This Month):</label>
-    <input type="number" name="productive_hours" id="productive_hours" required>
-    <small>e.g., 15 staff × 140 hrs = 2,100 hrs</small>
-
-    <label for="target_hours">Target Hours per Employee:</label>
-    <input type="number" name="target_hours_per_employee" id="target_hours" required>
-    <span class="benchmark-label" id="label-hours">(Using industry average)</span>
-
-    <label for="absenteeism_days">Total Days Lost to Absenteeism (All Staff, Per Month):</label>
-    <input type="number" name="absenteeism_days" id="absenteeism_days" required>
-    <span class="benchmark-label" id="label-absent">(Using industry average)</span>
-    <small>e.g., if 5 employees took 1 sick day each, enter 5</small>
-
-    <label for="overtime_hours">Total Overtime Hours Paid (This Month, All Staff):</label>
-    <input type="number" name="overtime_hours" id="overtime_hours">
-    <small>Include paid overtime only, not time in lieu</small>
-
-    <button type="submit">Calculate</button>
-  </form>
-  <p style="font-size:14px; color:#666; margin-top:-10px; margin-bottom:20px;">
+<form id="productivity-form">
+<label for="industry">Industry:</label>
+<select id="industry" name="industry" required="">
+<option value="">Select your industry</option>
+<option value="Agriculture / Farming">Agriculture / Farming</option>
+<option value="Construction">Construction</option>
+<option value="Education &amp; Training">Education &amp; Training</option>
+<option value="Finance &amp; Insurance">Finance &amp; Insurance</option>
+<option value="Government / Public Sector">Government / Public Sector</option>
+<option value="Healthcare">Healthcare</option>
+<option value="Hospitality">Hospitality</option>
+<option value="Integrated Services">Integrated Services</option>
+<option value="Logistics &amp; Transport">Logistics &amp; Transport</option>
+<option value="Manufacturing">Manufacturing</option>
+<option value="Media / Creative / Comms">Media / Creative / Comms</option>
+<option value="Non-Profit">Non-Profit</option>
+<option value="Professional Services">Professional Services</option>
+<option value="Real Estate &amp; Property">Real Estate &amp; Property</option>
+<option value="Retail">Retail</option>
+<option value="Technology / SaaS">Technology / SaaS</option>
+<option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
+</select>
+<label for="total_revenue">Total Annual Revenue (AUD):</label>
+<input id="total_revenue" name="total_revenue" required="" type="number"/>
+<label for="payroll_cost">Total Payroll Cost (AUD):</label>
+<input id="payroll_cost" name="payroll_cost" required="" type="number"/>
+<label for="total_employees">Number of Employees:</label>
+<input id="total_employees" name="total_employees" required="" type="number"/>
+<label for="productive_hours">Total Productive Hours Worked (All Staff, This Month):</label>
+<input id="productive_hours" name="productive_hours" required="" type="number"/>
+<small>e.g., 15 staff × 140 hrs = 2,100 hrs</small>
+<label for="target_hours">Target Hours per Employee:</label>
+<input id="target_hours" name="target_hours_per_employee" required="" type="number"/>
+<span class="benchmark-label" id="label-hours">(Using industry average)</span>
+<label for="absenteeism_days">Total Days Lost to Absenteeism (All Staff, Per Month):</label>
+<input id="absenteeism_days" name="absenteeism_days" required="" type="number"/>
+<span class="benchmark-label" id="label-absent">(Using industry average)</span>
+<small>e.g., if 5 employees took 1 sick day each, enter 5</small>
+<label for="overtime_hours">Total Overtime Hours Paid (This Month, All Staff):</label>
+<input id="overtime_hours" name="overtime_hours" type="number"/>
+<small>Include paid overtime only, not time in lieu</small>
+<button type="submit">Calculate</button>
+</form>
+<p style="font-size:14px; color:#666; margin-top:-10px; margin-bottom:20px;">
     The following results reflect potential performance insights, based on typical industry benchmarks and Candoo’s proprietary logic.
   </p>
-  <pre id="productivity-result"></pre>
-  <div class="cta" id="cta-bottom">
-    <h3>🌟 Seeing the numbers is the start. Now turn them into action.</h3>
-    <button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
-    <button onclick="window.location.href='mailto:admin@candooculture.com?subject=Workforce%20Productivity%20-%20Next%20Steps'">
+<pre id="productivity-result"></pre>
+<div class="cta" id="cta-bottom">
+<h3>🌟 Seeing the numbers is the start. Now turn them into action.</h3>
+<button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
+<button onclick="window.location.href='mailto:admin@candooculture.com?subject=Workforce%20Productivity%20-%20Next%20Steps'">
       📧 Prefer Email? Let’s Help You Understand What to Do Next
     </button>
-  </div>
-  <script>
+</div>
+<script>
     (() => {
       const MODULE = "workforce-productivity";
       const API_BASE = "https://testing-gh0h.onrender.com";
@@ -291,6 +194,6 @@
       });
     })();
   </script>
-  <script src="clarity-core.js"></script>
+<script src="clarity-core.js"></script>
 </body>
 </html>
