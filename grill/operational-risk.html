@@ -1,38 +1,33 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Operational Risk Score</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="clarity-style.css" rel="stylesheet"/></head>
+  <meta charset="utf-8" />
+  <title>Operational Risk Score</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600&display=swap" rel="stylesheet" />
+  <link href="clarity-style.css" rel="stylesheet" />
+</head>
 <body>
-<h1 style="margin-bottom: 30px;">Operational Risk Score</h1>
-<div class="info-banner">
-<strong>This tool combines inputs from all other modules.</strong><br/>
+  <h1>Operational Risk Score</h1>
+
+  <div class="info-banner">
+    <strong>This tool combines inputs from all other modules.</strong><br/>
     Complete Payroll, Churn, Leadership, Workforce, and Deep Dive — then hit the button below to calculate your risk score.
   </div>
-<div class="status-box" id="riskSummary">⏳ Checking module completion...</div>
-<div class="status-box">
-<p>Payroll Waste: <span id="status-payroll">❌</span></p>
-<p>Customer Churn: <span id="status-churn">❌</span></p>
-<p>Leadership Drag: <span id="status-leadership">❌</span></p>
-<p>Workforce Productivity: <span id="status-workforce">❌</span></p>
-<p>Deep Dive: <span id="status-deepdive">❌</span></p>
-</div>
 
-<div class="status-box" id="riskSummary">⏳ Checking module completion...</div>
-<div class="status-box">
-<p>Payroll Waste: <span id="status-payroll">❌</span></p>
-<p>Customer Churn: <span id="status-churn">❌</span></p>
-<p>Leadership Drag: <span id="status-leadership">❌</span></p>
-<p>Workforce Productivity: <span id="status-workforce">❌</span></p>
-<p>Deep Dive: <span id="status-deepdive">❌</span></p>
-</div>
-<button id="generate-risk-btn">🚀 Generate Operational Risk Score</button>
-<pre id="op-risk-result"></pre>
-<button class="reset-btn" id="reset-btn">🔄 Reset All Module Results</button>
-<script>
+  <div class="status-box" id="riskSummary">⏳ Checking module completion...</div>
+  <div class="status-box">
+    <p>Payroll Waste: <span id="status-payroll">❌</span></p>
+    <p>Customer Churn: <span id="status-churn">❌</span></p>
+    <p>Leadership Drag: <span id="status-leadership">❌</span></p>
+    <p>Workforce Productivity: <span id="status-workforce">❌</span></p>
+    <p>Deep Dive: <span id="status-deepdive">❌</span></p>
+  </div>
+
+  <button id="generate-risk-btn">🚀 Generate Operational Risk Score</button>
+  <pre id="op-risk-result"></pre>
+  <button class="reset-btn" id="reset-btn">🔄 Reset All Module Results</button>
+
+  <script>
     window.addEventListener("DOMContentLoaded", () => {
       const STATUS_BOX = document.getElementById("riskSummary");
       const RESULT_BOX = document.getElementById("op-risk-result");
@@ -57,11 +52,9 @@
         Object.entries(spanMap).forEach(([key, spanId]) => {
           const span = document.getElementById(spanId);
           if (!span) return;
-
           try {
             const item = JSON.parse(localStorage.getItem(key));
-            const isValid = item && typeof item === "object" && Object.keys(item).length > 0;
-            span.textContent = isValid ? "✅" : "❌";
+            span.textContent = item && typeof item === "object" && Object.keys(item).length > 0 ? "✅" : "❌";
           } catch {
             span.textContent = "❌";
           }
@@ -69,8 +62,7 @@
       }
 
       function updateOverallStatusBox() {
-        const allKeys = Object.keys(spanMap);
-        const count = allKeys.filter(key => {
+        const count = Object.keys(spanMap).filter(key => {
           try {
             const data = JSON.parse(localStorage.getItem(key));
             return data && typeof data === "object" && Object.keys(data).length > 0;
@@ -88,15 +80,15 @@
         updateDetailedModuleStatus();
         updateOverallStatusBox();
 
-        const payroll = JSON.parse(localStorage.getItem(keys.payroll) || "null");
-        const churn = JSON.parse(localStorage.getItem(keys.churn) || "null");
-        const leadership = JSON.parse(localStorage.getItem(keys.leadership) || "null");
-        const productivity = JSON.parse(localStorage.getItem(keys.productivity) || "null");
-        const dive = JSON.parse(localStorage.getItem(keys.dive) || "null");
+        const modules = {
+          payroll: JSON.parse(localStorage.getItem(keys.payroll) || "null"),
+          churn: JSON.parse(localStorage.getItem(keys.churn) || "null"),
+          leadership: JSON.parse(localStorage.getItem(keys.leadership) || "null"),
+          productivity: JSON.parse(localStorage.getItem(keys.productivity) || "null"),
+          dive: JSON.parse(localStorage.getItem(keys.dive) || "null")
+        };
 
-        const modules = { payroll, churn, leadership, productivity, dive };
         const completed = Object.values(modules).filter(val => val !== null);
-
         if (completed.length < 5) {
           STATUS_BOX.innerText = `❌ ${completed.length}/5 modules complete.`;
           RESULT_BOX.innerText = "Please complete all 5 modules before calculating.";
@@ -107,27 +99,23 @@
         STATUS_BOX.innerText = "✅ 5 of 5 modules complete. Calculating...";
 
         const payload = {
-          industry: payroll.industry || "",
-          total_employees: payroll.total_employees || productivity.total_employees || 0,
-          avg_salary: payroll.avg_salary || dive.avg_salary || 0,
-          improvement_rate: payroll.improvement_rate || 0,
-
-          churn_rate: churn.churn_rate || 0,
-          desired_improvement: churn.desired_improvement || 0,
-          cac: churn.cac || 0,
-          avg_revenue: churn.avg_revenue || 0,
-          num_customers: churn.num_customers || 0,
-
-          leadership_drag: leadership.leadership_drag || 0,
-
-          total_revenue: productivity.total_revenue || 0,
-          payroll_cost: productivity.payroll_cost || 0,
-          productive_hours: productivity.productive_hours || 0,
-          target_hours_per_employee: productivity.target_hours_per_employee || 0,
-          absenteeism_days: productivity.absenteeism_days || dive.absenteeism_days || 0,
-          overtime_hours: productivity.overtime_hours || 0,
-
-          avg_hours: dive.avg_hours || 0
+          industry: modules.payroll.industry || "",
+          total_employees: modules.payroll.total_employees || modules.productivity.total_employees || 0,
+          avg_salary: modules.payroll.avg_salary || modules.dive.avg_salary || 0,
+          improvement_rate: modules.payroll.improvement_rate || 0,
+          churn_rate: modules.churn.churn_rate || 0,
+          desired_improvement: modules.churn.desired_improvement || 0,
+          cac: modules.churn.cac || 0,
+          avg_revenue: modules.churn.avg_revenue || 0,
+          num_customers: modules.churn.num_customers || 0,
+          leadership_drag: modules.leadership.leadership_drag || 0,
+          total_revenue: modules.productivity.total_revenue || 0,
+          payroll_cost: modules.productivity.payroll_cost || 0,
+          productive_hours: modules.productivity.productive_hours || 0,
+          target_hours_per_employee: modules.productivity.target_hours_per_employee || 0,
+          absenteeism_days: modules.productivity.absenteeism_days || modules.dive.absenteeism_days || 0,
+          overtime_hours: modules.productivity.overtime_hours || 0,
+          avg_hours: modules.dive.avg_hours || 0
         };
 
         try {
@@ -166,11 +154,9 @@
       document.getElementById("generate-risk-btn").addEventListener("click", runORS);
       document.getElementById("reset-btn").addEventListener("click", resetAll);
 
-      // Initial load
       updateDetailedModuleStatus();
       updateOverallStatusBox();
 
-      // Poll for changes across tabs
       let lastModuleStates = {};
       setInterval(() => {
         let changed = false;
