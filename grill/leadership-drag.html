@@ -1,64 +1,161 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Leadership Drag</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600&amp;display=swap" rel="stylesheet"/>
-
-<link href="clarity-style.css" rel="stylesheet"/></head>
+  <meta charset="UTF-8" />
+  <title>Leadership Drag</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #fff;
+      color: #333;
+      padding: 40px 20px;
+      max-width: 600px;
+      margin: auto;
+      line-height: 1.6;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .info-banner {
+      background: #f1f1f1;
+      padding: 15px;
+      margin-bottom: 25px;
+      border-left: 4px solid #48f191;
+      font-size: 14px;
+      color: #333;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+    }
+    input, select, button {
+      display: block;
+      width: 100%;
+      font-size: 16px;
+      padding: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    input.prefilled {
+      background-color: #f9f9f9;
+      color: #555;
+    }
+    .benchmark-label {
+      font-size: 12px;
+      color: #888;
+      margin-top: -14px;
+      margin-bottom: 10px;
+      display: none;
+    }
+    small {
+      font-size: 12px;
+      color: #666;
+      margin-top: -10px;
+      display: block;
+    }
+    button {
+      background-color: #48f191;
+      color: #333;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background 0.2s ease-in-out;
+    }
+    button:hover {
+      background-color: #3bddad;
+    }
+    pre {
+      background: #fefefe;
+      border-left: 4px solid #48f191;
+      padding: 24px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      font-size: 16px;
+      line-height: 1.7;
+      font-family: 'DM Sans', sans-serif;
+      color: #333;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      display: none;
+    }
+    .cta {
+      margin-top: 40px;
+      text-align: center;
+      display: none;
+    }
+    .cta button {
+      margin-top: 10px;
+    }
+  </style>
+</head>
 <body>
-<h1>Leadership Drag</h1>
-<div class="info-banner">
-<strong>We’ve pre-filled your industry averages to save you time.</strong><br/>
-    These reflect common performance in your sector.<br/>
-<em>Have your own data?</em> Just update the fields to sharpen your results.
+  <h1>Leadership Drag</h1>
+  <div class="info-banner">
+    <strong>We’ve pre-filled your industry averages to save you time.</strong><br>
+    These reflect common performance in your sector.<br>
+    <em>Have your own data?</em> Just update the fields to sharpen your results.
   </div>
-<form id="leadership-drag-form">
-<label for="industry">Industry:</label>
-<select id="industry" name="industry" required="">
-<option value="">Select your industry</option>
-<option value="Agriculture / Farming">Agriculture / Farming</option>
-<option value="Construction">Construction</option>
-<option value="Education &amp; Training">Education &amp; Training</option>
-<option value="Finance &amp; Insurance">Finance &amp; Insurance</option>
-<option value="Government / Public Sector">Government / Public Sector</option>
-<option value="Healthcare">Healthcare</option>
-<option value="Hospitality">Hospitality</option>
-<option value="Integrated Services">Integrated Services</option>
-<option value="Logistics &amp; Transport">Logistics &amp; Transport</option>
-<option value="Manufacturing">Manufacturing</option>
-<option value="Media / Creative / Comms">Media / Creative / Comms</option>
-<option value="Non-Profit">Non-Profit</option>
-<option value="Professional Services">Professional Services</option>
-<option value="Real Estate &amp; Property">Real Estate &amp; Property</option>
-<option value="Retail">Retail</option>
-<option value="Technology / SaaS">Technology / SaaS</option>
-<option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
-</select>
-<label for="total_employees">Total Employees:</label>
-<input id="total_employees" name="total_employees" required="" type="number"/>
-<label for="avg_salary">Average Annual Salary (AUD):</label>
-<input id="avg_salary" name="avg_salary" required="" step="0.01" type="number"/>
-<small>Annual salary including super, across the team</small>
-<label for="leadership_drag">Estimated Leadership Drag (% of Salary Base):</label>
-<input id="leadership_drag" name="leadership_drag" required="" step="0.1" type="number"/>
-<span class="benchmark-label" id="label-leadership">(Using industry average)</span>
-<small>Estimate the % of total payroll lost to poor leadership impact</small>
-<button type="submit">Calculate</button>
-</form>
-<p style="font-size:14px; color:#666; margin-top:-10px; margin-bottom:20px;">
+  <form id="leadership-drag-form">
+    <label for="industry">Industry:</label>
+    <select name="industry" id="industry" required>
+      <option value="">Select your industry</option>
+      <option value="Agriculture / Farming">Agriculture / Farming</option>
+      <option value="Construction">Construction</option>
+      <option value="Education & Training">Education & Training</option>
+      <option value="Finance & Insurance">Finance & Insurance</option>
+      <option value="Government / Public Sector">Government / Public Sector</option>
+      <option value="Healthcare">Healthcare</option>
+      <option value="Hospitality">Hospitality</option>
+      <option value="Integrated Services">Integrated Services</option>
+      <option value="Logistics & Transport">Logistics & Transport</option>
+      <option value="Manufacturing">Manufacturing</option>
+      <option value="Media / Creative / Comms">Media / Creative / Comms</option>
+      <option value="Non-Profit">Non-Profit</option>
+      <option value="Professional Services">Professional Services</option>
+      <option value="Real Estate & Property">Real Estate & Property</option>
+      <option value="Retail">Retail</option>
+      <option value="Technology / SaaS">Technology / SaaS</option>
+      <option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
+    </select>
+
+    <label for="total_employees">Total Employees:</label>
+    <input type="number" name="total_employees" id="total_employees" required>
+
+    <label for="avg_salary">Average Annual Salary (AUD):</label>
+    <input type="number" name="avg_salary" id="avg_salary" step="0.01" required>
+    <small>Annual salary including super, across the team</small>
+
+    <label for="leadership_drag">Estimated Leadership Drag (% of Salary Base):</label>
+    <input type="number" name="leadership_drag" id="leadership_drag" step="0.1" required>
+    <span class="benchmark-label" id="label-leadership">(Using industry average)</span>
+    <small>Estimate the % of total payroll lost to poor leadership impact</small>
+
+    <button type="submit">Calculate</button>
+  </form>
+
+  <p style="font-size:14px; color:#666; margin-top:-10px; margin-bottom:20px;">
     The following results reflect potential performance insights, based on typical industry benchmarks and Candoo’s proprietary logic.
   </p>
-<pre id="leadership-result"></pre>
-<div class="cta" id="cta-bottom">
-<h3>🎯 Want to fix the leak? It starts with clarity at the top.</h3>
-<button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
-<button onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand What to Do Next'">
+
+  <pre id="leadership-result"></pre>
+
+  <div id="cta-bottom" class="cta">
+    <h3>🎯 Want to fix the leak? It starts with clarity at the top.</h3>
+    <button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
+    <button onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand What to Do Next'">
       📧 Prefer Email? Let’s Help You Understand What to Do Next
     </button>
-</div>
-<script>
+  </div>
+
+  <script>
     (() => {
       const MODULE = "leadership-drag";
       const API_BASE = "https://testing-gh0h.onrender.com";
@@ -182,6 +279,6 @@
       });
     })();
   </script>
-<script src="clarity-core.js"></script>
+  <script src="clarity-core.js"></script>
 </body>
 </html>
