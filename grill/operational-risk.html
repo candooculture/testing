@@ -5,14 +5,22 @@
 <meta charset="utf-8"/>
 <title>Operational Risk Score</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600&amp;display=swap" rel="stylesheet"/>
-
 <link href="clarity-style.css" rel="stylesheet"/></head>
 <body>
-<h1>Operational Risk Score</h1>
+<h1 style="margin-bottom: 30px;">Operational Risk Score</h1>
 <div class="info-banner">
 <strong>This tool combines inputs from all other modules.</strong><br/>
     Complete Payroll, Churn, Leadership, Workforce, and Deep Dive — then hit the button below to calculate your risk score.
   </div>
+<div class="status-box" id="riskSummary">⏳ Checking module completion...</div>
+<div class="status-box">
+<p>Payroll Waste: <span id="status-payroll">❌</span></p>
+<p>Customer Churn: <span id="status-churn">❌</span></p>
+<p>Leadership Drag: <span id="status-leadership">❌</span></p>
+<p>Workforce Productivity: <span id="status-workforce">❌</span></p>
+<p>Deep Dive: <span id="status-deepdive">❌</span></p>
+</div>
+
 <div class="status-box" id="riskSummary">⏳ Checking module completion...</div>
 <div class="status-box">
 <p>Payroll Waste: <span id="status-payroll">❌</span></p>
