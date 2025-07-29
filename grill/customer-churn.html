@@ -1,139 +1,98 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>Customer Churn</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600&amp;display=swap" rel="stylesheet"/>
-
-<link href="clarity-style.css" rel="stylesheet"/></head>
+  <meta charset="utf-8"/>
+  <title>Customer Churn</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600&display=swap" rel="stylesheet"/>
+  <link href="clarity-style.css" rel="stylesheet"/>
+</head>
 <body>
-<h1>Customer Churn</h1>
-<div class="info-banner">
-<strong>We’ve pre-filled your industry averages to save you time.</strong><br/>
+  <h1>Customer Churn</h1>
+
+  <div class="info-banner">
+    <strong>We’ve pre-filled your industry averages to save you time.</strong><br/>
     These reflect common performance in your sector.<br/>
-<em>Have your own data?</em> Just update the fields to sharpen your results.
+    <em>Have your own data?</em> Just update the fields to sharpen your results.
   </div>
-<form id="churn-form">
-<label>Industry:</label>
-<select id="industry" name="industry" required="">
-<option value="">Select your industry</option>
-<option value="Agriculture / Farming">Agriculture / Farming</option>
-<option value="Construction">Construction</option>
-<option value="Education &amp; Training">Education &amp; Training</option>
-<option value="Finance &amp; Insurance">Finance &amp; Insurance</option>
-<option value="Government / Public Sector">Government / Public Sector</option>
-<option value="Healthcare">Healthcare</option>
-<option value="Hospitality">Hospitality</option>
-<option value="Integrated Services">Integrated Services</option>
-<option value="Logistics &amp; Transport">Logistics &amp; Transport</option>
-<option value="Manufacturing">Manufacturing</option>
-<option value="Media / Creative / Comms">Media / Creative / Comms</option>
-<option value="Non-Profit">Non-Profit</option>
-<option value="Professional Services">Professional Services</option>
-<option value="Real Estate &amp; Property">Real Estate &amp; Property</option>
-<option value="Retail">Retail</option>
-<option value="Technology / SaaS">Technology / SaaS</option>
-<option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
-</select>
-<label>Number of Active Customers:</label>
-<input id="num_customers" name="num_customers" required="" type="number"/>
-<label>Average Revenue per Customer (AUD $/year):</label>
-<input id="avg_revenue" name="avg_revenue" required="" step="0.01" type="number"/>
-<label>Customer Acquisition Cost (CAC):</label>
-<input id="cac" name="cac" required="" step="0.01" type="number"/>
-<span class="benchmark-label" id="label-cac">(Using industry average)</span>
-<small>Include average marketing, onboarding, and sales cost per new customer</small>
-<label>Current Customer Churn Rate (% per year):</label>
-<input id="churn_rate" name="churn_rate" required="" step="0.1" type="number"/>
-<span class="benchmark-label" id="label-churn">(Using industry average)</span>
-<small>e.g., 7 = 7% of customers leave annually</small>
-<label>Desired Churn Improvement (% reduction target):</label>
-<input id="desired_improvement" name="desired_improvement" required="" step="0.1" type="number"/>
-<small>e.g., 5 = reduce churn from 10% to 5%</small>
-<button type="submit">Calculate</button>
-</form>
-<p style="font-size:14px; color:#666; margin-top:-10px; margin-bottom:20px;">
-    The following results reflect potential performance insights, based on typical industry benchmarks and Candoo’s proprietary logic.
-  </p>
-<pre id="churn-result"></pre>
-<div class="cta" id="cta-bottom">
-<h3>🎯 If churn feels invisible, it’s because it is. Let’s surface it.</h3>
-<button onclick="window.location.href='tel:+61YOURNUMBER'">📞 Book a Strategy Call</button>
-<button onclick="window.location.href='mailto:admin@candooculture.com?subject=Help Me Understand What to Do Next'">
-      📧 Prefer Email? Let’s Help You Understand What to Do Next
-    </button>
-</div>
-<script>
-    (() => {
-      const MODULE = "customer-churn";
-      const API_BASE = "https://testing-gh0h.onrender.com";
 
+  <form id="churn-form">
+    <div class="form-group">
+      <label for="industry">Industry:</label>
+      <select name="industry" id="industry" required>
+        <option value="">Select your industry</option>
+        <option value="Agriculture / Farming">Agriculture / Farming</option>
+        <option value="Construction">Construction</option>
+        <option value="Education & Training">Education & Training</option>
+        <option value="Finance & Insurance">Finance & Insurance</option>
+        <option value="Government / Public Sector">Government / Public Sector</option>
+        <option value="Healthcare">Healthcare</option>
+        <option value="Hospitality">Hospitality</option>
+        <option value="Integrated Services">Integrated Services</option>
+        <option value="Logistics & Transport">Logistics & Transport</option>
+        <option value="Manufacturing">Manufacturing</option>
+        <option value="Media / Creative / Comms">Media / Creative / Comms</option>
+        <option value="Non-Profit">Non-Profit</option>
+        <option value="Professional Services">Professional Services</option>
+        <option value="Real Estate & Property">Real Estate & Property</option>
+        <option value="Retail">Retail</option>
+        <option value="Technology / SaaS">Technology / SaaS</option>
+        <option value="Utilities / Energy / Waste">Utilities / Energy / Waste</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="total_employees">Total Employees:</label>
+      <input type="number" name="total_employees" id="total_employees" required />
+    </div>
+
+    <div class="form-group">
+      <label for="avg_salary">Average Annual Salary (AUD):</label>
+      <input type="number" name="avg_salary" id="avg_salary" required />
+    </div>
+
+    <div class="form-group">
+      <label for="churn_rate">Current Customer Churn Rate (% per year):</label>
+      <input type="number" name="churn_rate" id="churn_rate" required />
+    </div>
+
+    <div class="form-group">
+      <label for="desired_improvement">Desired Churn Improvement (% reduction target):</label>
+      <input type="number" name="desired_improvement" id="desired_improvement" required />
+      <small>e.g., 5 = reduce churn from 10% to 5%</small>
+    </div>
+
+    <button type="submit">Calculate</button>
+  </form>
+
+  <div id="results"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
       const form = document.getElementById("churn-form");
-      const industrySelect = document.getElementById("industry");
-      const churnInput = document.getElementById("churn_rate");
-      const cacInput = document.getElementById("cac");
-      const labelChurn = document.getElementById("label-churn");
-      const labelCAC = document.getElementById("label-cac");
-      const resultBox = document.getElementById("churn-result");
-      const cta = document.getElementById("cta-bottom");
+      const resultBox = document.getElementById("results");
 
-      function markPrefilled(input, label, value) {
-        if (input.value.trim() === "") {
-          input.value = value;
+      const inputs = document.querySelectorAll("input, select");
+      inputs.forEach(input => {
+        const key = input.name;
+        if (!key) return;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          input.value = stored;
           input.classList.add("prefilled");
-          label.style.display = "block";
         }
-      }
 
-      function clearOnEdit(input, label) {
         input.addEventListener("input", () => {
+          localStorage.setItem(key, input.value);
           input.classList.remove("prefilled");
-          label.style.display = "none";
         });
-      }
-
-      clearOnEdit(churnInput, labelChurn);
-      clearOnEdit(cacInput, labelCAC);
-
-      async function fetchBenchmarks(industry) {
-        if (!industry) return;
-        try {
-          const res = await fetch(`${API_BASE}/get-industry-benchmarks?industry=${encodeURIComponent(industry)}`);
-          const data = await res.json();
-          if (data.churn_rate != null) markPrefilled(churnInput, labelChurn, data.churn_rate);
-          if (data.cac != null) markPrefilled(cacInput, labelCAC, data.cac);
-        } catch (err) {
-          console.error(`[${MODULE}] Benchmark fetch failed`, err);
-        }
-      }
-
-      industrySelect.addEventListener("change", () => {
-        const selected = industrySelect.value;
-        localStorage.setItem("industry", selected);
-        fetchBenchmarks(selected);
       });
-
-      const saved = localStorage.getItem("industry");
-      if (saved) {
-        industrySelect.value = saved;
-        fetchBenchmarks(saved);
-      }
 
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        resultBox.style.display = "none";
-        cta.style.display = "none";
-
         const data = Object.fromEntries(new FormData(form).entries());
-        Object.keys(data).forEach(k => { if (!isNaN(data[k])) data[k] = Number(data[k]); });
-        data.last_updated = Date.now();
-        localStorage.setItem(`${MODULE}-inputs`, JSON.stringify(data));
-        window.dispatchEvent(new Event("storage"));
-        window.dispatchEvent(new CustomEvent("module-status-updated"));
 
         try {
-          const response = await fetch(`${API_BASE}/run-churn-calculator`, {
+          const response = await fetch("https://candoo-clarity.onrender.com/run-customer-churn", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
@@ -145,44 +104,25 @@
             const totalLoss = result.revenue_loss + result.replacement_cost;
             const recoveryOpportunity = (result.potential_gain / totalLoss) * 100;
 
-            let output = `💸 Total Annual Loss from Customer Churn: AUD $${totalLoss.toLocaleString()}
-`;
-            output += ` • Lost Revenue from Churned Customers: AUD $${result.revenue_loss.toLocaleString()}
-`;
-            output += ` • Replacement Cost (CAC): AUD $${result.replacement_cost.toLocaleString()}
-\n`;
-            output += `✅ Based on Your Inputs
-`;
-            output += `🎯 Projected Annual Recovery from ${data.desired_improvement}% Reduction in Churn Rate: AUD $${result.potential_gain.toLocaleString()}
-\n`;
-            output += `📈 Opportunity
-`;
-            output += `💰 Estimated Recovery = ${recoveryOpportunity.toFixed(1)}% of Total Churn Loss (via ${data.desired_improvement}% churn reduction)
-\n`;
-            output += `📊 Benchmark Check — ${data.industry} Industry
-`;
-            output += `- ${result.benchmark_message}
-\n`;
-            output += `🧠 Straight Talk
-`;
-            output += `You're leaking AUD $${totalLoss.toLocaleString()} every year through churned customers and acquisition costs.
-`;
-            output += `Even a small improvement delivers AUD $${result.potential_gain.toLocaleString()} straight to your bottom line.`;
-
-            resultBox.innerText = output;
-            resultBox.style.display = "block";
-            cta.style.display = "block";
-          } else {
-            resultBox.innerText = "Something went wrong.";
-            resultBox.style.display = "block";
+            resultBox.innerHTML = `
+              <div class="result-block">
+                <p><strong>💸 Total Annual Loss from Customer Churn:</strong> AUD ${totalLoss.toLocaleString()}</p>
+                <p><strong>📉 Lost Revenue from Churned Customers:</strong> AUD ${result.revenue_loss.toLocaleString()}</p>
+                <p><strong>🔁 Replacement Cost (CAC):</strong> AUD ${result.replacement_cost.toLocaleString()}</p>
+                <p><strong>✅ Based on Your Inputs:</strong> ${data.desired_improvement}% reduction in churn</p>
+                <p><strong>🎯 Projected Recovery:</strong> AUD ${result.potential_gain.toLocaleString()}</p>
+                <p><strong>📈 Estimated Recovery Opportunity:</strong> ${recoveryOpportunity.toFixed(1)}% of total churn loss</p>
+                <p><strong>📊 Benchmark Check:</strong> ${data.industry} industry – ${result.benchmark_message}</p>
+                <p><strong>💬 Straight Talk:</strong> You’re leaking AUD ${totalLoss.toLocaleString()} every year through churn and acquisition costs.</p>
+                <p>🚀 Even a small improvement delivers AUD ${result.potential_gain.toLocaleString()} straight to your bottom line.</p>
+              </div>
+            `;
           }
         } catch (err) {
-          console.error(`[${MODULE}] API error`, err);
-          resultBox.innerText = "API error. Try again.";
-          resultBox.style.display = "block";
+          resultBox.innerText = "Error calculating churn impact. Please try again.";
         }
       });
-    })();
+    });
   </script>
 </body>
 </html>
