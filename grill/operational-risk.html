@@ -55,68 +55,89 @@
   <p id="status"></p>
 
   <script>
-    document.getElementById("generateBtn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const statusEl = document.getElementById("status");
-      if (!email) {
-        statusEl.textContent = "⚠️ Please enter a recipient email.";
-        return;
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("report-form");
+  const emailInput = document.getElementById("recipient-email");
+  const generateBtn = document.getElementById("generate-btn");
+  const feedback = document.getElementById("feedback");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = emailInput.value.trim();
+    if (!email) {
+      feedback.textContent = "Please enter a valid email address.";
+      feedback.style.color = "orange";
+      return;
+    }
+
+    // Load the ORS score result from localStorage
+    const resultData = localStorage.getItem("ops-risk-result");
+    if (!resultData) {
+      feedback.textContent = "No Operational Risk Score found. Please complete all modules first.";
+      feedback.style.color = "orange";
+      return;
+    }
+
+    let parsed;
+    try {
+      parsed = JSON.parse(resultData);
+    } catch (err) {
+      feedback.textContent = "Invalid report data. Try again.";
+      feedback.style.color = "red";
+      return;
+    }
+
+    const { risk_score, risk_level } = parsed;
+    if (!risk_score || !risk_level) {
+      feedback.textContent = "Report data incomplete. Please regenerate your score.";
+      feedback.style.color = "red";
+      return;
+    }
+
+    const html = `
+      <h2>Operational Risk Report</h2>
+      <p><strong>Risk Score:</strong> ${risk_score} (${risk_level})</p>
+      <p>This score is based on:</p>
+      <ul>
+        <li>Payroll Waste</li>
+        <li>Customer Churn</li>
+        <li>Leadership Drag</li>
+        <li>Workforce Productivity</li>
+        <li>Productivity Deep Dive</li>
+      </ul>
+      <p>Each area contributes to your overall operational risk. The higher the score, the more risk is leaking from inefficiencies, lost time, and leadership friction.</p>
+    `;
+
+    const payload = {
+      recipient: email,
+      subject: "Candoo: Your Operational Risk Report",
+      html: html
+    };
+
+    try {
+      const response = await fetch("https://testing-gh0h.onrender.com/send-risk-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        feedback.textContent = "✅ Report sent successfully!";
+        feedback.style.color = "green";
+        form.reset();
+      } else {
+        throw new Error(result.detail || "Failed to send report.");
       }
-
-      const keys = [
-        "payroll-waste-inputs",
-        "customer-churn-inputs",
-        "leadership-drag-inputs",
-        "workforce-productivity-inputs",
-        "productivity-deep-dive-inputs"
-      ];
-
-      let payload = { recipient: email, subject: "Candoo: Your Operational Risk Report" };
-      let score = null;
-
-      try {
-        keys.forEach(key => {
-          const data = JSON.parse(localStorage.getItem(key) || '{}');
-          payload = { ...payload, ...data };
-        });
-
-        if (payload.operational_risk_score) {
-          score = parseInt(payload.operational_risk_score);
-        }
-
-        const htmlReport = `
-          <h2>Operational Risk Report</h2>
-          <p><strong>Risk Score:</strong> ${score !== null ? score + '%' : 'Unavailable'}</p>
-          <p>This score is based on:</p>
-          <ul>
-            <li>Payroll Waste</li>
-            <li>Customer Churn</li>
-            <li>Leadership Drag</li>
-            <li>Workforce Productivity</li>
-            <li>Productivity Deep Dive</li>
-          </ul>
-          <p>Each area contributes to your overall operational risk. The higher the score, the more risk is leaking from inefficiencies, lost time, and leadership friction.</p>
-        `;
-
-        payload.html = htmlReport;
-
-        const res = await fetch("https://testing-gh0h.onrender.com/send-risk-report", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await res.json();
-        if (result.success) {
-          statusEl.textContent = "✅ Report sent successfully.";
-        } else {
-          statusEl.textContent = "⚠️ Failed to send report. Check data or try again.";
-        }
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = "❌ Error sending report.";
-      }
-    });
-  </script>
+    } catch (err) {
+      console.error(err);
+      feedback.textContent = `❌ ${err.message}`;
+      feedback.style.color = "red";
+    }
+  });
+});
+</script>
 </body>
 </html>
