@@ -101,8 +101,7 @@ def run_leadership_drag_calculator(data: LeadershipDragCalculatorRequest):
 @app.post("/run-workforce-productivity")
 def run_workforce_productivity(data: WorkforceProductivityFullRequest):
     try:
-        result = calculate_productivity_metrics(data)
-        return result
+        return calculate_productivity_metrics(data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
