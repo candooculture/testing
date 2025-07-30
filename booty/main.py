@@ -12,6 +12,7 @@ from calculator import (
     calculate_productivity_metrics_dive,
 )
 from operational_risk import run_operational_risk, RiskInput
+from booty.risk_report import router as report_router  # ✅ NEW LINE
 import pandas as pd
 
 app = FastAPI()
@@ -27,6 +28,9 @@ app.add_middleware(
 
 # === Admin Router ===
 app.include_router(admin_router)
+
+# === Risk Report Router ===
+app.include_router(report_router)  # ✅ NEW LINE
 
 # === Input Models ===
 
