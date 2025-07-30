@@ -20,17 +20,13 @@
       font-size: 28px;
       font-weight: 700;
     }
-    label {
+    label, input {
       display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
+      width: 100%;
+      margin: 10px 0;
     }
     input {
-      width: 100%;
       padding: 10px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
       font-size: 16px;
     }
     button {
@@ -42,7 +38,6 @@
       background: #48f191;
       color: #000;
       font-weight: bold;
-      font-size: 16px;
       cursor: pointer;
     }
     #status {
@@ -54,24 +49,19 @@
 </head>
 <body>
   <h1>Operational Risk Report</h1>
-
-  <label for="recipient">Recipient Email</label>
-  <input type="email" id="recipient" placeholder="you@example.com" required />
-
+  <label for="email">Recipient Email:</label>
+  <input type="email" id="email" placeholder="you@example.com" required />
   <button id="generateBtn">Generate Report</button>
   <p id="status"></p>
 
   <script>
     document.getElementById("generateBtn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
       const statusEl = document.getElementById("status");
-      const email = document.getElementById("recipient").value.trim();
-
       if (!email) {
-        statusEl.textContent = "❌ Please enter a recipient email.";
+        statusEl.textContent = "⚠️ Please enter a recipient email.";
         return;
       }
-
-      statusEl.textContent = "⏳ Sending report...";
 
       const keys = [
         "payroll-waste-inputs",
@@ -81,24 +71,34 @@
         "productivity-deep-dive-inputs"
       ];
 
-      let combinedData = {};
+      let payload = { recipient: email, subject: "Candoo: Your Operational Risk Report" };
+      let score = null;
+
       try {
         keys.forEach(key => {
           const data = JSON.parse(localStorage.getItem(key) || '{}');
-          combinedData = { ...combinedData, ...data };
+          payload = { ...payload, ...data };
         });
 
-        const htmlBody = `
-          <h2>Your Operational Risk Report</h2>
-          <p>Here is the summary of your submitted data:</p>
-          <pre>${JSON.stringify(combinedData, null, 2)}</pre>
+        if (payload.operational_risk_score) {
+          score = parseInt(payload.operational_risk_score);
+        }
+
+        const htmlReport = `
+          <h2>Operational Risk Report</h2>
+          <p><strong>Risk Score:</strong> ${score !== null ? score + '%' : 'Unavailable'}</p>
+          <p>This score is based on:</p>
+          <ul>
+            <li>Payroll Waste</li>
+            <li>Customer Churn</li>
+            <li>Leadership Drag</li>
+            <li>Workforce Productivity</li>
+            <li>Productivity Deep Dive</li>
+          </ul>
+          <p>Each area contributes to your overall operational risk. The higher the score, the more risk is leaking from inefficiencies, lost time, and leadership friction.</p>
         `;
 
-        const payload = {
-          recipient: email,
-          subject: "Your Operational Risk Report",
-          html: htmlBody
-        };
+        payload.html = htmlReport;
 
         const res = await fetch("https://testing-gh0h.onrender.com/send-risk-report", {
           method: "POST",
@@ -107,10 +107,10 @@
         });
 
         const result = await res.json();
-        if (res.ok && result.success) {
+        if (result.success) {
           statusEl.textContent = "✅ Report sent successfully.";
         } else {
-          statusEl.textContent = `⚠️ Failed to send report: ${result.detail || "Unknown error"}`;
+          statusEl.textContent = "⚠️ Failed to send report. Check data or try again.";
         }
       } catch (err) {
         console.error(err);
