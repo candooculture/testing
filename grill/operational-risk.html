@@ -20,10 +20,18 @@
       font-size: 28px;
       font-weight: 700;
     }
-    #status {
-      text-align: center;
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
       font-size: 16px;
-      margin-top: 20px;
     }
     button {
       display: block;
@@ -34,18 +42,35 @@
       background: #48f191;
       color: #000;
       font-weight: bold;
+      font-size: 16px;
       cursor: pointer;
+    }
+    #status {
+      text-align: center;
+      font-size: 16px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
   <h1>Operational Risk Report</h1>
+
+  <label for="recipient">Recipient Email</label>
+  <input type="email" id="recipient" placeholder="you@example.com" required />
+
   <button id="generateBtn">Generate Report</button>
   <p id="status"></p>
 
   <script>
     document.getElementById("generateBtn").addEventListener("click", async () => {
       const statusEl = document.getElementById("status");
+      const email = document.getElementById("recipient").value.trim();
+
+      if (!email) {
+        statusEl.textContent = "❌ Please enter a recipient email.";
+        return;
+      }
+
       statusEl.textContent = "⏳ Sending report...";
 
       const keys = [
@@ -56,12 +81,24 @@
         "productivity-deep-dive-inputs"
       ];
 
-      let payload = {};
+      let combinedData = {};
       try {
         keys.forEach(key => {
           const data = JSON.parse(localStorage.getItem(key) || '{}');
-          payload = { ...payload, ...data };
+          combinedData = { ...combinedData, ...data };
         });
+
+        const htmlBody = `
+          <h2>Your Operational Risk Report</h2>
+          <p>Here is the summary of your submitted data:</p>
+          <pre>${JSON.stringify(combinedData, null, 2)}</pre>
+        `;
+
+        const payload = {
+          recipient: email,
+          subject: "Your Operational Risk Report",
+          html: htmlBody
+        };
 
         const res = await fetch("https://testing-gh0h.onrender.com/send-risk-report", {
           method: "POST",
@@ -70,10 +107,10 @@
         });
 
         const result = await res.json();
-        if (result.success) {
+        if (res.ok && result.success) {
           statusEl.textContent = "✅ Report sent successfully.";
         } else {
-          statusEl.textContent = "⚠️ Failed to send report. Check data or try again.";
+          statusEl.textContent = `⚠️ Failed to send report: ${result.detail || "Unknown error"}`;
         }
       } catch (err) {
         console.error(err);
