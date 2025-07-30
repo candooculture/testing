@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -13,6 +13,8 @@ from calculator import (
 )
 from operational_risk import run_operational_risk, RiskInput
 import pandas as pd
+import os
+import requests
 
 app = FastAPI()
 
@@ -140,4 +142,39 @@ def get_all_industries():
         industries = sorted(df["Industry"].dropna().unique().tolist())
         return {"industries": industries}
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# === Report Sender ===
+
+@app.post("/send-risk-report")
+async def send_risk_report(request: Request):
+    try:
+        data = await request.json()
+        print("📨 Sending Risk Report:", data)
+
+        mg_api_key = os.getenv("MAILGUN_API_KEY")
+        mg_domain = os.getenv("MAILGUN_DOMAIN")
+        mg_sender = os.getenv("MAILGUN_SENDER")
+
+        if not all([mg_api_key, mg_domain, mg_sender]):
+            raise Exception("Missing one or more Mailgun environment variables.")
+
+        response = requests.post(
+            f"https://api.mailgun.net/v3/{mg_domain}/messages",
+            auth=("api", mg_api_key),
+            data={
+                "from": f"Candoo Culture Reports <{mg_sender}>",
+                "to": [data["recipient"]],
+                "subject": data["subject"],
+                "html": data["html"]
+            }
+        )
+
+        if response.status_code != 200:
+            raise Exception(f"Mailgun Error: {response.text}")
+
+        return {"success": True, "message": "Report sent."}
+
+    except Exception as e:
+        print("❌ Report Sending Failed:", str(e))
         raise HTTPException(status_code=500, detail=str(e))
