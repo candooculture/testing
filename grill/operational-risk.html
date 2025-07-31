@@ -138,5 +138,20 @@
     });
   });
 </script>
+  
+<script>
+  console.log("Script loaded.");
+
+  const btn = document.getElementById("generate-btn");
+  if (!btn) {
+    console.error("❌ Button not found in DOM.");
+  } else {
+    console.log("✅ Button found. Binding click event.");
+
+    btn.addEventListener("click", () => {
+      alert("🚀 Button clicked!");
+    });
+  }
+</script>
 </body>
 </html>
