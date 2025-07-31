@@ -1,7 +1,4 @@
-from pathlib import Path
-
-file_path = Path("/mnt/data/final_main.py")
-file_path.write_text('''from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional
@@ -205,5 +202,3 @@ async def send_risk_report(request: Request):
         return {"success": True, "message": "Report sent."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-''')
-file_path
