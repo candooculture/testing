@@ -61,6 +61,14 @@
     const feedback = document.getElementById("feedback");
     const btn = document.getElementById("generate-btn");
 
+    const read = (key) => {
+      try {
+        return JSON.parse(localStorage.getItem(key)) || {};
+      } catch {
+        return {};
+      }
+    };
+
     btn.addEventListener("click", async (e) => {
       e.preventDefault();
 
@@ -71,49 +79,46 @@
         return;
       }
 
-      // Load saved ORS result (for context only — not actually required by backend)
-      const resultData = localStorage.getItem("ops-risk-result");
-      let parsed = {};
-      if (resultData) {
-        try {
-          parsed = JSON.parse(resultData);
-        } catch (err) {
-          console.error("⚠️ Invalid JSON in ops-risk-result.");
-        }
-      }
+      // === Read all 5 module payloads ===
+      const payroll = read("payroll-waste-inputs");
+      const churn = read("customer-churn-inputs");
+      const leadership = read("leadership-drag-inputs");
+      const workforce = read("workforce-productivity-inputs");
+      const deep = read("productivity-deep-dive-inputs");
 
+      // === Merge into full payload ===
       const payload = {
         recipient: email,
         subject: "Candoo: Your Operational Risk Report",
 
-        // === Required backend keys ===
-        industry: "Professional Services",
-        total_employees: 40,
-        avg_salary: 92000,
+        // Common data
+        industry: payroll.industry || workforce.industry || "",
 
-        // Payroll
-        improvement_rate: 12,
-        payroll_cost: 3680000,
+        // Payroll Waste
+        improvement_rate: payroll.improvement_rate,
+        payroll_cost: payroll.payroll_cost,
+        total_employees: payroll.total_employees,
+        avg_salary: payroll.avg_salary,
 
-        // Churn
-        churn_rate: 14,
-        desired_improvement: 10,
-        cac: 800,
-        avg_revenue: 5200,
-        num_customers: 500,
+        // Customer Churn
+        churn_rate: churn.churn_rate,
+        desired_improvement: churn.desired_improvement,
+        cac: churn.cac,
+        avg_revenue: churn.avg_revenue,
+        num_customers: churn.num_customers,
 
-        // Leadership
-        leadership_drag: 12,
+        // Leadership Drag
+        leadership_drag: leadership.leadership_drag,
 
         // Workforce Productivity
-        total_revenue: 2600000,
-        productive_hours: 31000,
-        target_hours_per_employee: 160,
-        overtime_hours: 2800,
+        total_revenue: workforce.total_revenue,
+        productive_hours: workforce.productive_hours,
+        target_hours_per_employee: workforce.target_hours_per_employee,
+        overtime_hours: workforce.overtime_hours,
 
         // Deep Dive
-        absenteeism_days: 3,
-        avg_hours: 152
+        absenteeism_days: deep.absenteeism_days,
+        avg_hours: deep.avg_hours
       };
 
       try {
