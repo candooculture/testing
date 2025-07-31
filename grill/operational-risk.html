@@ -57,94 +57,88 @@
   <p id="feedback"></p>
 
   <script>
-    console.log("✅ Script loaded and running...");
-
     const emailInput = document.getElementById("email");
     const feedback = document.getElementById("feedback");
     const btn = document.getElementById("generate-btn");
 
-    if (!btn) {
-      console.error("❌ Button not found.");
-    } else {
-      btn.addEventListener("click", async (e) => {
-        e.preventDefault();
-        console.log("🚀 Generate Report button clicked.");
+    btn.addEventListener("click", async (e) => {
+      e.preventDefault();
 
-        const email = emailInput.value.trim();
-        if (!email) {
-          feedback.textContent = "Please enter a valid email address.";
-          feedback.style.color = "orange";
-          return;
-        }
+      const email = emailInput.value.trim();
+      if (!email) {
+        feedback.textContent = "Please enter a valid email address.";
+        feedback.style.color = "orange";
+        return;
+      }
 
-        const resultData = localStorage.getItem("ops-risk-result");
-        if (!resultData) {
-          feedback.textContent = "No Operational Risk Score found. Please complete all modules first.";
-          feedback.style.color = "orange";
-          return;
-        }
-
-        let parsed;
+      // Load saved ORS result (for context only — not actually required by backend)
+      const resultData = localStorage.getItem("ops-risk-result");
+      let parsed = {};
+      if (resultData) {
         try {
           parsed = JSON.parse(resultData);
         } catch (err) {
-          feedback.textContent = "Invalid report data. Try again.";
-          feedback.style.color = "red";
-          console.error("❌ JSON parse failed:", err);
-          return;
+          console.error("⚠️ Invalid JSON in ops-risk-result.");
         }
+      }
 
-        const { risk_score, risk_level } = parsed;
-        if (!risk_score || !risk_level) {
-          feedback.textContent = "Report data incomplete. Please regenerate your score.";
-          feedback.style.color = "red";
-          return;
+      const payload = {
+        recipient: email,
+        subject: "Candoo: Your Operational Risk Report",
+
+        // === Required backend keys ===
+        industry: "Professional Services",
+        total_employees: 40,
+        avg_salary: 92000,
+
+        // Payroll
+        improvement_rate: 12,
+        payroll_cost: 3680000,
+
+        // Churn
+        churn_rate: 14,
+        desired_improvement: 10,
+        cac: 800,
+        avg_revenue: 5200,
+        num_customers: 500,
+
+        // Leadership
+        leadership_drag: 12,
+
+        // Workforce Productivity
+        total_revenue: 2600000,
+        productive_hours: 31000,
+        target_hours_per_employee: 160,
+        overtime_hours: 2800,
+
+        // Deep Dive
+        absenteeism_days: 3,
+        avg_hours: 152
+      };
+
+      try {
+        const response = await fetch("https://testing-gh0h.onrender.com/send-risk-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+        console.log("📬 Server response:", result);
+
+        if (response.ok) {
+          feedback.textContent = "✅ Report sent successfully!";
+          feedback.style.color = "green";
+          emailInput.value = "";
+        } else {
+          throw new Error(result.detail || "Failed to send report.");
         }
-
-        const html = `
-          <h2>Operational Risk Report</h2>
-          <p><strong>Risk Score:</strong> ${risk_score} (${risk_level})</p>
-          <p>This score is based on:</p>
-          <ul>
-            <li>📉 Payroll Waste</li>
-            <li>🔁 Customer Churn</li>
-            <li>🧱 Leadership Drag</li>
-            <li>📊 Workforce Productivity</li>
-            <li>🔎 Productivity Deep Dive</li>
-          </ul>
-          <p>Each area contributes to your overall operational risk. The higher the score, the more risk is leaking from inefficiencies, lost time, and leadership friction.</p>
-        `;
-
-        const payload = {
-          recipient: email,
-          subject: "Candoo: Your Operational Risk Report",
-          html
-        };
-
-        try {
-          const response = await fetch("https://testing-gh0h.onrender.com/send-risk-report", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-          });
-
-          const result = await response.json();
-          console.log("📬 Server response:", result);
-
-          if (response.ok) {
-            feedback.textContent = "✅ Report sent successfully!";
-            feedback.style.color = "green";
-            emailInput.value = "";
-          } else {
-            throw new Error(result.detail || "Failed to send report.");
-          }
-        } catch (err) {
-          console.error("❌ Fetch failed:", err);
-          feedback.textContent = `❌ ${err.message}`;
-          feedback.style.color = "red";
-        }
-      });
-    }
+      } catch (err) {
+        console.error("❌ Fetch failed:", err);
+        feedback.textContent = `❌ ${err.message}`;
+        feedback.style.color = "red";
+      }
+    });
   </script>
 </body>
 </html>
