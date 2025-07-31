@@ -170,6 +170,7 @@ async def send_risk_report(request: Request):
 
         # Run ORS scoring
         ors_result = run_operational_risk(RiskInput(**data))
+        print("DEBUG ORS Result →", ors_result)
 
         # Build and send the HTML email
         response = requests.post(
