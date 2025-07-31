@@ -32,7 +32,7 @@ class RiskInput(BaseModel):
     # Shared
     total_employees: int = 0
     industry: str = ""
-
+    ebitda_margin: float = 20.0  # New input
 
 @router.post("/run-operational-risk")
 def run_operational_risk(data: RiskInput):
@@ -40,32 +40,44 @@ def run_operational_risk(data: RiskInput):
         inputs = data.dict()
         print("🔍 ORS Received Payload:", inputs)
 
-        module_checks = {
-            "Payroll": inputs.get("payroll_cost", 0) > 0,
-            "Churn": inputs.get("churn_rate", 0) > 0,
-            "Leadership": inputs.get("leadership_drag", 0) > 0,
-            "Productivity": inputs.get("productive_hours", 0) > 0,
-            "Deep Dive": inputs.get("avg_salary", 0) > 0 and inputs.get("absenteeism_days", 0) > 0
-        }
+        # === Baseline EBITDA ===
+        ebitda_value = inputs["total_revenue"] * (inputs["ebitda_margin"] / 100)
 
-        completed_modules = [name for name, passed in module_checks.items() if passed]
-        num_modules = len(completed_modules)
+        # === Mocked $ losses by module (replace with real logic later)
+        module_losses = {}
 
-        if num_modules == 0:
-            raise HTTPException(
-                status_code=400,
-                detail=f"No valid modules detected. Payload: {inputs}"
-            )
+        if inputs["payroll_cost"] > 0 and inputs["improvement_rate"] > 0:
+            module_losses["Payroll Waste"] = round(inputs["payroll_cost"] * (inputs["improvement_rate"] / 100), 2)
 
-        score = num_modules * 20
-        tier = "Low" if score <= 40 else "Moderate" if score <= 80 else "High"
+        if inputs["churn_rate"] > 0 and inputs["avg_revenue"] > 0 and inputs["num_customers"] > 0:
+            churn_loss = inputs["churn_rate"] / 100 * inputs["avg_revenue"] * inputs["num_customers"]
+            module_losses["Customer Churn"] = round(churn_loss, 2)
+
+        if inputs["leadership_drag"] > 0 and inputs["payroll_cost"] > 0:
+            module_losses["Leadership Drag"] = round(inputs["payroll_cost"] * (inputs["leadership_drag"] / 100), 2)
+
+        if inputs["productive_hours"] > 0 and inputs["target_hours_per_employee"] > 0 and inputs["total_employees"] > 0:
+            expected_total_hours = inputs["target_hours_per_employee"] * inputs["total_employees"]
+            productivity_gap_pct = 1 - (inputs["productive_hours"] / expected_total_hours)
+            productivity_loss = productivity_gap_pct * inputs["payroll_cost"]
+            module_losses["Workforce Productivity"] = round(max(productivity_loss, 0), 2)
+
+        if inputs["avg_hours"] > 0 and inputs["absenteeism_days"] > 0:
+            deep_dive_loss = (inputs["absenteeism_days"] / 20) * inputs["avg_salary"] * inputs["total_employees"]
+            module_losses["Process Gaps (Deep Dive)"] = round(deep_dive_loss, 2)
+
+        # === Totals ===
+        total_risk = sum(module_losses.values())
+        ebitda_risk_pct = round((total_risk / ebitda_value) * 100, 1) if ebitda_value > 0 else 0
 
         return {
-            "formatted_labels": {
-                "Operational Risk Score": f"{score}/100",
-                "Risk Tier": tier
-            },
-            "straight_talk": f"✅ Completed Modules: {', '.join(completed_modules)}\n❌ Blind Spots: {5 - num_modules} module(s) unaccounted for.\n\nThis score highlights where risk is hidden and resilience is weak."
+            "ebitda_margin": inputs["ebitda_margin"],
+            "ebitda_value": round(ebitda_value, 2),
+            "total_risk_dollars": round(total_risk, 2),
+            "ebitda_risk_pct": ebitda_risk_pct,
+            "module_breakdown": module_losses,
+            "summary": f"You're putting {ebitda_risk_pct}% of your profit at risk due to operational inefficiencies.",
+            "cta": f"If nothing changes, you'll forfeit ${round(total_risk, 2)} in profit this year."
         }
 
     except Exception as e:
