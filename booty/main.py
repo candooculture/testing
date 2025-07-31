@@ -118,37 +118,45 @@ def run_operational_risk_calculator(data: RiskInput):
 
 # === Email Report Builder ===
 
+def format_dollars(value):
+    if value is None or value == "N/A":
+        return "$N/A"
+    try:
+        return f"${float(value):,.0f}"
+    except:
+        return "$N/A"
+
 def render_report_html(data):
     return f"""
     <!DOCTYPE html>
     <html>
     <head><meta charset="UTF-8"><title>ORS Report</title></head>
-    <body style='font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 20px; color: #333;'>
+    <body style='font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 20px; color: #eee; background-color: #1a1a1a;'>
       <h2 style='text-align: center;'>📊 Operational Risk Summary</h2>
-      <p style='text-align: center; color: #555;'>Snapshot of your financial risk due to operational inefficiencies.</p>
-      <hr style='margin: 20px 0; border: none; border-top: 1px solid #eee;' />
+      <p style='text-align: center; color: #ccc;'>Snapshot of your financial risk due to operational inefficiencies.</p>
+      <hr style='margin: 20px 0; border: none; border-top: 1px solid #444;' />
 
       <h3>🔥 EBITDA at Risk</h3>
       <ul>
-        <li><strong>Total Risk Impact:</strong> ${data.get("total_risk_dollar", "N/A")}</li>
+        <li><strong>Total Risk Impact:</strong> {format_dollars(data.get("total_risk_dollars"))}</li>
         <li><strong>Estimated EBITDA Margin:</strong> {data.get("ebitda_margin", "N/A")}%</li>
         <li><strong>EBITDA at Risk:</strong> {data.get("ebitda_risk_pct", "N/A")}%</li>
       </ul>
 
       <h3>📋 Risk Breakdown</h3>
       <ul>
-        <li>Payroll Waste: ${data.get("payroll_waste_loss", "N/A")}</li>
-        <li>Customer Churn: ${data.get("churn_loss", "N/A")}</li>
-        <li>Leadership Drag: ${data.get("leadership_loss", "N/A")}</li>
-        <li>Workforce Productivity: ${data.get("productivity_loss", "N/A")}</li>
-        <li>Process Gaps: ${data.get("deep_dive_loss", "N/A")}</li>
+        <li>Payroll Waste: {format_dollars(data.get("module_breakdown", {}).get("Payroll Waste"))}</li>
+        <li>Customer Churn: {format_dollars(data.get("module_breakdown", {}).get("Customer Churn"))}</li>
+        <li>Leadership Drag: {format_dollars(data.get("module_breakdown", {}).get("Leadership Drag"))}</li>
+        <li>Workforce Productivity: {format_dollars(data.get("module_breakdown", {}).get("Workforce Productivity"))}</li>
+        <li>Process Gaps: {format_dollars(data.get("module_breakdown", {}).get("Process Gaps (Deep Dive)"))}</li>
       </ul>
 
       <h3>🧠 Inputs Summary</h3>
       <ul>
         <li><strong>Employees:</strong> {data.get("total_employees", "N/A")}</li>
-        <li><strong>Average Salary:</strong> ${data.get("avg_salary", "N/A")}</li>
-        <li><strong>Total Revenue:</strong> ${data.get("total_revenue", "N/A")}</li>
+        <li><strong>Average Salary:</strong> {format_dollars(data.get("avg_salary"))}</li>
+        <li><strong>Total Revenue:</strong> {format_dollars(data.get("total_revenue"))}</li>
         <li><strong>Industry:</strong> {data.get("industry", "N/A")}</li>
       </ul>
 
