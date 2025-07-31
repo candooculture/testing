@@ -104,7 +104,16 @@ input.prefilled {
     color: #666;
 }
 
-/* 🔥 NEW TABS STYLE (GRID) */
+.module-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 30px;
+  width: 100%;
+}
+
 .tabs {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
