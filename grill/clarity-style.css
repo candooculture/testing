@@ -141,11 +141,13 @@ input.prefilled {
 }
 
 .content {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  min-height: 320px;
+  transition: min-height 0.3s ease;
 }
 
 table {
