@@ -42,7 +42,7 @@
     <div class="tabs" id="tabs"></div>
     <div class="content" id="contentContainer">Loading...</div>
   </div>
-  
+
   <script>
     const calculators = {
       team_efficiency: { name: "💸 Payroll Waste", file: "payroll-waste.html" },
@@ -79,7 +79,7 @@
 
         const { name } = calculators[key];
         const tab = document.createElement('div');
-        tab.className = 'tab';
+        tab.className = key === '__admin__' ? 'tab admin-tab' : 'tab';
         tab.innerHTML = name;
         tab.onclick = () => switchTab(key, tab);
         tabsDiv.appendChild(tab);
@@ -140,7 +140,7 @@
 
     window.onload = loadVisibility;
   </script>
- 
+
   <script>
     document.getElementById('resetAllBtn').addEventListener('click', () => {
       if (confirm('Are you sure you want to clear all module results? This cannot be undone.')) {
