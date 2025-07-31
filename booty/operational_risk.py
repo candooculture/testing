@@ -40,12 +40,10 @@ def run_operational_risk(data: RiskInput):
         inputs = data.dict()
         print("🔍 ORS Received Payload:", inputs)
 
-        # === Baseline EBITDA ===
         ebitda_value = inputs["total_revenue"] * (inputs["ebitda_margin"] / 100)
-
-        # === Mocked $ losses by module (replace with real logic later)
         module_losses = {}
 
+        # === Calculations ===
         if inputs["payroll_cost"] > 0 and inputs["improvement_rate"] > 0:
             module_losses["Payroll Waste"] = round(inputs["payroll_cost"] * (inputs["improvement_rate"] / 100), 2)
 
@@ -66,8 +64,14 @@ def run_operational_risk(data: RiskInput):
             deep_dive_loss = (inputs["absenteeism_days"] / 20) * inputs["avg_salary"] * inputs["total_employees"]
             module_losses["Process Gaps (Deep Dive)"] = round(deep_dive_loss, 2)
 
-        # === Totals ===
-        total_risk = sum(module_losses.values())
+        # === Flattened outputs ===
+        payroll_waste = module_losses.get("Payroll Waste", 0)
+        churn_loss = module_losses.get("Customer Churn", 0)
+        leadership_loss = module_losses.get("Leadership Drag", 0)
+        productivity_loss = module_losses.get("Workforce Productivity", 0)
+        deep_dive_loss = module_losses.get("Process Gaps (Deep Dive)", 0)
+
+        total_risk = payroll_waste + churn_loss + leadership_loss + productivity_loss + deep_dive_loss
         ebitda_risk_pct = round((total_risk / ebitda_value) * 100, 1) if ebitda_value > 0 else 0
 
         return {
@@ -76,6 +80,11 @@ def run_operational_risk(data: RiskInput):
             "total_risk_dollars": round(total_risk, 2),
             "ebitda_risk_pct": ebitda_risk_pct,
             "module_breakdown": module_losses,
+            "payroll_waste_loss": payroll_waste,
+            "churn_loss": churn_loss,
+            "leadership_loss": leadership_loss,
+            "productivity_loss": productivity_loss,
+            "deep_dive_loss": deep_dive_loss,
             "summary": f"You're putting {ebitda_risk_pct}% of your profit at risk due to operational inefficiencies.",
             "cta": f"If nothing changes, you'll forfeit ${round(total_risk, 2)} in profit this year."
         }
