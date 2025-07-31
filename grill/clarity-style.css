@@ -92,6 +92,40 @@ select {
     transition: box-shadow 0.2s ease-in-out;
 }
 
+/* === Standard Calculator Module Styles (Shared) === */
+
+.info-banner {
+  background: #f1f1f1;
+  padding: 15px;
+  margin-bottom: 25px;
+  border-left: 4px solid #48f191;
+  font-size: 14px;
+  color: #333;
+}
+
+label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+input, select, button {
+  display: block;
+  width: 100%;
+  font-size: 16px;
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+input.prefilled {
+  background-color: #f9f9f9;
+  color: #555;
+}
+
 input:focus,
 select:focus {
     border-color: #48f191;
