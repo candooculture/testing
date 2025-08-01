@@ -1,3 +1,4 @@
+
 /* clarity-style.css - DARK THEME BUILD with Shared Background Image */
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600&display=swap');
@@ -60,6 +61,10 @@ h2 {
   font-weight: 600;
   margin-bottom: 20px;
 }
+.content p,
+.intro p {
+  color: #ccc;
+}
 
 /* BUTTONS */
 button,
@@ -76,6 +81,7 @@ a button {
   box-shadow: 0 2px 5px rgba(19, 220, 255, 0.2);
   display: inline-block;
   margin-top: 16px;
+  min-width: 140px;
 }
 button:hover,
 a button:hover {
