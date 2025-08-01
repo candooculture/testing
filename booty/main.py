@@ -130,11 +130,74 @@ def render_report_html(data):
     return f"""
     <!DOCTYPE html>
     <html>
-    <head><meta charset="UTF-8"><title>ORS Report</title></head>
-    <body style='font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 20px; color: #eee; background-color: #1a1a1a;'>
-      <h2 style='text-align: center;'>📊 Operational Risk Summary</h2>
-      <p style='text-align: center; color: #ccc;'>Snapshot of your financial risk due to operational inefficiencies.</p>
-      <hr style='margin: 20px 0; border: none; border-top: 1px solid #444;' />
+    <head>
+      <meta charset="UTF-8">
+      <title>ORS Report</title>
+      <style>
+        body {{
+          font-family: Arial, sans-serif;
+          background-color: #1a1a1a;
+          color: #eee;
+          max-width: 640px;
+          margin: 0 auto;
+          padding: 30px 20px;
+          line-height: 1.6;
+        }}
+        h2 {{
+          text-align: center;
+          color: #fff;
+          font-size: 24px;
+          margin-bottom: 10px;
+        }}
+        h3 {{
+          font-size: 20px;
+          border-bottom: 1px solid #444;
+          padding-bottom: 6px;
+          margin-top: 30px;
+          color: #fff;
+        }}
+        h4 {{
+          font-size: 16px;
+          color: #ccc;
+          margin-top: 24px;
+          margin-bottom: 6px;
+        }}
+        ul {{
+          list-style: none;
+          padding-left: 0;
+          margin-top: 0;
+        }}
+        li {{
+          padding: 4px 0;
+          border-bottom: 1px solid #2a2a2a;
+        }}
+        li:last-child {{
+          border-bottom: none;
+        }}
+        p, li {{
+          font-size: 14px;
+        }}
+        em {{
+          font-style: italic;
+          color: #aaa;
+        }}
+        .footer-note {{
+          margin-top: 30px;
+          font-size: 13px;
+          color: #777;
+          text-align: center;
+        }}
+      </style>
+    </head>
+    <body>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="https://cdn.prod.website-files.com/6837cb68fba35c01d42b2008/683bf2a9cdebe0a37abc749f_icons%20website-p-500.png"
+             alt="Candoo Culture" width="140" style="max-width: 100%; height: auto;" />
+      </div>
+
+      <h2>📊 Operational Risk Summary</h2>
+      <p style="text-align: center; color: #ccc;">Snapshot of your financial risk due to operational inefficiencies.</p>
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid #444;" />
 
       <h3>🔥 EBITDA at Risk</h3>
       <ul>
@@ -145,54 +208,50 @@ def render_report_html(data):
 
       <h3>📋 Risk Breakdown</h3>
       <ul>
-        <li>Payroll Waste: {format_dollars(data.get("module_breakdown", {}).get("Payroll Waste"))}</li>
-        <li>Customer Churn: {format_dollars(data.get("module_breakdown", {}).get("Customer Churn"))}</li>
-        <li>Leadership Drag: {format_dollars(data.get("module_breakdown", {}).get("Leadership Drag"))}</li>
-        <li>Workforce Productivity: {format_dollars(data.get("module_breakdown", {}).get("Workforce Productivity"))}</li>
-        <li>Process Gaps: {format_dollars(data.get("module_breakdown", {}).get("Process Gaps (Deep Dive)"))}</li>
+        <li><strong>Payroll Waste:</strong> {format_dollars(data.get("module_breakdown", {}).get("Payroll Waste"))}</li>
+        <li><strong>Customer Churn:</strong> {format_dollars(data.get("module_breakdown", {}).get("Customer Churn"))}</li>
+        <li><strong>Leadership Drag:</strong> {format_dollars(data.get("module_breakdown", {}).get("Leadership Drag"))}</li>
+        <li><strong>Workforce Productivity:</strong> {format_dollars(data.get("module_breakdown", {}).get("Workforce Productivity"))}</li>
+        <li><strong>Process Gaps:</strong> {format_dollars(data.get("module_breakdown", {}).get("Process Gaps (Deep Dive)"))}</li>
       </ul>
 
       <h3>🧠 Inputs Summary</h3>
-        <p style='color: #999; font-size: 13px;'><em>Please note: This is a direct summary of the inputs used in your calculation. Some values may reflect benchmark data based on your selected industry.</em></p>
-        
-        <!-- BUSINESS CONTEXT -->
-        <h4 style='margin-top: 20px; color: #ccc;'>Business Context</h4>
-        <ul>
-          <li><strong>Industry:</strong> {data.get("industry", "N/A")}</li>
-          <li><strong>Total Employees:</strong> {data.get("total_employees", "N/A")}</li>
-          <li><strong>Average Salary:</strong> {format_dollars(data.get("avg_salary"))}</li>
-          <li><strong>Total Revenue:</strong> {format_dollars(data.get("total_revenue"))}</li>
-        </ul>
-        
-        <!-- CUSTOMER ECONOMICS -->
-        <h4 style='margin-top: 20px; color: #ccc;'>Customer Economics</h4>
-        <ul>
-          <li><strong>Number of Customers:</strong> {data.get("num_customers", "N/A")}</li>
-          <li><strong>Average Revenue per Customer:</strong> {format_dollars(data.get("avg_revenue"))}</li>
-          <li><strong>CAC:</strong> {format_dollars(data.get("cac"))}</li>
-          <li><strong>Churn Rate:</strong> {data.get("churn_rate", "N/A")}%</li>
-          <li><strong>Desired Improvement:</strong> {data.get("desired_improvement", "N/A")}%</li>
-        </ul>
-        
-        <!-- LEADERSHIP & PRODUCTIVITY -->
-        <h4 style='margin-top: 20px; color: #ccc;'>Leadership & Productivity</h4>
-        <ul>
-          <li><strong>Leadership Drag:</strong> {data.get("leadership_drag", "N/A")}%</li>
-          <li><strong>Improvement Rate:</strong> {data.get("improvement_rate", "N/A")}%</li>
-          <li><strong>Productive Hours:</strong> {data.get("productive_hours", "N/A")}</li>
-          <li><strong>Target Hours per Employee:</strong> {data.get("target_hours_per_employee", "N/A")}</li>
-          <li><strong>Average Weekly Hours:</strong> {data.get("avg_hours", "N/A")}</li>
-          <li><strong>Overtime Hours:</strong> {data.get("overtime_hours", "N/A")}</li>
-          <li><strong>Absenteeism Days:</strong> {data.get("absenteeism_days", "N/A")}</li>
-        </ul>
-        
-        <!-- CALCULATED -->
-        <h4 style='margin-top: 20px; color: #ccc;'>Calculated</h4>
-        <ul>
-          <li><strong>Payroll Cost:</strong> {format_dollars(data.get("payroll_cost"))}</li>
-        </ul>
+      <p><em>Please note: This is a direct summary of the inputs used in your calculation. Some values may reflect benchmark data based on your selected industry.</em></p>
 
-      <p style='margin-top: 30px; font-size: 14px; color: #777;'>Generated by the Candoo Culture ORS Engine.</p>
+      <h4>Business Context</h4>
+      <ul>
+        <li><strong>Industry:</strong> {data.get("industry", "N/A")}</li>
+        <li><strong>Total Employees:</strong> {data.get("total_employees", "N/A")}</li>
+        <li><strong>Average Salary:</strong> {format_dollars(data.get("avg_salary"))}</li>
+        <li><strong>Total Revenue:</strong> {format_dollars(data.get("total_revenue"))}</li>
+      </ul>
+
+      <h4>Customer Economics</h4>
+      <ul>
+        <li><strong>Number of Customers:</strong> {data.get("num_customers", "N/A")}</li>
+        <li><strong>Average Revenue per Customer:</strong> {format_dollars(data.get("avg_revenue"))}</li>
+        <li><strong>CAC:</strong> {format_dollars(data.get("cac"))}</li>
+        <li><strong>Churn Rate:</strong> {data.get("churn_rate", "N/A")}%</li>
+        <li><strong>Desired Improvement:</strong> {data.get("desired_improvement", "N/A")}%</li>
+      </ul>
+
+      <h4>Workforce & Operations</h4>
+      <ul>
+        <li><strong>Leadership Drag:</strong> {data.get("leadership_drag", "N/A")}%</li>
+        <li><strong>Productive Hours:</strong> {data.get("productive_hours", "N/A")}</li>
+        <li><strong>Target Hours per Employee:</strong> {data.get("target_hours_per_employee", "N/A")}</li>
+        <li><strong>Average Weekly Hours:</strong> {data.get("avg_hours", "N/A")}</li>
+        <li><strong>Overtime Hours:</strong> {data.get("overtime_hours", "N/A")}</li>
+        <li><strong>Absenteeism Days:</strong> {data.get("absenteeism_days", "N/A")}</li>
+      </ul>
+
+      <h4>Calculated & Efficiency Factors</h4>
+      <ul>
+        <li><strong>Payroll Cost:</strong> {format_dollars(data.get("payroll_cost"))}</li>
+        <li><strong>Improvement Rate:</strong> {data.get("improvement_rate", "N/A")}%</li>
+      </ul>
+
+      <p class="footer-note">Generated by the Candoo Culture ORS Engine.</p>
     </body>
     </html>
     """
