@@ -1,252 +1,234 @@
-/* clarity-style.css */
+/* clarity-style.css - DARK THEME BUILD */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;600&display=swap');
+
+html {
+    background-color: #000;
+    background-image: url('background.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 body {
-  font-family: 'DM Sans', sans-serif;
-  background: #f9f9f9;
-  color: #333;
-  padding: 40px 20px;
-  max-width: 900px;
-  margin: auto;
-  line-height: 1.6;
+    font-family: 'Montserrat', sans-serif;
+    color: #fff;
+    padding: 40px 20px;
+    max-width: 900px;
+    margin: auto;
+    line-height: 1.6;
+    background: transparent;
+}
+
+/* Logo Position */
+.logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.logo img {
+    width: 140px;
+    height: auto;
+    opacity: 0.9;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.logo img:hover {
+    opacity: 1;
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 32px;
-  font-weight: 700;
-  color: #222;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
 }
 
-.ors-warning {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  padding: 20px;
-  margin: 30px 0;
-  border-radius: 8px;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.ors-warning h3 {
-  margin-top: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.ors-warning ul {
-  margin-left: 1.2rem;
-  padding-left: 0;
-  list-style: disc;
-}
-
-.reset-wrapper {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.reset-button {
-  background-color: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffeeba;
-  padding: 10px 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.reset-button:hover {
-  background-color: #ffe8a1;
+h2 {
+    color: #13dcff !important;
+    font-weight: 600;
+    margin-bottom: 20px;
 }
 
 button {
-  background-color: #48f191;
-  color: #222;
-  font-weight: 600;
-  padding: 12px 16px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+    background-color: #13dcff;
+    color: #000;
+    font-weight: 600;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    box-shadow: 0 2px 5px rgba(19, 220, 255, 0.2);
 }
 
 button:hover {
-  background-color: #3bddad;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    background-color: #0fbcd8;
+    box-shadow: 0 4px 10px rgba(19, 220, 255, 0.3);
 }
 
 input,
 select {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  font-size: 16px;
-  box-sizing: border-box;
-  background-color: #fff;
-  transition: box-shadow 0.2s ease-in-out;
-}
-
-/* === Shared Calculator Module Styles === */
-
-.info-banner {
-  background: #f1f1f1;
-  padding: 15px;
-  margin-bottom: 25px;
-  border-left: 4px solid #48f191;
-  font-size: 14px;
-  color: #333;
-}
-
-label {
-  font-weight: 600;
-  margin-bottom: 8px;
-  display: block;
-}
-
-input, select, button {
-  display: block;
-  width: 100%;
-  font-size: 16px;
-  padding: 12px;
-  margin-bottom: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-family: inherit;
-  box-sizing: border-box;
-}
-
-input.prefilled {
-  background-color: #f9f9f9;
-  color: #555;
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #444;
+    border-radius: 10px;
+    font-size: 16px;
+    box-sizing: border-box;
+    background-color: #111;
+    color: #fff;
+    transition: box-shadow 0.2s ease-in-out, border-color 0.2s;
 }
 
 input:focus,
 select:focus {
-  border-color: #48f191;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(72, 241, 145, 0.2);
+    border-color: #13dcff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(19, 220, 255, 0.3);
 }
 
 input.prefilled {
-  background-color: #f2f2f2;
-  color: #666;
+    background-color: #222;
+    color: #aaa;
 }
 
-.module-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  align-items: center;
-  justify-content: flex-start;
-  margin-top: 30px;
-  width: 100%;
-}
-
-/* === Tabs Layout and Styling === */
+/* 🔥 TABS STYLE (GRID) */
 .tabs {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-  justify-content: center;
-  margin: 30px auto;
-  max-width: 800px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 25px;
 }
 
 .tab {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 14px 20px;
-  background-color: #ffffff;
-  border: 1px solid #ccc;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 16px;
-  transition: background-color 0.2s, box-shadow 0.2s;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-  white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 14px 20px;
+    background-color: #111;
+    border: 1px solid #333;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    color: #fff;
 }
 
 .tab:hover {
-  background-color: #f0fdf9;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    background-color: #1a1a1a;
+    box-shadow: 0 2px 6px rgba(19, 220, 255, 0.2);
 }
 
 .tab.active {
-  background-color: #e8fff4;
-  border: 2px solid #48f191;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+    background-color: #0f0f0f;
+    border: 2px solid #13dcff;
+    box-shadow: inset 0 1px 3px rgba(19, 220, 255, 0.15);
+    color: #13dcff;
 }
 
-.tab.admin-tab {
-  grid-column: 1 / -1;
-  justify-self: center;
-  max-width: 300px;
-}
-
-/* === Inner Module Container === */
 .content {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  min-height: 320px;
-  transition: min-height 0.3s ease;
+    background-color: #333;
+    border: 1px solid #222;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: #fff;
 }
 
 table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  background-color: #fff;
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #111;
+    color: #fff;
 }
 
-th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: left;
+th,
+td {
+    border: 1px solid #333;
+    padding: 10px;
+    text-align: left;
 }
 
 th {
-  background-color: #f0f0f0;
-  font-weight: bold;
+    background-color: #1a1a1a;
+    font-weight: bold;
+    color: #13dcff;
 }
 
 .status-message.success {
-  color: #26a269;
-  font-weight: 500;
-  margin-top: 10px;
+    color: #13dcff;
+    font-weight: 500;
+    margin-top: 10px;
 }
 
 .status-message.error {
-  color: #d0393e;
-  font-weight: 500;
-  margin-top: 10px;
+    color: #ff4d4d;
+    font-weight: 500;
+    margin-top: 10px;
 }
 
 .edited-cell {
-  background-color: #ffffdd;
+    background-color: #333300;
 }
 
 .calculator-toggle {
-  margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 a button {
-  width: auto;
-  display: inline-block;
-  margin-top: 10px;
+    width: auto;
+    display: inline-block;
+    margin-top: 10px;
 }
 
 .hidden {
-  display: none !important;
+    display: none !important;
+}
+
+/* === FIXES === */
+p, .info-banner, .cta h3 {
+    color: #fff !important;
+}
+
+.cta-button,
+a.cta-button,
+button,
+a button {
+    background-color: #13dcff !important;
+    color: #000 !important;
+    font-weight: bold;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    display: inline-block;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.cta-button:hover,
+a.cta-button:hover,
+button:hover,
+a button:hover {
+    background-color: #0fbcd8 !important;
+    color: #000 !important;
+}
+
+.cta-button + .cta-button {
+    margin-left: 20px;
+}
+
+#efficiency-form + p {
+    margin-top: 10px !important;
 }
