@@ -63,6 +63,22 @@ h2 {
     margin-bottom: 20px;
 }
 
+.before-you-begin {
+  background: rgba(255, 255, 255, 0.08); /* subtle light overlay */
+  border-left: 5px solid #13dcff;
+  padding: 20px 25px;
+  margin: 30px 0;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(19, 220, 255, 0.15);
+}
+.before-you-begin h2 {
+  margin-top: 0;
+  font-size: 1.25rem;
+  color: #13dcff;
+}
+
 button,
 a button {
     background-color: #13dcff;
