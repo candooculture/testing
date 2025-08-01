@@ -167,6 +167,14 @@ small,
   color: #fff;
 }
 
+.benchmark-note {
+  font-size: 14px;
+  color: #aaa;
+  margin-top: 12px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
 /* MODULES + MISC */
 .cta-button + .cta-button {
   margin-left: 20px;
