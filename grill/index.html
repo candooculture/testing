@@ -98,7 +98,7 @@
         tab.innerHTML = name;
         tab.onclick = () => switchTab(key, tab);
         // Decide which row this tab belongs to
-        if (["payroll_waste", "customer_churn", "leadership_drag"].includes(key)) {
+        if (["team_efficiency", "customer_churn", "leadership_drag"].includes(key)) {
           rowTop.appendChild(tab);
         } else if (["workforce_productivity", "productivity_dive"].includes(key)) {
           rowMid.appendChild(tab);
@@ -109,7 +109,8 @@
       });
 
       const firstKey = visibleKeys.find(k => k !== '__admin__');
-      const firstTab = tabsDiv.querySelector('.tab');
+      const allTabs = document.querySelectorAll('.tab');
+      const firstTab = allTabs[0];
       if (firstTab && firstKey) {
         firstTab.classList.add('active');
         switchTab(firstKey, firstTab);
