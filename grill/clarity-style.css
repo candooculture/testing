@@ -157,6 +157,24 @@ small,
   color: #13dcff;
 }
 
+.admin-link-wrapper {
+  margin-top: -10px;
+  text-align: right;
+  width: 100%;
+  padding-right: 10px;
+}
+
+.admin-link {
+  font-size: 12px;
+  opacity: 0.3;
+  text-decoration: none;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.admin-link:hover {
+  opacity: 0.6;
+}
+
 /* CONTENT */
 .content {
   background-color: #333;
