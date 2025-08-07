@@ -68,9 +68,11 @@
     };
 
     async function loadVisibility() {
-      const tabsDiv = document.getElementById('tabs');
-      const container = document.getElementById('contentContainer');
-      tabsDiv.innerHTML = '';
+      const rowTop = document.getElementById('tabs-top');
+      const rowMid = document.getElementById('tabs-middle');
+      const rowBot = document.getElementById('tabs-bottom');
+      
+      [rowTop, rowMid, rowBot].forEach(row => row.innerHTML = '');
 
       let visibleKeys = [];
 
@@ -95,7 +97,15 @@
         tab.className = key === '__admin__' ? 'tab admin-tab' : 'tab';
         tab.innerHTML = name;
         tab.onclick = () => switchTab(key, tab);
-        tabsDiv.appendChild(tab);
+        // Decide which row this tab belongs to
+        if (["payroll_waste", "customer_churn", "leadership_drag"].includes(key)) {
+          rowTop.appendChild(tab);
+        } else if (["workforce_productivity", "productivity_dive"].includes(key)) {
+          rowMid.appendChild(tab);
+        } else if (key === "operational_risk") {
+          rowBot.appendChild(tab);
+        }
+
       });
 
       const firstKey = visibleKeys.find(k => k !== '__admin__');
