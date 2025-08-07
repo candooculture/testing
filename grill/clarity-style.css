@@ -166,7 +166,7 @@ small,
 
 .admin-link {
   font-size: 12px;
-  opacity: 0.3;
+  opacity: 1;
   text-decoration: none;
   color: #333;
   transition: opacity 0.2s ease-in-out;
