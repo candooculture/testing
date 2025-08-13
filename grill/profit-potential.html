@@ -122,6 +122,21 @@
   @media (max-width: 860px) {
     .col-3, .col-4, .col-6, .col-12 { grid-column: span 12; }
   }
+        /* Center the whole module nicely */
+body {
+  display: grid;
+  place-items: start center;   /* top–center */
+  min-height: 100dvh;
+  padding: 24px;
+}
+
+.wrap {
+  width: min(1100px, calc(100vw - 48px)); /* fit on small screens, cap on large */
+  margin: 0;  /* body grid handles centering */
+}
+
+/* Optional: tighten card edges on dark bg */
+.card { border-color: #dfe3ea; }
 </style>
 </head>
 
