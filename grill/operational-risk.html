@@ -101,3 +101,46 @@ function saveOrsRisk(v) {
 }
 </script>
 
+<script>
+/* Capture ANY JSON response on this page and save ORS ($) to localStorage */
+(function () {
+  function setRisk(val) {
+    const n = Number(String(val).replace(/,/g, ''));
+    if (Number.isFinite(n) && n > 0) {
+      localStorage.setItem('ors_ebitda_at_risk', String(n));
+      // poke this page; other tabs will read on their reload
+      try { window.dispatchEvent(new Event('storage')); } catch (_) {}
+      console.log("💾 Saved ors_ebitda_at_risk:", n);
+    }
+  }
+  function findRisk(obj) {
+    if (!obj || typeof obj !== 'object') return null;
+    // Try your common backend field names. Add more if your response shape differs.
+    const keys = [
+      "total_risk_dollars",
+      "total_ors_ebitda_risk",
+      "total_risk_impact",
+      "ebitda_at_risk",
+      "ebitdaAtRisk"
+    ];
+    for (const k of keys) if (obj[k] != null) return obj[k];
+    if (obj.results) return findRisk(obj.results);
+    return null;
+  }
+  const origFetch = window.fetch;
+  window.fetch = async function (...args) {
+    const res = await origFetch.apply(this, args);
+    try {
+      const clone = res.clone();
+      const ct = (clone.headers.get('content-type') || '').toLowerCase();
+      if (ct.includes('application/json')) {
+        const data = await clone.json();
+        const val = findRisk(data);
+        if (val != null) setRisk(val);
+      }
+    } catch (_) {}
+    return res;
+  };
+})();
+</script>
+
