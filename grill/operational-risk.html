@@ -83,3 +83,15 @@
     }
   });
 </script>
+
+<script>
+// 1) tiny helper
+function saveOrsRisk(v) {
+  const n = Number(String(v).replace(/,/g, ''));
+  if (!Number.isFinite(n) || n <= 0) return;
+  localStorage.setItem('ors_ebitda_at_risk', String(n));
+  // nudge other tabs/views
+  try { window.dispatchEvent(new Event('storage')); } catch(_) {}
+}
+</script>
+
