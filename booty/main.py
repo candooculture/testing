@@ -295,7 +295,7 @@ async def send_risk_report(request: Request):
         # === Run ORS Calculation and inject results ===
         try:
             ors_result = run_operational_risk(RiskInput(**data))
-            data.update(ors_result)
+            data.update(ors_result)  # adds keys like total_risk_dollars, ebitda_risk_pct
         except Exception as calc_error:
             print("ORS calculation failed:", calc_error)
 
@@ -314,13 +314,30 @@ async def send_risk_report(request: Request):
                 "from": f"Candoo Culture Reports <{mg_sender}>",
                 "to": [data["recipient"]],
                 "subject": data["subject"],
-                "html": render_report_html(data)
-            }
+                "html": render_report_html(data),
+            },
+            timeout=20,
         )
 
         if response.status_code != 200:
             raise Exception(f"Mailgun Error: {response.text}")
 
-        return {"success": True, "message": "Report sent."}
+        # === Return ORS figures for frontend storage ===
+        total_risk = float(
+            data.get("total_risk_dollars")
+            or data.get("total_risk_impact")
+            or 0
+        )
+        ebitda_pct = float(data.get("ebitda_risk_pct") or 0)
+
+        return {
+            "success": True,
+            "message": "Report sent.",
+            "results": {
+                "total_risk_dollars": total_risk,  # primary
+                "ebitdaAtRisk": total_risk,        # alias for UI
+                "ebitda_risk_pct": ebitda_pct,
+            },
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
