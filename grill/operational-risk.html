@@ -14,11 +14,8 @@
   const btn = document.getElementById("generate-btn");
 
   const read = (key) => {
-    try {
-      return JSON.parse(localStorage.getItem(key)) || {};
-    } catch {
-      return {};
-    }
+    try { return JSON.parse(localStorage.getItem(key)) || {}; }
+    catch { return {}; }
   };
 
   btn.addEventListener("click", async (e) => {
@@ -68,6 +65,15 @@
 
       const result = await response.json();
       console.log("📬 Server response:", result);
+
+      // NEW: save EBITDA-at-risk to localStorage for the Profit page
+      const orsVal =
+        (result?.results?.total_risk_dollars) ??
+        (result?.results?.ebitdaAtRisk) ??
+        (result?.total_ors_ebitda_risk) ??
+        (result?.total_risk_impact) ??
+        (result?.ebitda_at_risk) ?? 0;
+      saveOrsRisk(orsVal); // <- this calls the helper you already added at the bottom
 
       if (response.ok) {
         feedback.textContent = "✅ Report sent successfully!";
