@@ -123,20 +123,23 @@
     .col-3, .col-4, .col-6, .col-12 { grid-column: span 12; }
   }
         /* Center the whole module nicely */
-body {
-  display: grid;
-  place-items: start center;   /* top–center */
-  min-height: 100dvh;
+/* Center the whole module (robust against external CSS) */
+.wrap{
+  width: min(1120px, 100%);
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Keep dark bg + spacing, but no grid layout */
+body{
+  background: var(--bg);
   padding: 24px;
 }
 
-.wrap {
-  width: min(1100px, calc(100vw - 48px)); /* fit on small screens, cap on large */
-  margin: 0;  /* body grid handles centering */
-}
-
-/* Optional: tighten card edges on dark bg */
-.card { border-color: #dfe3ea; }
+/* Optional: slightly stronger card edge on dark bg */
+.card{ border-color:#dfe3ea; }
 </style>
 </head>
 
