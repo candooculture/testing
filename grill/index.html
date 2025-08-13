@@ -181,6 +181,83 @@
       }
     });
   </script>
+  
+  <script>
+(() => {
+  // === Floating test button ===
+  const btn = document.createElement('button');
+  btn.textContent = 'TEST: Profit Potential';
+  Object.assign(btn.style, {
+    position:'fixed', right:'16px', bottom:'16px', zIndex: 99999,
+    background:'#0ea5e9', color:'#fff', border:'0', padding:'10px 14px',
+    borderRadius:'10px', fontWeight:'600', cursor:'pointer', boxShadow:'0 2px 10px rgba(0,0,0,.15)'
+  });
+  btn.id = 'pp_test_open';
+  document.body.appendChild(btn);
+
+  // === Open overlay with iframe ===
+  function openOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'pp_overlay';
+    Object.assign(overlay.style, {
+      position:'fixed', inset:'0', background:'#fff', zIndex: 99998, display:'flex', flexDirection:'column'
+    });
+
+    // top bar with controls
+    const bar = document.createElement('div');
+    Object.assign(bar.style, {
+      flex:'0 0 auto', display:'flex', alignItems:'center', gap:'8px',
+      padding:'8px 12px', borderBottom:'1px solid #e5e7eb', background:'#f8fafc'
+    });
+
+    function mkBtn(label, onClick) {
+      const b = document.createElement('button');
+      b.textContent = label;
+      Object.assign(b.style, {
+        background:'#fff', color:'#0ea5e9', border:'1px solid #0ea5e9',
+        padding:'6px 10px', borderRadius:'8px', fontWeight:'600', cursor:'pointer'
+      });
+      b.addEventListener('click', onClick);
+      return b;
+    }
+
+    // Decide URL: index and modules live together in /grill/
+    const moduleUrl = 'profit-potential.html'; // same folder as index.html in your test repo
+
+    const linkInfo = document.createElement('span');
+    linkInfo.textContent = 'Profit Potential (iframe)';
+    linkInfo.style.cssText = 'font-weight:600;margin-right:auto;';
+
+    // iframe
+    const frame = document.createElement('iframe');
+    frame.id = 'pp_iframe';
+    frame.src = moduleUrl;
+    Object.assign(frame.style, { flex:'1 1 auto', width:'100%', height:'100%', border:'0' });
+
+    // Controls
+    const seedORS = mkBtn('Seed ORS 800k + Reload', () => {
+      localStorage.setItem('ors_ebitda_at_risk', '800000'); // same-origin storage
+      frame.contentWindow.location.reload();
+    });
+    const seedPayroll = mkBtn('Seed Payroll 120k + Reload', () => {
+      localStorage.setItem('payroll-waste-savings', '120000');
+      frame.contentWindow.location.reload();
+    });
+    const clearSeeds = mkBtn('Clear Seeds + Reload', () => {
+      ['ors_ebitda_at_risk','payroll-waste-savings'].forEach(k => localStorage.removeItem(k));
+      frame.contentWindow.location.reload();
+    });
+    const newTab = mkBtn('Open in New Tab', () => window.open(moduleUrl, '_blank'));
+    const close = mkBtn('Close', () => overlay.remove());
+
+    bar.append(linkInfo, seedORS, seedPayroll, clearSeeds, newTab, close);
+    overlay.append(bar, frame);
+    document.body.appendChild(overlay);
+  }
+
+  btn.addEventListener('click', openOverlay);
+})();
+</script>
 </body>
 
 </html>
