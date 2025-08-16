@@ -22,16 +22,15 @@
     color:#e5e7eb;
   }
 
-  /* simple, reliable centering */
   .wrap{
     max-width: var(--maxw);
     width: 100%;
-    margin: 0 auto !important;     /* center */
-    padding: 0 24px;                /* gutters */
+    margin: 0 !important;              /* centering handled by #pp flex */
+    padding: 0 24px;                    /* gutters */
     box-sizing: border-box;
     display: block !important;
     float: none !important;
-    position: static !important;    /* kill previous positioning */
+    position: static !important;
     transform: none !important;
   }
 
@@ -86,9 +85,21 @@
   .logo a{display:inline-flex; align-items:center; gap:10px; text-decoration:none; color:inherit;}
   .logo-tag{font-size:.9rem; opacity:.8; text-decoration:underline;}
 
+  /* SCOPED, BULLETPROOF CENTERING */
+  #pp{
+    display:flex !important;
+    justify-content:center !important;
+    align-items:flex-start !important;
+    min-height:100dvh;
+    background: var(--bg);
+  }
+  #pp .wrap{
+    width: min(var(--maxw), 100%);
+  }
+
   @media (max-width:860px){
     .col-3,.col-4,.col-6,.col-12{grid-column:span 12;}
-    .wrap{ padding: 0 16px; }
+    #pp .wrap{ padding: 0 16px; }
   }
 </style>
 </head>
