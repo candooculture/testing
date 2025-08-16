@@ -258,203 +258,238 @@
   </div>
 
   <script>
-    // ---- Storage Keys we try to read ----
-    const KEYMAP = {
-      ors: ["ors_ebitda_at_risk","ors-ebitda-risk","orsTotalRisk","ORS_EBITDA_AT_RISK"],
+  // ---- Storage Keys we try to read ----
+  const KEYMAP = {
+    ors: [
+      "ors_ebitda_at_risk", "ors-ebitda-risk", "orsTotalRisk",
+      "ORS_EBITDA_AT_RISK", "ebitdaAtRisk" // extra alias
+    ],
+    savings: {
+      payroll:   ["payroll-waste-savings","payrollSavings","payroll_waste_savings"],
+      churn:     ["customer-churn-savings","churnSavings","customer_churn_savings"],
+      workforce: ["workforce-productivity-savings","workforceSavings","workforce_productivity_savings"],
+      deep:      ["productivity-deep-dive-savings","deepDiveSavings","productivity_deep_dive_savings"],
+      leadership:["leadership-drag-savings","leadershipSavings","leadership_drag_savings"]
+    }
+  };
+
+  function lsFirstNumber(keys){
+    for (const k of keys){
+      const raw = localStorage.getItem(k);
+      if (!raw) continue;
+
+      // try a plain number string (allow commas)
+      const v = Number(String(raw).replace(/,/g,"").trim());
+      if (!Number.isNaN(v)) return v;
+
+      // try JSON with common fields
+      try{
+        const obj = JSON.parse(raw);
+        const candidates = ["value","amount","total","ebitda_at_risk","ebitdaRisk","risk","savings","gain"];
+        for (const c of candidates){
+          if (obj && typeof obj === "object" && obj[c] != null){
+            const n = Number(String(obj[c]).replace(/,/g,""));
+            if (!Number.isNaN(n)) return n;
+          }
+        }
+      }catch(_){}
+    }
+    return null;
+  }
+
+  function fmt(n){
+    return (n==null || Number.isNaN(n))
+      ? "–"
+      : n.toLocaleString(undefined,{style:"currency",currency:"AUD",maximumFractionDigits:0});
+  }
+
+  function num(id){
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    const v = Number(String(el.value).replace(/,/g,"").trim());
+    return Number.isFinite(v) ? v : 0;
+  }
+
+  function setVal(id, value){
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = value ?? "";
+    try { localStorage.setItem(id, el.value); } catch {}
+  }
+
+  // Always overwrite Net/Gross when top-line inputs exist
+  function computeNow(){
+    const rev  = num("revenue");
+    const cogs = num("cogs");
+    const opex = num("opex");
+
+    let gp = num("grossNow") || null;
+    let np = num("netNow"); // may be user-entered if no top-line inputs
+
+    if (rev || cogs || opex){
+      gp = (rev || 0) - (cogs || 0);
+      np = gp - (opex || 0);
+
+      // write both every time (prevents stale values)
+      setVal("grossNow", String(gp));
+      setVal("netNow",   String(np));
+    } else {
+      if (gp == null) gp = 0;
+      if (!Number.isFinite(np)) np = 0;
+    }
+    return { gpNow: gp ?? 0, npNow: np ?? 0 };
+  }
+
+  function totalSavings(){
+    return num("payrollSavings") + num("churnSavings") + num("workforceSavings")
+         + num("deepDiveSavings") + num("leadershipSavings");
+  }
+
+  function deltaBadge(delta){
+    if (!Number.isFinite(delta)) return "–";
+    const cls  = delta >= 0 ? "pos" : "neg";
+    const sign = delta >= 0 ? "+" : "";
+    return `<span class="${cls}">${sign}${fmt(delta)}</span>`;
+  }
+
+  function taxRate(){
+    const t = Number(document.getElementById("taxRate")?.value || 0);
+    return Math.min(1, Math.max(0, t/100));
+  }
+
+  function recalc(){
+    const { gpNow, npNow } = computeNow();
+    const fixes = totalSavings();
+    const ors   = num("orsRisk");
+    const useFixes = document.getElementById("applyFixes").checked;
+    const useORS   = document.getElementById("applyORS").checked;
+
+    // Now
+    document.getElementById("gpNowCell").textContent = fmt(gpNow);
+    document.getElementById("npNowCell").textContent = fmt(npNow);
+
+    // Fixes only
+    const npFix = npNow + (useFixes ? fixes : 0);
+    document.getElementById("gpFixCell").textContent = fmt(gpNow);
+    document.getElementById("npFixCell").textContent = fmt(npFix);
+    document.getElementById("npFixDelta").innerHTML = deltaBadge(npFix - npNow);
+
+    // ORS only (EBITDA)
+    const npORS = npNow + (useORS ? ors : 0);
+    document.getElementById("gpORSCell").textContent = fmt(gpNow);
+    document.getElementById("npORSCell").textContent = fmt(npORS);
+    document.getElementById("npORSDelta").innerHTML = deltaBadge(npORS - npNow);
+
+    // ORS → Net after tax
+    const orsAfterTax = (useORS ? ors * (1 - taxRate()) : 0);
+    const npORSnet = npNow + orsAfterTax;
+    document.getElementById("gpORSNetCell").textContent = fmt(gpNow);
+    document.getElementById("npORSNetCell").textContent = fmt(npORSnet);
+    document.getElementById("npORSNetDelta").innerHTML = deltaBadge(npORSnet - npNow);
+
+    // Best uses after-tax ORS so it's Net apples-to-apples
+    const npBest = npNow + (useFixes ? fixes : 0) + orsAfterTax;
+    document.getElementById("gpBestCell").textContent = fmt(gpNow);
+    document.getElementById("npBestCell").textContent = fmt(npBest);
+    document.getElementById("npBestDelta").innerHTML = deltaBadge(npBest - npNow);
+
+    const period = (document.getElementById("periodLabel").value || "this period");
+    document.getElementById("summary").textContent =
+      `In ${period}, fixing inefficiencies adds ${fmt(useFixes?fixes:0)}. ` +
+      `Eliminating ORS adds ${fmt(useORS?ors:0)} at EBITDA, ≈ ${fmt(useORS?orsAfterTax:0)} to net after tax. ` +
+      `Best-case Net becomes ${fmt(npBest)} (from ${fmt(npNow)}).`;
+  }
+
+  function preload(){
+    const ids = ["revenue","cogs","opex","grossNow","netNow","periodLabel",
+      "payrollSavings","churnSavings","workforceSavings","deepDiveSavings","leadershipSavings",
+      "orsRisk","applyFixes","applyORS","taxRate"];
+
+    for (const id of ids){
+      const el = document.getElementById(id); if (!el) continue;
+      const stored = localStorage.getItem(id);
+      if (stored != null){
+        if (el.type === "checkbox") el.checked = stored === "true";
+        else el.value = stored;
+      }
+      el.addEventListener(el.type === "checkbox" ? "change" : "input", ()=>{
+        localStorage.setItem(id, el.type === "checkbox" ? String(el.checked) : el.value);
+      });
+    }
+
+    // Pull module values if our fields are empty
+    if (!num("payrollSavings"))   { const v=lsFirstNumber(KEYMAP.savings.payroll);    if (v!=null) setVal("payrollSavings",v); }
+    if (!num("churnSavings"))     { const v=lsFirstNumber(KEYMAP.savings.churn);      if (v!=null) setVal("churnSavings",v); }
+    if (!num("workforceSavings")) { const v=lsFirstNumber(KEYMAP.savings.workforce);  if (v!=null) setVal("workforceSavings",v); }
+    if (!num("deepDiveSavings"))  { const v=lsFirstNumber(KEYMAP.savings.deep);       if (v!=null) setVal("deepDiveSavings",v); }
+    if (!num("leadershipSavings")){ const v=lsFirstNumber(KEYMAP.savings.leadership); if (v!=null) setVal("leadershipSavings",v); }
+    if (!num("orsRisk"))          { const v=lsFirstNumber(KEYMAP.ors);                if (v!=null) setVal("orsRisk",v); }
+  }
+
+  function copyJSON(){
+    const payload = {
+      period: document.getElementById("periodLabel").value || null,
+      inputs: {
+        revenue: num("revenue"), cogs: num("cogs"), opex: num("opex"),
+        grossNow: num("grossNow") || null, netNow: num("netNow")
+      },
       savings: {
-        payroll:   ["payroll-waste-savings","payrollSavings","payroll_waste_savings"],
-        churn:     ["customer-churn-savings","churnSavings","customer_churn_savings"],
-        workforce: ["workforce-productivity-savings","workforceSavings","workforce_productivity_savings"],
-        deep:      ["productivity-deep-dive-savings","deepDiveSavings","productivity_deep_dive_savings"],
-        leadership:["leadership-drag-savings","leadershipSavings","leadership_drag_savings"]
+        payroll: num("payrollSavings"), churn: num("churnSavings"),
+        workforce: num("workforceSavings"), deepDive: num("deepDiveSavings"),
+        leadership: num("leadershipSavings"),
+      },
+      ors: { ebitdaAtRisk: num("orsRisk") },
+      taxRatePct: Number(document.getElementById("taxRate")?.value || 0),
+      scenarios: {
+        applyFixes: document.getElementById("applyFixes").checked,
+        applyORS: document.getElementById("applyORS").checked
+      },
+      results: {
+        now:   { gross: document.getElementById("gpNowCell").textContent,  net: document.getElementById("npNowCell").textContent },
+        fixes: { gross: document.getElementById("gpFixCell").textContent,  net: document.getElementById("npFixCell").textContent,   delta: document.getElementById("npFixDelta").innerText },
+        ors:   { gross: document.getElementById("gpORSCell").textContent,  net: document.getElementById("npORSCell").textContent,   delta: document.getElementById("npORSDelta").innerText },
+        orsNet:{ gross: document.getElementById("gpORSNetCell").textContent, net: document.getElementById("npORSNetCell").textContent, delta: document.getElementById("npORSNetDelta").innerText },
+        best:  { gross: document.getElementById("gpBestCell").textContent, net: document.getElementById("npBestCell").textContent,   delta: document.getElementById("npBestDelta").innerText }
       }
     };
-
-    function lsFirstNumber(keys){
-      for(const k of keys){
-        const raw = localStorage.getItem(k);
-        if(!raw) continue;
-        const v = Number(String(raw).replace(/,/g,"").trim());
-        if(!Number.isNaN(v)) return v;
-        try{
-          const obj = JSON.parse(raw);
-          const candidates=["value","amount","total","ebitda_at_risk","ebitdaRisk","risk","savings","gain"];
-          for(const c of candidates){
-            if(obj && typeof obj==="object" && obj[c]!=null){
-              const n = Number(String(obj[c]).replace(/,/g,""));
-              if(!Number.isNaN(n)) return n;
-            }
-          }
-        }catch(_){}
+    const text = JSON.stringify(payload, null, 2);
+    navigator.clipboard.writeText(text).then(
+      ()=>alert("Copied results JSON to clipboard."),
+      ()=>{
+        const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta);
+        ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+        alert("Copied results JSON to clipboard.");
       }
-      return null;
-    }
+    );
+  }
 
-    function fmt(n){ return (n==null || Number.isNaN(n)) ? "–" :
-      n.toLocaleString(undefined,{style:"currency",currency:"AUD",maximumFractionDigits:0}); }
-
-    function num(id){
-      const el=document.getElementById(id); if(!el) return 0;
-      const v = Number(String(el.value).replace(/,/g,"").trim());
-      return Number.isFinite(v) ? v : 0;
-    }
-    function setVal(id, value){ const el=document.getElementById(id); if(!el) return;
-      el.value = value ?? ""; localStorage.setItem(id, el.value); }
-
-    function computeNow(){
-      const rev=num("revenue"), cogs=num("cogs"), opex=num("opex");
-      let gp = num("grossNow") || null, np = num("netNow") || null;
-      if(rev || cogs || opex){
-        gp = (rev||0) - (cogs||0);
-        np = gp - (opex||0);
-        setVal("grossNow", String(gp));
-        if(!num("netNow")) setVal("netNow", String(np));
-      } else {
-        if(np==null) np = 0;
-      }
-      return { gpNow: gp ?? 0, npNow: np ?? 0 };
-    }
-    function totalSavings(){
-      return num("payrollSavings")+num("churnSavings")+num("workforceSavings")+num("deepDiveSavings")+num("leadershipSavings");
-    }
-    function deltaBadge(delta){
-      if(!Number.isFinite(delta)) return "–";
-      const cls = delta>=0 ? "pos" : "neg";
-      const sign = delta>=0 ? "+" : "";
-      return `<span class="${cls}">${sign}${fmt(delta)}</span>`;
-    }
-    function taxRate(){
-      const t = Number(document.getElementById("taxRate")?.value || 0);
-      return Math.min(1, Math.max(0, t/100));
-    }
-
-    function recalc(){
-      const { gpNow, npNow } = computeNow();
-      const fixes = totalSavings();
-      const ors = num("orsRisk");
-      const useFixes = document.getElementById("applyFixes").checked;
-      const useORS = document.getElementById("applyORS").checked;
-
-      // Now
-      document.getElementById("gpNowCell").textContent = fmt(gpNow);
-      document.getElementById("npNowCell").textContent = fmt(npNow);
-
-      // Fixes only
-      const npFix = npNow + (useFixes ? fixes : 0);
-      document.getElementById("gpFixCell").textContent = fmt(gpNow);
-      document.getElementById("npFixCell").textContent = fmt(npFix);
-      document.getElementById("npFixDelta").innerHTML = deltaBadge(npFix - npNow);
-
-      // ORS only (EBITDA)
-      const npORS = npNow + (useORS ? ors : 0);
-      document.getElementById("gpORSCell").textContent = fmt(gpNow);
-      document.getElementById("npORSCell").textContent = fmt(npORS);
-      document.getElementById("npORSDelta").innerHTML = deltaBadge(npORS - npNow);
-
-      // ORS → Net after tax
-      const orsAfterTax = (useORS ? ors * (1 - taxRate()) : 0);
-      const npORSnet = npNow + orsAfterTax;
-      document.getElementById("gpORSNetCell").textContent = fmt(gpNow);
-      document.getElementById("npORSNetCell").textContent = fmt(npORSnet);
-      document.getElementById("npORSNetDelta").innerHTML = deltaBadge(npORSnet - npNow);
-
-      // Best uses after-tax ORS so it's Net apples-to-apples
-      const npBest = npNow + (useFixes ? fixes : 0) + orsAfterTax;
-      document.getElementById("gpBestCell").textContent = fmt(gpNow);
-      document.getElementById("npBestCell").textContent = fmt(npBest);
-      document.getElementById("npBestDelta").innerHTML = deltaBadge(npBest - npNow);
-
-      const period = (document.getElementById("periodLabel").value || "this period");
-      document.getElementById("summary").textContent =
-        `In ${period}, fixing inefficiencies adds ${fmt(useFixes?fixes:0)}. ` +
-        `Eliminating ORS adds ${fmt(useORS?ors:0)} at EBITDA, ≈ ${fmt(useORS?orsAfterTax:0)} to net after tax. ` +
-        `Best-case Net becomes ${fmt(npBest)} (from ${fmt(npNow)}).`;
-    }
-
-    function preload(){
-      const ids = ["revenue","cogs","opex","grossNow","netNow","periodLabel",
+  window.addEventListener("DOMContentLoaded", ()=>{
+    preload();
+    ["revenue","cogs","opex","netNow","payrollSavings","churnSavings","workforceSavings",
+     "deepDiveSavings","leadershipSavings","orsRisk","applyFixes","applyORS","periodLabel","taxRate"]
+      .forEach(id=>{
+        const el=document.getElementById(id); if(!el) return;
+        el.addEventListener(el.type==="checkbox"?"change":"input", recalc);
+      });
+    document.getElementById("recalc").addEventListener("click", recalc);
+    document.getElementById("copyJSON").addEventListener("click", copyJSON);
+    document.getElementById("clear").addEventListener("click", ()=>{
+      const ids=["revenue","cogs","opex","grossNow","netNow","periodLabel",
         "payrollSavings","churnSavings","workforceSavings","deepDiveSavings","leadershipSavings",
         "orsRisk","applyFixes","applyORS","taxRate"];
-      for(const id of ids){
-        const el = document.getElementById(id); if(!el) continue;
-        const stored = localStorage.getItem(id);
-        if(stored!=null){
-          if(el.type==="checkbox") el.checked = stored==="true";
-          else el.value = stored;
-        }
-        el.addEventListener(el.type==="checkbox"?"change":"input", ()=>{
-          localStorage.setItem(id, el.type==="checkbox" ? String(el.checked) : el.value);
-        });
+      for (const id of ids){
+        localStorage.removeItem(id);
+        const el=document.getElementById(id); if(!el) continue;
+        if (el.type==="checkbox") el.checked=(id==="applyFixes"||id==="applyORS");
+        else el.value="";
       }
-      // Pull module values if our fields are empty
-      if(!num("payrollSavings"))  { const v=lsFirstNumber(KEYMAP.savings.payroll);   if(v!=null) setVal("payrollSavings",v); }
-      if(!num("churnSavings"))    { const v=lsFirstNumber(KEYMAP.savings.churn);     if(v!=null) setVal("churnSavings",v); }
-      if(!num("workforceSavings")){ const v=lsFirstNumber(KEYMAP.savings.workforce); if(v!=null) setVal("workforceSavings",v); }
-      if(!num("deepDiveSavings")) { const v=lsFirstNumber(KEYMAP.savings.deep);      if(v!=null) setVal("deepDiveSavings",v); }
-      if(!num("leadershipSavings")){const v=lsFirstNumber(KEYMAP.savings.leadership);if(v!=null) setVal("leadershipSavings",v); }
-      if(!num("orsRisk"))         { const v=lsFirstNumber(KEYMAP.ors);               if(v!=null) setVal("orsRisk",v); }
-    }
-
-    function copyJSON(){
-      const payload = {
-        period: document.getElementById("periodLabel").value || null,
-        inputs: {
-          revenue: num("revenue"), cogs: num("cogs"), opex: num("opex"),
-          grossNow: num("grossNow") || null, netNow: num("netNow")
-        },
-        savings: {
-          payroll: num("payrollSavings"), churn: num("churnSavings"),
-          workforce: num("workforceSavings"), deepDive: num("deepDiveSavings"),
-          leadership: num("leadershipSavings"),
-        },
-        ors: { ebitdaAtRisk: num("orsRisk") },
-        taxRatePct: Number(document.getElementById("taxRate")?.value || 0),
-        scenarios: {
-          applyFixes: document.getElementById("applyFixes").checked,
-          applyORS: document.getElementById("applyORS").checked
-        },
-        results: {
-          now:   { gross: document.getElementById("gpNowCell").textContent,  net: document.getElementById("npNowCell").textContent },
-          fixes: { gross: document.getElementById("gpFixCell").textContent,  net: document.getElementById("npFixCell").textContent, delta: document.getElementById("npFixDelta").innerText },
-          ors:   { gross: document.getElementById("gpORSCell").textContent,  net: document.getElementById("npORSCell").textContent, delta: document.getElementById("npORSDelta").innerText },
-          orsNet:{ gross: document.getElementById("gpORSNetCell").textContent, net: document.getElementById("npORSNetCell").textContent, delta: document.getElementById("npORSNetDelta").innerText },
-          best:  { gross: document.getElementById("gpBestCell").textContent, net: document.getElementById("npBestCell").textContent, delta: document.getElementById("npBestDelta").innerText }
-        }
-      };
-      const text = JSON.stringify(payload, null, 2);
-      navigator.clipboard.writeText(text).then(()=>alert("Copied results JSON to clipboard."),()=>{
-        const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta);
-        ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("Copied results JSON to clipboard.");
-      });
-    }
-
-    window.addEventListener("DOMContentLoaded", ()=>{
-      preload();
-      ["revenue","cogs","opex","netNow","payrollSavings","churnSavings","workforceSavings",
-       "deepDiveSavings","leadershipSavings","orsRisk","applyFixes","applyORS","periodLabel","taxRate"]
-        .forEach(id=>{
-          const el=document.getElementById(id); if(!el) return;
-          el.addEventListener(el.type==="checkbox"?"change":"input", recalc);
-        });
-      document.getElementById("recalc").addEventListener("click", recalc);
-      document.getElementById("copyJSON").addEventListener("click", copyJSON);
-      document.getElementById("clear").addEventListener("click", ()=>{
-        const ids=["revenue","cogs","opex","grossNow","netNow","periodLabel",
-          "payrollSavings","churnSavings","workforceSavings","deepDiveSavings","leadershipSavings",
-          "orsRisk","applyFixes","applyORS","taxRate"];
-        for(const id of ids){
-          localStorage.removeItem(id);
-          const el=document.getElementById(id); if(!el) continue;
-          if(el.type==="checkbox") el.checked=(id==="applyFixes"||id==="applyORS");
-          else el.value="";
-        }
-        recalc();
-      });
       recalc();
     });
+    recalc();
+  });
 
-    // (Optional) react to other tabs saving values
-    window.addEventListener("storage", ()=>{ recalc(); });
-  </script>
+  // (Optional) react to other tabs saving values
+  window.addEventListener("storage", ()=>{ recalc(); });
+</script>
 </body>
 </html>
