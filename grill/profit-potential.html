@@ -283,7 +283,7 @@
   const KEYMAP = {
     ors: [
       "ors_ebitda_at_risk", "ors-ebitda-risk", "orsTotalRisk",
-      "ORS_EBITDA_AT_RISK", "ebitdaAtRisk" // extra alias
+      "ORS_EBITDA_AT_RISK", "ebitdaAtRisk"
     ],
     savings: {
       payroll:   ["payroll-waste-savings","payrollSavings","payroll_waste_savings"],
@@ -422,7 +422,8 @@
   }
 
   function preload(){
-    const ids = ["revenue","cogs","opex","grossNow","netNow","periodLabel",
+    // Do NOT preload grossNow/netNow (prevents reviving stale 5s)
+    const ids = ["revenue","cogs","opex","periodLabel",
       "payrollSavings","churnSavings","workforceSavings","deepDiveSavings","leadershipSavings",
       "orsRisk","applyFixes","applyORS","taxRate"];
 
@@ -486,15 +487,22 @@
 
   window.addEventListener("DOMContentLoaded", ()=>{
     preload();
+
     ["revenue","cogs","opex","netNow","payrollSavings","churnSavings","workforceSavings",
      "deepDiveSavings","leadershipSavings","orsRisk","applyFixes","applyORS","periodLabel","taxRate"]
       .forEach(id=>{
         const el=document.getElementById(id); if(!el) return;
         el.addEventListener(el.type==="checkbox"?"change":"input", recalc);
       });
-    document.getElementById("recalc").addEventListener("click", recalc);
-    document.getElementById("copyJSON").addEventListener("click", copyJSON);
-    document.getElementById("clear").addEventListener("click", ()=>{
+
+    const recalcBtn = document.getElementById("recalc");
+    if (recalcBtn) recalcBtn.addEventListener("click", recalc);
+
+    const copyBtn = document.getElementById("copyJSON");
+    if (copyBtn) copyBtn.addEventListener("click", copyJSON);
+
+    const clearBtn = document.getElementById("clear");
+    if (clearBtn) clearBtn.addEventListener("click", ()=>{
       const ids=["revenue","cogs","opex","grossNow","netNow","periodLabel",
         "payrollSavings","churnSavings","workforceSavings","deepDiveSavings","leadershipSavings",
         "orsRisk","applyFixes","applyORS","taxRate"];
@@ -506,6 +514,7 @@
       }
       recalc();
     });
+
     recalc();
   });
 
