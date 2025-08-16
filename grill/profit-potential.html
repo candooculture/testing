@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="clarity-style.css">
-  <style>
+<style>
   :root{
     --maxw:1120px; --pad:24px; --gap:12px; --radius:12px;
     --accent:#13dcff; --bg:#333;
@@ -22,16 +22,19 @@
     color:#e5e7eb;
   }
 
-  /* bulletproof centering for the module */
+  /* bulletproof centering */
   .wrap{
-    width: min(var(--maxw), calc(100vw - 48px));
-    position: relative;
-    left: 50%;
-    transform: translateX(-50%);
-    margin: 0 !important;
-    display:block !important;
-    float:none !important;
-    clear:both !important;
+    max-width: var(--maxw);
+    width: min(var(--maxw), 100%);
+    margin: 0 auto !important;              /* center */
+    padding-inline: 24px;                    /* gutters */
+    box-sizing: border-box;
+    position: static !important;             /* kill previous hacks */
+    left: auto !important;
+    transform: none !important;
+    float: none !important;
+    clear: both !important;
+    display: block !important;
   }
 
   h1,h2,h3{margin:0 0 12px;}
