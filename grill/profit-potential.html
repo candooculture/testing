@@ -212,7 +212,7 @@
     <div class="col-3">
       <label>&nbsp;</label>
       <div class="actions">
-        <label><input type="checkbox" id="applyORS" checked> Eliminate ORS Risk</label>
+        <label><input type="checkbox" id="applyORS"> Eliminate ORS Risk</label>
       </div>
     </div>
   </div>
@@ -501,7 +501,7 @@
       for (const id of ids){
         localStorage.removeItem(id);
         const el=document.getElementById(id); if(!el) continue;
-        if (el.type==="checkbox") el.checked=(id==="applyFixes"||id==="applyORS");
+        if (el.type==="checkbox") el.checked = (id === "applyFixes"); // Fixes on, ORS off
         else el.value="";
       }
       recalc();
