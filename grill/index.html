@@ -184,7 +184,6 @@
   
   <script>
 (() => {
-  // === Floating test button ===
   const btn = document.createElement('button');
   btn.textContent = 'TEST: Profit Potential';
   Object.assign(btn.style, {
@@ -192,62 +191,11 @@
     background:'#0ea5e9', color:'#fff', border:'0', padding:'10px 14px',
     borderRadius:'10px', fontWeight:'600', cursor:'pointer', boxShadow:'0 2px 10px rgba(0,0,0,.15)'
   });
-  btn.id = 'pp_test_open';
   document.body.appendChild(btn);
 
-  function chromeBtn(label, onClick){
-    const b = document.createElement('button');
-    b.textContent = label;
-    Object.assign(b.style, {
-      background:'#fff', color:'#0ea5e9', border:'1px solid #0ea5e9',
-      padding:'6px 10px', borderRadius:'8px', fontWeight:'600', cursor:'pointer'
-    });
-    b.addEventListener('click', onClick);
-    return b;
-  }
-
-  // === Open overlay with iframe ===
-  function openOverlay() {
-    // kill existing overlay if any
-    document.getElementById('pp_overlay')?.remove();
-
-    const overlay = document.createElement('div');
-    overlay.id = 'pp_overlay';
-    overlay.setAttribute('role','dialog');
-    Object.assign(overlay.style, {
-      position:'fixed', inset:'0', background:'rgba(0,0,0,.8)',
-      zIndex: 99998, display:'flex', flexDirection:'column', backdropFilter:'blur(2px)'
-    });
-
-    // top bar
-    const bar = document.createElement('div');
-    Object.assign(bar.style, {
-      flex:'0 0 auto', display:'flex', alignItems:'center', gap:'8px',
-      padding:'8px 12px', borderBottom:'1px solid #e5e7eb', background:'#f8fafc'
-    });
-
-    const title = document.createElement('span');
-    title.textContent = 'Profit Potential (preview)';
-    title.style.cssText = 'font-weight:600;margin-right:auto;';
-
-    const moduleUrl = 'profit-potential.html'; // same folder as index.html
-    const openTab = chromeBtn('Open in New Tab', () => window.open(moduleUrl, '_blank'));
-    const close = chromeBtn('Close', () => overlay.remove());
-
-    bar.append(title, openTab, close);
-
-    // iframe
-    const frame = document.createElement('iframe');
-    frame.id = 'pp_iframe';
-    frame.src = moduleUrl;
-    Object.assign(frame.style, { flex:'1 1 auto', width:'100%', height:'100%', border:'0', background:'#111' });
-
-    // mount everything
-    overlay.append(bar, frame);
-    document.body.appendChild(overlay);
-  }
-
-  btn.addEventListener('click', openOverlay);
+  btn.addEventListener('click', () => {
+    window.open('profit-potential.html', '_blank');
+  });
 })();
 </script>
 </body>
