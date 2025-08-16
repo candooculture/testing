@@ -85,28 +85,27 @@
   .logo a{display:inline-flex; align-items:center; gap:10px; text-decoration:none; color:inherit;}
   .logo-tag{font-size:.9rem; opacity:.8; text-decoration:underline;}
 
-  /* SCOPED, BULLETPROOF CENTERING */
-  #pp{
-    display:flex !important;
-    justify-content:center !important;
-    align-items:flex-start !important;
-    min-height:100dvh;
-    background: var(--bg);
-  }
-  #pp .wrap{
-    width: min(var(--maxw), 100%);
-  }
-
-  @media (max-width:860px){
-    .col-3,.col-4,.col-6,.col-12{grid-column:span 12;}
-    #pp .wrap{ padding: 0 16px; }
-  }
-</style>
-
-<style>
-#pp{display:grid !important;place-items:start center !important;min-height:100dvh;margin:0;padding:var(--pad);background:var(--bg);}
-#pp .wrap{width:min(1120px,calc(100vw - 48px));margin:0 !important;padding-inline:24px;box-sizing:border-box;position:static !important;left:auto !important;right:auto !important;transform:none !important;float:none !important;clear:both !important;}
-@media (max-width:860px){#pp .wrap{width:calc(100vw - 32px);padding-inline:16px;}}
+#pp{
+  display:grid !important;
+  place-items:start center !important;
+  min-height:100dvh;
+  width:100% !important;        /* <-- uncap width */
+  max-width:none !important;     /* <-- override 900px clamp */
+  margin:0 !important;           /* beat margin:auto */
+  padding:var(--pad) !important; /* beat global padding */
+  background:var(--bg);
+}
+#pp .wrap{
+  width:min(1120px,calc(100vw - 48px));
+  margin:0 !important;
+  padding-inline:24px;
+  box-sizing:border-box;
+  position:static !important; left:auto !important; right:auto !important; transform:none !important;
+  float:none !important; clear:both !important;
+}
+@media (max-width:860px){
+  #pp .wrap{ width:calc(100vw - 32px); padding-inline:16px; }
+}
 </style>
 </head>
 <body id="pp" >
