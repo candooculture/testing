@@ -152,54 +152,71 @@
       </div>
     </div>
 
-    <!-- Savings & ORS -->
-    <div class="card">
-      <h2>Fixable Savings & ORS Impact</h2>
-      <p class="hint">If your calculators already produced $-savings, they may auto-fill. Otherwise, type them.</p>
-      <div class="grid" style="margin-top:8px;">
-        <div class="col-4">
-          <label for="payrollSavings">Payroll Waste – Savings</label>
-          <input type="number" id="payrollSavings" step="0.01" placeholder="e.g. 120,000">
-        </div>
-        <div class="col-4">
-          <label for="churnSavings">Customer Churn – Recovery</label>
-          <input type="number" id="churnSavings" step="0.01" placeholder="e.g. 250,000">
-        </div>
-        <div class="col-4">
-          <label for="workforceSavings">Workforce Productivity – Gain</label>
-          <input type="number" id="workforceSavings" step="0.01" placeholder="e.g. 300,000">
-        </div>
-        <div class="col-4">
-          <label for="deepDiveSavings">Productivity Deep Dive – Gain</label>
-          <input type="number" id="deepDiveSavings" step="0.01" placeholder="e.g. 90,000">
-        </div>
-        <div class="col-4">
-          <label for="leadershipSavings">Leadership Drag – Reduction</label>
-          <input type="number" id="leadershipSavings" step="0.01" placeholder="e.g. 160,000">
-        </div>
-        <div class="col-4">
-          <label for="orsRisk">ORS – EBITDA at Risk</label>
-          <input type="number" id="orsRisk" step="0.01" placeholder="e.g. 800,000">
-          <small class="hint">
-            EBITDA = your core operating profit before tax and interest. 
-            It’s pre-tax; the table also shows the estimated after-tax net impact.
-            (We auto fill this from other modules if found - edit if needed.)
-          </small>
-        </div>
-        <div class="col-4">
-          <label for="taxRate">Tax rate (%)</label>
-          <input type="number" id="taxRate" step="0.1" value="30">
-          <p class="hint">Converts ORS (EBITDA) to net after tax.</p>
-        </div>
-      </div>
+    <!-- Savings only -->
+<div class="card" id="card-savings">
+  <h2>Fixable Savings</h2>
+  <p class="hint">If your calculators already produced $-savings, they may auto-fill. Otherwise, type them.</p>
 
+  <div class="grid">
+    <div class="col-4">
+      <label for="payrollSavings">Payroll Waste — Savings</label>
+      <input type="number" id="payrollSavings" placeholder="e.g. 120,000" inputmode="decimal">
+    </div>
+
+    <div class="col-4">
+      <label for="churnSavings">Customer Churn — Recovery</label>
+      <input type="number" id="churnSavings" placeholder="e.g. 250,000" inputmode="decimal">
+    </div>
+
+    <div class="col-4">
+      <label for="workforceSavings">Workforce Productivity — Gain</label>
+      <input type="number" id="workforceSavings" placeholder="e.g. 300,000" inputmode="decimal">
+    </div>
+
+    <div class="col-4">
+      <label for="deepDiveSavings">Productivity Deep Dive — Gain</label>
+      <input type="number" id="deepDiveSavings" placeholder="e.g. 90,000" inputmode="decimal">
+    </div>
+
+    <div class="col-4">
+      <label for="leadershipSavings">Leadership Drag — Reduction</label>
+      <input type="number" id="leadershipSavings" placeholder="e.g. 160,000" inputmode="decimal">
+    </div>
+  </div>
+
+  <div class="actions" style="margin-top:12px">
+    <label><input type="checkbox" id="applyFixes" checked> Apply “Fix Inefficiencies”</label>
+  </div>
+</div>
+
+<!-- ORS + Tax (Optional) -->
+<div class="card" id="card-ors">
+  <h2>ORS Risk &amp; Tax <span class="hint">(optional)</span></h2>
+
+  <div class="grid">
+    <div class="col-6">
+      <label for="orsRisk">ORS — EBITDA at Risk</label>
+      <input type="number" id="orsRisk" placeholder="e.g. 800,000" inputmode="decimal">
+      <p class="hint" style="margin-top:6px">
+        EBITDA = your core operating profit before interest &amp; tax. It’s pre-tax; the table also shows
+        the estimated after-tax net impact. (We auto-fill this from other modules if found — edit if needed.)
+      </p>
+    </div>
+
+    <div class="col-3">
+      <label for="taxRate">Tax rate (%)</label>
+      <input type="number" id="taxRate" placeholder="e.g. 30" min="0" max="60" step="1">
+      <p class="hint" style="margin-top:6px">Converts ORS (EBITDA) to net after tax.</p>
+    </div>
+
+    <div class="col-3">
+      <label>&nbsp;</label>
       <div class="actions">
-        <label><input type="checkbox" id="applyFixes" checked>Apply “Fix Inefficiencies”</label>
-        <label><input type="checkbox" id="applyORS" checked>Eliminate ORS Risk</label>
-        <button id="recalc">Recalculate</button>
-        <button id="clear" class="ghost">Reset This Page</button>
+        <label><input type="checkbox" id="applyORS" checked> Eliminate ORS Risk</label>
       </div>
     </div>
+  </div>
+</div>
 
     <!-- Results -->
     <div class="card">
