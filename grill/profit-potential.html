@@ -102,9 +102,14 @@
     #pp .wrap{ padding: 0 16px; }
   }
 </style>
-</head>
 
-<body id="pp">
+<style>
+#pp{display:grid !important;place-items:start center !important;min-height:100dvh;margin:0;padding:var(--pad);background:var(--bg);}
+#pp .wrap{width:min(1120px,calc(100vw - 48px));margin:0 !important;padding-inline:24px;box-sizing:border-box;position:static !important;left:auto !important;right:auto !important;transform:none !important;float:none !important;clear:both !important;}
+@media (max-width:860px){#pp .wrap{width:calc(100vw - 32px);padding-inline:16px;}}
+</style>
+</head>
+<body id="pp" >
   <div class="wrap">
     <div class="logo">
       <a href="https://candooculture.com/">
