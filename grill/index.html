@@ -233,26 +233,6 @@
     frame.id = 'pp_iframe';
     frame.src = moduleUrl;
     Object.assign(frame.style, { flex:'1 1 auto', width:'100%', height:'100%', border:'0' });
-
-    // Controls
-    const seedORS = mkBtn('Seed ORS 800k + Reload', () => {
-      localStorage.setItem('ors_ebitda_at_risk', '800000'); // same-origin storage
-      frame.contentWindow.location.reload();
-    });
-    const seedPayroll = mkBtn('Seed Payroll 120k + Reload', () => {
-      localStorage.setItem('payroll-waste-savings', '120000');
-      frame.contentWindow.location.reload();
-    });
-    const clearSeeds = mkBtn('Clear Seeds + Reload', () => {
-      ['ors_ebitda_at_risk','payroll-waste-savings'].forEach(k => localStorage.removeItem(k));
-      frame.contentWindow.location.reload();
-    });
-    const newTab = mkBtn('Open in New Tab', () => window.open(moduleUrl, '_blank'));
-    const close = mkBtn('Close', () => overlay.remove());
-
-    bar.append(linkInfo, seedORS, seedPayroll, clearSeeds, newTab, close);
-    overlay.append(bar, frame);
-    document.body.appendChild(overlay);
   }
 
   btn.addEventListener('click', openOverlay);
